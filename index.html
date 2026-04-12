@@ -10,9 +10,9 @@
 <meta http-equiv="X-Content-Type-Options" content="nosniff">
 <meta name="referrer" content="strict-origin-when-cross-origin">
 <title>Jerbi Explore – Cap Bon</title>
-<link rel="manifest" href="/Explore/manifest.json">
+<link rel="manifest" href="/jerbi-guide/manifest.json">
 <!-- Configuration centralisée -->
-<script src="/Explore/config.js" defer></script>
+<script src="/jerbi-guide/config.js" defer></script>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css"/>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js" defer></script>
 <!-- PapaParse for reading CSV from Google Sheets (published) -->
@@ -66,7 +66,7 @@ body.light {
   /* ── Mode clair : img-005 (falaises, parasols, eau turquoise) + voile jour ── */
   background:
     linear-gradient(rgba(253,248,238,0.68), rgba(253,248,238,0.68)),
-    url('/Explore/data/Images/img-005.jpg') center / cover fixed;
+    url('/jerbi-guide/data/Images/img-005.jpg') center / cover fixed;
 }
 
 *,*::before,*::after{margin:0;padding:0;box-sizing:border-box;}
@@ -76,7 +76,7 @@ body{
   /* ── Mode sombre : img-001 (kayak, falaises, eau turquoise) + voile nuit ── */
   background:
     linear-gradient(rgba(10,5,0,0.74), rgba(10,5,0,0.74)),
-    url('/Explore/data/Images/img-001.jpg') center top / cover fixed;
+    url('/jerbi-guide/data/Images/img-001.jpg') center top / cover fixed;
   color:var(--tb);
   transition:background .5s,color .3s;
   -webkit-tap-highlight-color:transparent;
@@ -1300,7 +1300,7 @@ body.light .event-card.past .event-month{color:var(--tm);}
 
 <div id="splash">
   <div class="logo-wrap" style="border-radius:12px;padding:6px 10px;">
-    <img src="/Explore/logo.png" alt="Jerbi Explore" class="splash-logo-img">
+    <img src="/jerbi-guide/logo.png" alt="Jerbi Explore" class="splash-logo-img">
   </div>
   <div class="splash-tag">Cap Bon · Guide & Expériences</div>
   <div class="splash-bar"></div>
@@ -1312,7 +1312,7 @@ body.light .event-card.past .event-month{color:var(--tm);}
   <div id="sidebar">
     <div id="sidebar-logo" onclick="navigate('home')">
       <div class="logo-wrap" style="padding:4px 8px;border-radius:8px;">
-        <img src="/Explore/logo.png" alt="Jerbi Explore" style="height:58px;width:auto;display:block;">
+        <img src="/jerbi-guide/logo.png" alt="Jerbi Explore" style="height:58px;width:auto;display:block;">
       </div>
     </div>
     <div class="sidebar-nav-item active" data-screen="home" onclick="navigate('home')">
@@ -1350,7 +1350,7 @@ body.light .event-card.past .event-month{color:var(--tm);}
       <div id="topbar">
         <div class="topbar-logo" id="topbar-logo-btn" onclick="navigate('home')" title="Accueil">
           <div class="logo-wrap" style="padding:3px 6px;border-radius:6px;">
-            <img src="/Explore/logo.png" alt="Jerbi Explore" style="height:42px;width:auto;display:block;">
+            <img src="/jerbi-guide/logo.png" alt="Jerbi Explore" style="height:42px;width:auto;display:block;">
           </div>
         </div>
         <div class="topbar-right">
@@ -1745,7 +1745,7 @@ body.light .event-card.past .event-month{color:var(--tm);}
    sinon valeurs par défaut.
    
    MISE À JOUR DES DONNÉES :
-   1. Aller sur GitHub → dossier /Explore/data/
+   1. Aller sur GitHub → dossier /jerbi-guide/data/
    2. Cliquer sur le fichier CSV à modifier (lieux.csv, etc.)
    3. Cliquer sur l'icône crayon (Edit) en haut à droite
    4. Modifier directement dans l'éditeur web → Commit changes
@@ -1759,7 +1759,7 @@ body.light .event-card.past .event-month{color:var(--tm);}
 // Lecture de la config centralisée (config.js)
 const CFG = (typeof APP_CONFIG !== 'undefined') ? APP_CONFIG : {
   VERSION: '3.0.0',
-  GITHUB_REPO_PATH: '/Explore',
+  GITHUB_REPO_PATH: '/jerbi-guide',
   get CSV_LIEUX()       { return `${this.GITHUB_REPO_PATH}/data/lieux.csv`; },
   get CSV_PARTENAIRES() { return `${this.GITHUB_REPO_PATH}/data/partenaires.csv`; },
   get CSV_EVENEMENTS()  { return `${this.GITHUB_REPO_PATH}/data/evenements.csv`; },
@@ -1774,7 +1774,7 @@ const CFG = (typeof APP_CONFIG !== 'undefined') ? APP_CONFIG : {
   INSTALL_SNOOZE_DAYS: 7,
   CONTACT_WHATSAPP: '+216XXXXXXXX',
   SPONSOR_ACTIF:   true,
-  SPONSOR_LOGO:    '/Explore/data/logo_sponsor.png',
+  SPONSOR_LOGO:    '/jerbi-guide/data/logo_sponsor.png',
   SPONSOR_LIEN:    'https://www.svr-lab.com',
   SPONSOR_ALT:     'SVR Sun Secure',
 };
@@ -1809,8 +1809,8 @@ function safeImgUrl(url) {
   url = url.trim();
   // Accepter URL absolues http/https
   if (url.startsWith('http://') || url.startsWith('https://')) return url;
-  // Accepter chemins relatifs locaux /Explore/... ou data/...
-  if (url.startsWith('/Explore/') || url.startsWith('./') || url.startsWith('../')) return url;
+  // Accepter chemins relatifs locaux /jerbi-guide/... ou data/...
+  if (url.startsWith('/jerbi-guide/') || url.startsWith('./') || url.startsWith('../')) return url;
   // Rejeter javascript:, data:, blob: et tout autre schéma non autorisé
   return '';
 }
@@ -2826,7 +2826,7 @@ function _runSearch(q) {
 }
 
 /* ══ DONNÉES LOCALES — Lecture CSV serveur ═════════════════
-   Fichiers dans /Explore/data/
+   Fichiers dans /jerbi-guide/data/
    Mise à jour : éditer directement sur GitHub (interface web)
    ou glisser-déposer un nouveau fichier CSV.
    Offline : précachés par le SW → disponibles sans réseau.
@@ -3555,7 +3555,7 @@ function scheduleWeatherRetry() {
 /* ══════════════════════════════════════════════════════════
    MESSAGES ADMINISTRATEUR
    ─────────────────────────────────────────────────────────
-   Principe : lecture de /Explore/data/message.txt
+   Principe : lecture de /jerbi-guide/data/message.txt
    • Chargement au démarrage + toutes les 60 secondes
    • Messages séparés par une ligne vide dans le fichier
    • Bouton 📢 visible uniquement si au moins 1 message
@@ -3900,7 +3900,7 @@ async function adminLogin() {
 <!-- badge admin intégré dans le script principal -->
 
 <!-- ══ JERBI CHAT — Guide IA hybride (local + Groq) ══ -->
-<script src="/Explore/jerbi-chat.js" defer></script>
+<script src="/jerbi-guide/jerbi-chat.js" defer></script>
 
 </body>
 </html>

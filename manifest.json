@@ -2,8 +2,8 @@
   "name": "Jerbi Explore – Cap Bon",
   "short_name": "Jerbi Explore",
   "description": "Expériences, Guide & Bonnes Adresses – Cap Bon, Tunisie",
-  "start_url": "/Explore/",
-  "scope": "/Explore/",
+  "start_url": "/jerbi-guide/",
+  "scope": "/jerbi-guide/",
   "display": "standalone",
   "background_color": "#0a0500",
   "theme_color": "#d4a843",
@@ -12,25 +12,25 @@
   "categories": ["travel", "lifestyle", "food"],
   "icons": [
     {
-      "src": "/Explore/icon-192.png",
+      "src": "/jerbi-guide/icon-192.png",
       "sizes": "192x192",
       "type": "image/png",
       "purpose": "any"
     },
     {
-      "src": "/Explore/icon-192.png",
+      "src": "/jerbi-guide/icon-192.png",
       "sizes": "192x192",
       "type": "image/png",
       "purpose": "maskable"
     },
     {
-      "src": "/Explore/icon-512.png",
+      "src": "/jerbi-guide/icon-512.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "any"
     },
     {
-      "src": "/Explore/icon-512.png",
+      "src": "/jerbi-guide/icon-512.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "maskable"
@@ -38,7 +38,7 @@
   ],
   "screenshots": [
     {
-      "src": "/Explore/screenshot-mobile.png",
+      "src": "/jerbi-guide/screenshot-mobile.png",
       "sizes": "390x844",
       "type": "image/png",
       "form_factor": "narrow",
@@ -50,15 +50,15 @@
       "name": "Guide",
       "short_name": "Guide",
       "description": "Carte et liste des lieux",
-      "url": "/Explore/#guide",
-      "icons": [{ "src": "/Explore/icon-192.png", "sizes": "192x192" }]
+      "url": "/jerbi-guide/#guide",
+      "icons": [{ "src": "/jerbi-guide/icon-192.png", "sizes": "192x192" }]
     },
     {
       "name": "Agenda",
       "short_name": "Agenda",
       "description": "Événements à venir",
-      "url": "/Explore/#agenda",
-      "icons": [{ "src": "/Explore/icon-192.png", "sizes": "192x192" }]
+      "url": "/jerbi-guide/#agenda",
+      "icons": [{ "src": "/jerbi-guide/icon-192.png", "sizes": "192x192" }]
     }
   ],
   "prefer_related_applications": false
