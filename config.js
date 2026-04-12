@@ -10,10 +10,10 @@ const APP_CONFIG = {
   VERSION: '3.0.0',
 
   // ── Chemins GitHub Pages ──────────────────────────────
-  GITHUB_REPO_PATH: '/jerbi-guide',
+  GITHUB_REPO_PATH: '/Explore',
 
   // ── Fichiers CSV locaux ───────────────────────────────
-  // Placés dans /jerbi-guide/data/
+  // Placés dans /Explore/data/
   // Mise à jour : éditer directement sur GitHub (interface web)
   // ou téléverser un nouveau fichier via l'interface GitHub
   get CSV_LIEUX()       { return `${this.GITHUB_REPO_PATH}/data/lieux.csv`; },
@@ -58,7 +58,7 @@ const APP_CONFIG = {
   // Mettre l'image logo_sponsor.png dans data/
   // Laisser SPONSOR_ACTIF: false pour désactiver sans supprimer le fichier
   SPONSOR_ACTIF:   true,
-  SPONSOR_LOGO: '/jerbi-guide/data/logo_sponsor.png?v=2',
+  SPONSOR_LOGO: '/Explore/data/logo_sponsor.png?v=2',
   SPONSOR_LIEN:    '',
   SPONSOR_ALT:     'SVR',
 };
