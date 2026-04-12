@@ -14,7 +14,7 @@ const CACHE_VERSION = 'jerbi-v3.6.0';
 const CACHE_STATIC  = `${CACHE_VERSION}-static`;
 const CACHE_DYNAMIC = `${CACHE_VERSION}-dynamic`;
 
-const BASE_PATH = '/jerbi-guide';
+const BASE_PATH = '/Explore';
 
 /* Assets précachés à l'installation — UNIQUEMENT l'essentiel
    Les images galerie sont exclues (peuvent être 404 si pas encore uploadées) */

@@ -10,7 +10,7 @@
   'use strict';
 
   /* ── CONFIG ─────────────────────────────────────────── */
-  const BASE = (window.APP_CONFIG && window.APP_CONFIG.GITHUB_REPO_PATH) || '/jerbi-guide';
+  const BASE = (window.APP_CONFIG && window.APP_CONFIG.GITHUB_REPO_PATH) || '/Explore';
 
   const WA_NUMBER = (window.APP_CONFIG && window.APP_CONFIG.CONTACT_WHATSAPP
     ? window.APP_CONFIG.CONTACT_WHATSAPP.replace(/\D/g, '')
