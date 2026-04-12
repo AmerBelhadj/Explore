@@ -1,0 +1,3 @@
+# Images — Galerie Jerbi Explore
+Déposer ici les photos nommées img-001.jpg, img-002.jpg, img-003.jpg...
+Le chargement est séquentiel et s'arrête à la première image manquante.

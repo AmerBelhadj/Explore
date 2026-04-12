@@ -10,7 +10,7 @@
    - Tuiles carte : cache-first dynamique
 ══════════════════════════════════════════════════════ */
 
-const CACHE_VERSION = 'jerbi-v3.6.0';
+const CACHE_VERSION = 'jerbi-v3.7.0';
 const CACHE_STATIC  = `${CACHE_VERSION}-static`;
 const CACHE_DYNAMIC = `${CACHE_VERSION}-dynamic`;
 
@@ -33,6 +33,9 @@ const STATIC_ASSETS = [
   `${BASE_PATH}/data/evenements.csv`,
   `${BASE_PATH}/data/Videos/Video.csv`,
   `${BASE_PATH}/data/faq.csv`,
+  `${BASE_PATH}/data/e_shop/produits.csv`,
+  `${BASE_PATH}/data/Background/bg-dark.jpg`,
+  `${BASE_PATH}/data/Background/bg-light.jpg`,
   /* Chat IA hybride */
   `${BASE_PATH}/jerbi-chat.js`,
   /* Libs CDN */

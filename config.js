@@ -7,7 +7,7 @@
 
 const APP_CONFIG = {
   // ── Version de l'application ──────────────────────────
-  VERSION: '3.0.0',
+  VERSION: '3.1.0',
 
   // ── Chemins GitHub Pages ──────────────────────────────
   GITHUB_REPO_PATH: '/Explore',
@@ -21,12 +21,32 @@ const APP_CONFIG = {
   get CSV_EVENEMENTS()  { return `${this.GITHUB_REPO_PATH}/data/evenements.csv`; },
   get CSV_VIDEOS()      { return `${this.GITHUB_REPO_PATH}/data/Videos/Video.csv`; },
   get CSV_FAQ()         { return `${this.GITHUB_REPO_PATH}/data/faq.csv`; },
+  get CSV_PRODUCTS()    { return `${this.GITHUB_REPO_PATH}/data/e_shop/produits.csv`; },
 
   // ── Chatbot IA ────────────────────────────────────────
   // URL du proxy Cloudflare Worker (clé Groq côté serveur)
   // Format : 'https://jerbi-proxy.TON-COMPTE.workers.dev'
   // Laisser vide '' = mode local uniquement
   CHAT_PROXY_URL: '',
+
+  // ── E-Shop ────────────────────────────────────────────
+  // Numéro WhatsApp pour les commandes (format international sans +)
+  // Exemple : '21698765432' → +216 98 765 432
+  SHOP_WHATSAPP: '',
+
+  // ── Analytics ─────────────────────────────────────────
+  // GoatCounter : créez un compte gratuit sur https://www.goatcounter.com
+  // Renseignez votre code de site (ex : 'jerbi-explore')
+  // Laisser '' pour désactiver le tracking GoatCounter
+  GOATCOUNTER_CODE: '',
+
+  // ── Fond d'écran ──────────────────────────────────────
+  // Images dans data/Background/
+  //   bg-dark.jpg  → mode sombre
+  //   bg-light.jpg → mode clair
+  // Remplacer ces fichiers pour changer le fond sans toucher au code
+  BG_DARK:  'bg-dark.jpg',
+  BG_LIGHT: 'bg-light.jpg',
 
   // Rafraîchissement automatique des données (en ms)
   // CSV local = rechargement toutes les 5 min suffit

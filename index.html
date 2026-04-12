@@ -63,25 +63,124 @@ body.light {
   --red:       #a82020;
   --pill:      rgba(160,110,0,0.10);
   --pillt:     rgba(26,18,0,0.85);
-  /* ── Mode clair : img-005 (falaises, parasols, eau turquoise) + voile jour ── */
+  /* ── Mode clair : fond depuis data/Background/bg-light.jpg ── */
   background:
     linear-gradient(rgba(253,248,238,0.68), rgba(253,248,238,0.68)),
-    url('/Explore/data/Images/img-005.jpg') center / cover fixed;
+    url('/Explore/data/Background/bg-light.jpg') center / cover fixed;
 }
 
 *,*::before,*::after{margin:0;padding:0;box-sizing:border-box;}
 html,body{height:100%;height:100dvh;overflow:hidden;}
 body{
   font-family:'DM Sans',sans-serif;
-  /* ── Mode sombre : img-001 (kayak, falaises, eau turquoise) + voile nuit ── */
+  /* ── Mode sombre : fond depuis data/Background/bg-dark.jpg ── */
   background:
     linear-gradient(rgba(10,5,0,0.74), rgba(10,5,0,0.74)),
-    url('/Explore/data/Images/img-001.jpg') center top / cover fixed;
+    url('/Explore/data/Background/bg-dark.jpg') center top / cover fixed;
   color:var(--tb);
   transition:background .5s,color .3s;
   -webkit-tap-highlight-color:transparent;
   overscroll-behavior:none;
 }
+
+
+/* ══ E-SHOP ═════════════════════════════════════════════ */
+#screen-shop{padding:0;}
+.shop-header{padding:20px 16px 12px;border-bottom:1px solid var(--border);}
+.shop-header h2{font-family:'Playfair Display',serif;font-size:1.2rem;color:var(--th);}
+.shop-header p{font-size:.75rem;color:var(--tm);margin-top:2px;}
+.shop-filters{display:flex;gap:8px;padding:10px 16px;overflow-x:auto;border-bottom:1px solid var(--border);}
+.shop-filters::-webkit-scrollbar{display:none;}
+.shop-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;padding:12px 16px;padding-bottom:80px;}
+@media(min-width:640px){.shop-grid{grid-template-columns:repeat(3,1fr);}}
+@media(min-width:900px){.shop-grid{grid-template-columns:repeat(4,1fr);}}
+.shop-card{
+  background:var(--card);border:1px solid var(--border);border-radius:12px;
+  overflow:hidden;cursor:pointer;transition:transform .15s,box-shadow .15s;
+  display:flex;flex-direction:column;
+}
+.shop-card:active{transform:scale(.97);}
+.shop-card-img{
+  width:100%;aspect-ratio:1;background:var(--cardh);
+  display:flex;align-items:center;justify-content:center;
+  font-size:2.5rem;overflow:hidden;position:relative;
+}
+.shop-card-img img{width:100%;height:100%;object-fit:cover;}
+.shop-badge-dispo{
+  position:absolute;top:8px;right:8px;
+  font-size:.6rem;font-weight:700;padding:3px 7px;border-radius:20px;
+  background:rgba(0,0,0,.55);backdrop-filter:blur(4px);
+}
+.shop-badge-dispo.dispo{color:#4ade80;}
+.shop-badge-dispo.indispo{color:#f87171;}
+.shop-card-body{padding:10px 10px 12px;flex:1;display:flex;flex-direction:column;gap:4px;}
+.shop-card-name{font-size:.82rem;font-weight:600;color:var(--th);line-height:1.2;}
+.shop-card-prix{font-size:.9rem;font-weight:700;color:var(--tq);}
+.shop-card-origin{font-size:.68rem;color:var(--tm);}
+/* Modal produit */
+#shop-modal-overlay{
+  display:none;position:fixed;inset:0;z-index:9000;
+  background:rgba(0,0,0,.72);backdrop-filter:blur(6px);
+  align-items:flex-end;justify-content:center;
+}
+#shop-modal-overlay.open{display:flex;}
+#shop-modal{
+  background:var(--card);border-radius:20px 20px 0 0;width:100%;max-width:560px;
+  max-height:88vh;overflow-y:auto;padding:0 0 32px;
+}
+#shop-modal::-webkit-scrollbar{width:4px;}
+#shop-modal::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px;}
+.shop-modal-img{width:100%;aspect-ratio:16/9;object-fit:cover;border-radius:20px 20px 0 0;}
+.shop-modal-img-placeholder{
+  width:100%;aspect-ratio:16/9;background:var(--cardh);
+  display:flex;align-items:center;justify-content:center;font-size:5rem;
+  border-radius:20px 20px 0 0;
+}
+.shop-modal-body{padding:20px 20px 0;}
+.shop-modal-title{font-family:'Playfair Display',serif;font-size:1.3rem;color:var(--th);margin-bottom:4px;}
+.shop-modal-prix{font-size:1.5rem;font-weight:700;color:var(--tq);margin-bottom:12px;}
+.shop-modal-row{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px;}
+.shop-modal-chip{
+  font-size:.7rem;padding:4px 10px;border-radius:20px;
+  background:var(--pill);color:var(--th);
+}
+.shop-modal-section{margin-bottom:14px;}
+.shop-modal-section-title{font-size:.7rem;font-weight:700;color:var(--tq);text-transform:uppercase;letter-spacing:1px;margin-bottom:5px;}
+.shop-modal-section-text{font-size:.82rem;color:var(--tb);line-height:1.5;}
+.shop-modal-cta{
+  margin:20px 20px 0;padding:14px;border-radius:12px;
+  background:linear-gradient(135deg,#d4a843,#b8861a);
+  color:#000;font-weight:700;font-size:.9rem;border:none;
+  width:calc(100% - 40px);cursor:pointer;
+}
+.shop-modal-close{
+  position:sticky;top:0;float:right;
+  margin:12px 12px 0 0;
+  background:rgba(0,0,0,.45);backdrop-filter:blur(4px);
+  border:none;color:#fff;border-radius:50%;width:32px;height:32px;
+  font-size:1rem;cursor:pointer;display:flex;align-items:center;justify-content:center;
+  z-index:1;
+}
+/* ══ ANALYTICS ADMIN ════════════════════════════════════ */
+.admin-tab-bar{display:flex;gap:0;border-bottom:2px solid var(--border);margin-bottom:16px;}
+.admin-tab{
+  flex:1;padding:8px 4px;font-size:.75rem;font-weight:600;
+  background:transparent;border:none;color:var(--tm);cursor:pointer;
+  border-bottom:2px solid transparent;margin-bottom:-2px;transition:color .2s;
+}
+.admin-tab.active{color:var(--tq);border-bottom-color:var(--tq);}
+.analytics-card{
+  background:var(--cardh);border-radius:10px;padding:14px;margin-bottom:10px;
+}
+.analytics-card-title{font-size:.7rem;color:var(--tm);text-transform:uppercase;letter-spacing:.8px;margin-bottom:6px;}
+.analytics-card-value{font-size:1.6rem;font-weight:700;color:var(--th);}
+.analytics-card-sub{font-size:.7rem;color:var(--tm);margin-top:2px;}
+.analytics-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px;}
+.analytics-screen-row{display:flex;align-items:center;gap:8px;padding:7px 0;border-bottom:1px solid var(--border);}
+.analytics-screen-bar{flex:1;height:6px;border-radius:3px;background:var(--border);overflow:hidden;}
+.analytics-screen-fill{height:100%;background:var(--tq);border-radius:3px;}
+.analytics-screen-label{font-size:.72rem;color:var(--tb);min-width:70px;}
+.analytics-screen-count{font-size:.72rem;color:var(--tm);min-width:30px;text-align:right;}
 
 /* ══ DESKTOP LAYOUT ══ */
 #root{
@@ -1334,6 +1433,9 @@ body.light .event-card.past .event-month{color:var(--tm);}
     <div class="sidebar-nav-item" data-screen="gallery" onclick="navigate('gallery')">
       <span class="sidebar-nav-icon">📸</span> Galerie
     </div>
+    <div class="sidebar-nav-item" data-screen="shop" onclick="navigate('shop')">
+      <span class="sidebar-nav-icon">🛒</span> Boutique
+    </div>
     <div class="sidebar-bottom">
       <div class="sidebar-theme-btn" onclick="toggleTheme()">
         <span id="sidebar-theme-icon">🌙</span>
@@ -1662,6 +1764,34 @@ body.light .event-card.past .event-month{color:var(--tm);}
 
 
 
+
+        <!-- ══ SCREEN BOUTIQUE ══ -->
+        <div class="screen" id="screen-shop">
+          <div class="shop-header">
+            <h2>🛒 Boutique Cap Bon</h2>
+            <p>Produits locaux &amp; artisanaux — livraison disponible</p>
+          </div>
+          <div class="shop-filters" id="shop-filters">
+            <div class="filter-pill active" onclick="filterShop('tous',this)">Tous</div>
+            <div class="filter-pill" onclick="filterShop('disponible',this)">✅ Disponible</div>
+            <div class="filter-pill" onclick="filterShop('indisponible',this)">⏳ Épuisé</div>
+          </div>
+          <div class="shop-grid" id="shop-grid">
+            <div style="grid-column:1/-1;text-align:center;padding:40px;color:var(--tm)">
+              <div style="font-size:2rem;margin-bottom:8px">🛒</div>
+              <div style="font-size:.85rem">Chargement des produits…</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Modal produit -->
+        <div id="shop-modal-overlay" onclick="if(event.target===this)closeShopModal()">
+          <div id="shop-modal">
+            <button class="shop-modal-close" onclick="closeShopModal()">✕</button>
+            <div id="shop-modal-inner"></div>
+          </div>
+        </div>
+
       </div><!-- /screens -->
 
       <!-- BOTTOM NAV -->
@@ -1682,10 +1812,13 @@ body.light .event-card.past .event-month{color:var(--tm);}
         <div class="nav-item" data-screen="gallery" onclick="navigate('gallery')">
           <div class="nav-icon">📸</div><div class="nav-label">Galerie</div>
         </div>
+        <div class="nav-item" data-screen="shop" onclick="navigate('shop')">
+          <div class="nav-icon">🛒</div><div class="nav-label">Boutique</div>
+        </div>
       </div>
 
     </div><!-- /app -->
-    <div id="version-footer">v3.0.0 · Jerbi Explore</div>
+    <div id="version-footer">v3.1.0 · Jerbi Explore</div>
   </div><!-- /main-content -->
 </div><!-- /root -->
 
@@ -1810,7 +1943,7 @@ function safeImgUrl(url) {
   // Accepter URL absolues http/https
   if (url.startsWith('http://') || url.startsWith('https://')) return url;
   // Accepter chemins relatifs locaux /Explore/... ou data/...
-  if (url.startsWith('/Explore/') || url.startsWith('./') || url.startsWith('../')) return url;
+  if (url.startsWith('/Explore/') || url.startsWith('./') || url.startsWith('../') || url.startsWith('data/')) return url;
   // Rejeter javascript:, data:, blob: et tout autre schéma non autorisé
   return '';
 }
@@ -1911,6 +2044,9 @@ function navigate(id) {
   if (id === 'adresses') renderPartenaires();
   if (id === 'agenda') renderEvenements();
   if (id === 'gallery') { if (!galleryLoaded) loadGallery(); else renderGallery(); }
+  if (id === 'shop') { if (!shopLoaded) loadShop(); else renderShop(); }
+  // Analytics: compter les visites par écran
+  trackScreenVisit(id);
 }
 function goBack() { navigate(prevScreen === currentScreen ? 'home' : prevScreen); }
 
@@ -3730,6 +3866,10 @@ document.addEventListener('DOMContentLoaded', function() {
     });
   })();
 
+  // Initialiser le système d'analytiques
+  initAnalytics();
+  trackScreenVisit('home'); // page initiale
+
   // Stocker la date de première visite si absente
   if (!localStorage.getItem('jerbi_last_visit')) {
     localStorage.setItem('jerbi_last_visit', new Date(0).toISOString());
@@ -3792,6 +3932,264 @@ function showToast(msg, duration) {
 }
 
 /* ══ ADMIN PANEL ══════════════════════════════════════════ */
+/* ══════════════════════════════════════════════════════
+   E-SHOP — Boutique Cap Bon
+   Lecture depuis data/e_shop/produits.csv
+   Photos depuis data/e_shop/<filename>
+══════════════════════════════════════════════════════ */
+let shopLoaded = false;
+let allProduits = [];
+let currentShopFilter = 'tous';
+
+async function loadShop() {
+  const grid = document.getElementById('shop-grid');
+  try {
+    const csvPath = (CFG.GITHUB_REPO_PATH || '') + '/data/e_shop/produits.csv';
+    const resp = await fetch(csvPath);
+    if (!resp.ok) throw new Error('HTTP ' + resp.status);
+    const text = await resp.text();
+    const result = Papa.parse(text, {
+      header: true,
+      skipEmptyLines: true,
+      delimiter: ';',
+      transformHeader: h => h.trim()
+    });
+    allProduits = (result.data || []).filter(p => (p.affichage || '').trim().toUpperCase() === 'OUI');
+    shopLoaded = true;
+    renderShop();
+  } catch(e) {
+    console.warn('[Shop] Erreur chargement CSV:', e);
+    if (grid) grid.innerHTML = `<div style="grid-column:1/-1;text-align:center;padding:40px;color:var(--tm)">
+      <div style="font-size:2rem;margin-bottom:8px">⚠️</div>
+      <div style="font-size:.85rem">Produits non disponibles hors ligne</div>
+    </div>`;
+  }
+}
+
+function filterShop(filter, el) {
+  currentShopFilter = filter;
+  document.querySelectorAll('#shop-filters .filter-pill').forEach(p => p.classList.remove('active'));
+  if (el) el.classList.add('active');
+  renderShop();
+}
+
+function renderShop() {
+  const grid = document.getElementById('shop-grid');
+  if (!grid) return;
+  const BASE = (CFG.GITHUB_REPO_PATH || '') + '/data/e_shop/';
+  let produits = allProduits.filter(p => {
+    if (currentShopFilter === 'disponible') return (p.disponibilite || '').toUpperCase() === 'OUI';
+    if (currentShopFilter === 'indisponible') return (p.disponibilite || '').toUpperCase() !== 'OUI';
+    return true;
+  });
+  if (!produits.length) {
+    grid.innerHTML = `<div style="grid-column:1/-1;text-align:center;padding:40px;color:var(--tm);font-size:.85rem">Aucun produit trouvé</div>`;
+    return;
+  }
+  grid.innerHTML = produits.map(p => {
+    const dispo = (p.disponibilite || '').toUpperCase() === 'OUI';
+    const photo = (p.photo || '').trim();
+    const imgHtml = photo
+      ? `<img src="${escHtml(BASE + photo)}" alt="${escHtml(p.nom)}" loading="lazy" onerror="this.parentElement.innerHTML='🛍️'">`
+      : '🛍️';
+    const sk = storeItem(p);
+    return `<div class="shop-card" onclick="openShopModal(getItem('${sk}'))">
+      <div class="shop-card-img">
+        ${imgHtml}
+        <div class="shop-badge-dispo ${dispo ? 'dispo' : 'indispo'}">${dispo ? '● Dispo' : '● Épuisé'}</div>
+      </div>
+      <div class="shop-card-body">
+        <div class="shop-card-name">${escHtml(p.nom || '')}</div>
+        <div class="shop-card-prix">${escHtml(p.prix || '')}</div>
+        <div class="shop-card-origin">📍 ${escHtml(p.origines || '')}</div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function openShopModal(p) {
+  const overlay = document.getElementById('shop-modal-overlay');
+  const inner = document.getElementById('shop-modal-inner');
+  if (!overlay || !inner) return;
+  const BASE = (CFG.GITHUB_REPO_PATH || '') + '/data/e_shop/';
+  const dispo = (p.disponibilite || '').toUpperCase() === 'OUI';
+  const photo = (p.photo || '').trim();
+  const wa = (CFG.SHOP_WHATSAPP || '');
+  inner.innerHTML = `
+    ${photo
+      ? `<img class="shop-modal-img" src="${escHtml(BASE + photo)}" alt="${escHtml(p.nom)}" onerror="this.outerHTML='<div class=shop-modal-img-placeholder>🛍️</div>'">`
+      : `<div class="shop-modal-img-placeholder">🛍️</div>`}
+    <div class="shop-modal-body">
+      <div class="shop-modal-title">${escHtml(p.nom || '')}</div>
+      <div class="shop-modal-prix">${escHtml(p.prix || '')}
+        <span style="font-size:.75rem;font-weight:400;color:${dispo ? '#4ade80' : '#f87171'};margin-left:10px">${dispo ? '✅ Disponible' : '⏳ Épuisé'}</span>
+      </div>
+      <div class="shop-modal-row">
+        ${(p.tags || '').split(',').filter(t=>t.trim()).slice(0,4).map(t=>`<div class="shop-modal-chip">${escHtml(t.trim())}</div>`).join('')}
+      </div>
+      ${p.description ? `<div class="shop-modal-section">
+        <div class="shop-modal-section-title">📝 Description</div>
+        <div class="shop-modal-section-text">${escHtml(p.description)}</div>
+      </div>` : ''}
+      ${p.composition ? `<div class="shop-modal-section">
+        <div class="shop-modal-section-title">🧪 Composition</div>
+        <div class="shop-modal-section-text">${escHtml(p.composition)}</div>
+      </div>` : ''}
+      ${p.origines ? `<div class="shop-modal-section">
+        <div class="shop-modal-section-title">📍 Origines</div>
+        <div class="shop-modal-section-text">${escHtml(p.origines)}</div>
+      </div>` : ''}
+    </div>
+    ${wa ? `<button class="shop-modal-cta" onclick="window.open('https://wa.me/${wa}?text=Bonjour%2C+je+suis+intéressé(e)+par+le+produit+%22${encodeURIComponent(p.nom||'')}%22+sur+Jerbi+Explore','_blank')">
+      📲 Commander sur WhatsApp
+    </button>` : `<div style="margin:0 20px;padding:12px;text-align:center;font-size:.8rem;color:var(--tm)">
+      Contactez-nous via l'application pour commander.
+    </div>`}
+  `;
+  overlay.classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+
+function closeShopModal() {
+  const overlay = document.getElementById('shop-modal-overlay');
+  if (overlay) overlay.classList.remove('open');
+  document.body.style.overflow = '';
+}
+
+/* ══════════════════════════════════════════════════════
+   ANALYTICS — Tracking local (localStorage) + GoatCounter
+══════════════════════════════════════════════════════ */
+const ANALYTICS_KEY = 'jerbi_analytics';
+
+function getAnalyticsData() {
+  try {
+    return JSON.parse(localStorage.getItem(ANALYTICS_KEY) || '{}');
+  } catch(e) { return {}; }
+}
+
+function saveAnalyticsData(data) {
+  try { localStorage.setItem(ANALYTICS_KEY, JSON.stringify(data)); } catch(e) {}
+}
+
+function trackScreenVisit(screenId) {
+  const data = getAnalyticsData();
+  if (!data.screens) data.screens = {};
+  data.screens[screenId] = (data.screens[screenId] || 0) + 1;
+  data.lastVisit = new Date().toISOString();
+  if (!data.firstVisit) data.firstVisit = data.lastVisit;
+  data.totalVisits = (data.totalVisits || 0) + 1;
+  saveAnalyticsData(data);
+  // GoatCounter pageview (si activé)
+  if (typeof window.goatcounter !== 'undefined' && window.goatcounter.count) {
+    window.goatcounter.count({ path: '/screen/' + screenId, title: screenId });
+  }
+}
+
+function initAnalytics() {
+  const data = getAnalyticsData();
+  // Première visite
+  if (!data.firstVisit) {
+    data.firstVisit = new Date().toISOString();
+    data.totalVisits = 0;
+    data.screens = {};
+    data.installs = 0;
+    data.sessions = 0;
+    saveAnalyticsData(data);
+  }
+  // Compter cette session
+  data.sessions = (data.sessions || 0) + 1;
+  saveAnalyticsData(data);
+}
+
+// Tracker l'installation
+window.addEventListener('appinstalled', () => {
+  const data = getAnalyticsData();
+  data.installs = (data.installs || 0) + 1;
+  data.lastInstall = new Date().toISOString();
+  saveAnalyticsData(data);
+  if (typeof window.goatcounter !== 'undefined' && window.goatcounter.count) {
+    window.goatcounter.count({ path: '/pwa-install', title: 'PWA Install' });
+  }
+});
+
+function renderAdminAnalytics() {
+  const el = document.getElementById('admin-analytics-content');
+  if (!el) return;
+  const data = getAnalyticsData();
+  const screens = data.screens || {};
+  const totalVisits = data.totalVisits || 0;
+  const sessions = data.sessions || 0;
+  const maxVisit = Math.max(1, ...Object.values(screens));
+  const screenLabels = {home:'🏠 Accueil',exp:'🎬 Expériences',adresses:'🛍️ Adresses',agenda:'📅 Agenda',guide:'🗺️ Guide',gallery:'📸 Galerie',shop:'🛒 Boutique'};
+  const fmt = iso => iso ? new Date(iso).toLocaleDateString('fr-FR', {day:'2-digit',month:'2-digit',year:'numeric'}) : '—';
+
+  el.innerHTML = `
+    <div class="analytics-grid">
+      <div class="analytics-card">
+        <div class="analytics-card-title">📱 Sessions</div>
+        <div class="analytics-card-value">${sessions}</div>
+        <div class="analytics-card-sub">sur cet appareil</div>
+      </div>
+      <div class="analytics-card">
+        <div class="analytics-card-title">📲 Installations</div>
+        <div class="analytics-card-value">${data.installs || 0}</div>
+        <div class="analytics-card-sub">PWA installée</div>
+      </div>
+      <div class="analytics-card">
+        <div class="analytics-card-title">🗓️ 1ère visite</div>
+        <div class="analytics-card-value" style="font-size:1rem">${fmt(data.firstVisit)}</div>
+        <div class="analytics-card-sub">&nbsp;</div>
+      </div>
+      <div class="analytics-card">
+        <div class="analytics-card-title">⏱️ Dernière visite</div>
+        <div class="analytics-card-value" style="font-size:1rem">${fmt(data.lastVisit)}</div>
+        <div class="analytics-card-sub">&nbsp;</div>
+      </div>
+    </div>
+    <div class="analytics-card">
+      <div class="analytics-card-title">📊 Pages visitées (total : ${totalVisits})</div>
+      ${Object.entries(screenLabels).map(([k,lbl]) => {
+        const count = screens[k] || 0;
+        const pct = totalVisits > 0 ? Math.round(count / totalVisits * 100) : 0;
+        const barW = maxVisit > 0 ? Math.round(count / maxVisit * 100) : 0;
+        return `<div class="analytics-screen-row">
+          <div class="analytics-screen-label">${lbl}</div>
+          <div class="analytics-screen-bar"><div class="analytics-screen-fill" style="width:${barW}%"></div></div>
+          <div class="analytics-screen-count">${count} <span style="color:var(--ts)">(${pct}%)</span></div>
+        </div>`;
+      }).join('')}
+    </div>
+    ${(CFG.GOATCOUNTER_CODE && CFG.GOATCOUNTER_CODE !== 'VOTRE_CODE') ? `
+    <div class="analytics-card" style="margin-top:10px">
+      <div class="analytics-card-title">🌐 Statistiques globales (tous appareils)</div>
+      <div style="font-size:.78rem;color:var(--ts);margin-bottom:8px">Voir le tableau de bord GoatCounter :</div>
+      <a href="https://${CFG.GOATCOUNTER_CODE}.goatcounter.com" target="_blank"
+         style="display:inline-block;padding:8px 16px;background:var(--tq);color:#000;border-radius:8px;font-size:.8rem;font-weight:700;text-decoration:none">
+        📈 Ouvrir GoatCounter →
+      </a>
+    </div>` : `
+    <div class="analytics-card" style="margin-top:10px;border:1px dashed var(--border)">
+      <div class="analytics-card-title">🌐 Activer les stats globales</div>
+      <div style="font-size:.78rem;color:var(--ts);line-height:1.5">
+        Créez un compte gratuit sur <strong>GoatCounter.com</strong>, puis<br>
+        renseignez votre code dans <code>config.js → GOATCOUNTER_CODE</code>
+      </div>
+    </div>`}
+    <div style="text-align:center;margin-top:12px">
+      <button onclick="resetAnalytics()" style="font-size:.72rem;color:var(--tm);background:none;border:1px solid var(--border);border-radius:6px;padding:5px 12px;cursor:pointer">
+        🗑️ Réinitialiser les stats locales
+      </button>
+    </div>
+  `;
+}
+
+function resetAnalytics() {
+  if (!confirm('Réinitialiser toutes les statistiques locales ?')) return;
+  localStorage.removeItem(ANALYTICS_KEY);
+  renderAdminAnalytics();
+  showToast('📊 Statistiques réinitialisées');
+}
+
 function openAdminPanel() {
   const overlay  = document.getElementById('admin-overlay');
   const login    = document.getElementById('admin-login');
@@ -3804,12 +4202,22 @@ function openAdminPanel() {
     if (login)   login.style.display   = 'none';
     if (content) content.style.display = 'block';
     renderAdminGallery();
+    showAdminTab('gallery');
   } else {
     if (login)   login.style.display   = 'block';
     if (content) content.style.display = 'none';
     if (errEl)   errEl.textContent     = '';
     if (pwdInput) pwdInput.value       = '';
   }
+}
+
+function showAdminTab(tab) {
+  document.getElementById('admin-section-gallery').style.display = tab === 'gallery' ? 'block' : 'none';
+  document.getElementById('admin-section-analytics').style.display = tab === 'analytics' ? 'block' : 'none';
+  document.querySelectorAll('.admin-tab').forEach(t => t.classList.remove('active'));
+  const btn = document.getElementById('admin-tab-' + tab);
+  if (btn) btn.classList.add('active');
+  if (tab === 'analytics') renderAdminAnalytics();
 }
 
 function closeAdminPanel() {
@@ -3884,15 +4292,27 @@ async function adminLogin() {
 
     <!-- CONTENT -->
     <div id="admin-content" style="display:none">
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
         <div style="font-size:.78rem;color:var(--ts)">
-          Médias en galerie : <strong id="admin-pending-count" style="color:var(--tq)">0</strong>
+          Médias : <strong id="admin-pending-count" style="color:var(--tq)">0</strong>
         </div>
         <div style="font-size:.7rem;color:var(--tm);cursor:pointer;" onclick="adminUnlocked=false;closeAdminPanel()">
-          🔒 Se déconnecter
+          🔒 Déconnexion
         </div>
       </div>
-      <div id="admin-gallery-list"></div>
+      <!-- Onglets admin -->
+      <div class="admin-tab-bar">
+        <button class="admin-tab active" id="admin-tab-gallery" onclick="showAdminTab('gallery')">📸 Galerie</button>
+        <button class="admin-tab" id="admin-tab-analytics" onclick="showAdminTab('analytics')">📊 Statistiques</button>
+      </div>
+      <!-- Section Galerie -->
+      <div id="admin-section-gallery">
+        <div id="admin-gallery-list"></div>
+      </div>
+      <!-- Section Analytiques -->
+      <div id="admin-section-analytics" style="display:none">
+        <div id="admin-analytics-content"></div>
+      </div>
     </div>
   </div>
 </div>
@@ -3901,6 +4321,22 @@ async function adminLogin() {
 
 <!-- ══ JERBI CHAT — Guide IA hybride (local + Groq) ══ -->
 <script src="/Explore/jerbi-chat.js" defer></script>
+
+<!-- ══ GOATCOUNTER Analytics (si activé dans config.js) ══ -->
+<script>
+(function() {
+  // Attendre que config.js soit chargé
+  window.addEventListener('load', function() {
+    var code = (typeof APP_CONFIG !== 'undefined' && APP_CONFIG.GOATCOUNTER_CODE) ? APP_CONFIG.GOATCOUNTER_CODE : '';
+    if (!code || code === 'VOTRE_CODE') return;
+    var s = document.createElement('script');
+    s.async = true;
+    s.src = 'https://gc.zgo.at/count.js';
+    s.setAttribute('data-goatcounter', 'https://' + code + '.goatcounter.com/count');
+    document.body.appendChild(s);
+  });
+})();
+</script>
 
 </body>
 </html>
