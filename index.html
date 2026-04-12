@@ -1,0 +1,3906 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="theme-color" content="#0a0500">
+<meta name="description" content="Jerbi Explore – Expériences & Guide Cap Bon">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta http-equiv="X-Content-Type-Options" content="nosniff">
+<meta name="referrer" content="strict-origin-when-cross-origin">
+<title>Jerbi Explore – Cap Bon</title>
+<link rel="manifest" href="/jerbi-guide/manifest.json">
+<!-- Configuration centralisée -->
+<script src="/jerbi-guide/config.js" defer></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css"/>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js" defer></script>
+<!-- PapaParse for reading CSV from Google Sheets (published) -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js" defer></script>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+/* ══ TOKENS DARK — thème Jerbi Explore (noir chaud × or) ══ */
+:root {
+  --bg:        #0a0500;
+  --bg2:       #150c00;
+  --bg3:       #1f1300;
+  --card:      rgba(255,255,255,0.07);
+  --cardh:     rgba(255,255,255,0.13);
+  --nav:       rgba(6,3,0,0.97);
+  --border:    rgba(255,255,255,0.12);
+  --bgold:     rgba(212,168,67,0.35);
+  --th:        #f8f5ef;
+  --tb:        rgba(248,245,239,0.85);
+  --ts:        rgba(248,245,239,0.50);
+  --tm:        rgba(248,245,239,0.30);
+  --tq:        #d4a843;
+  --coral:     #f4845f;
+  --gold:      #d4a843;
+  --green:     #2ecc71;
+  --red:       #e74c3c;
+  --pill:      transparent;
+  --pillt:     rgba(248,245,239,0.55);
+  --nav-h:     64px;
+}
+/* ══ TOKENS LIGHT — thème crème chaud × or ══ */
+body.light {
+  --bg:        #fdf8ee;
+  --bg2:       #ffffff;
+  --bg3:       #f5edd8;
+  --card:      #ffffff;
+  --cardh:     #fffbf0;
+  --nav:       rgba(255,252,240,0.98);
+  --border:    rgba(160,120,0,0.18);
+  --bgold:     rgba(160,110,0,0.15);
+  --th:        #1a1200;
+  --tb:        #2d1f00;
+  --ts:        rgba(45,31,0,0.75);
+  --tm:        rgba(45,31,0,0.50);
+  --tq:        #8a6000;
+  --coral:     #b03a20;
+  --gold:      #8a6000;
+  --green:     #256a35;
+  --red:       #a82020;
+  --pill:      rgba(160,110,0,0.10);
+  --pillt:     rgba(26,18,0,0.85);
+  /* ── Mode clair : img-005 (falaises, parasols, eau turquoise) + voile jour ── */
+  background:
+    linear-gradient(rgba(253,248,238,0.68), rgba(253,248,238,0.68)),
+    url('/jerbi-guide/data/Images/img-005.jpg') center / cover fixed;
+}
+
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box;}
+html,body{height:100%;height:100dvh;overflow:hidden;}
+body{
+  font-family:'DM Sans',sans-serif;
+  /* ── Mode sombre : img-001 (kayak, falaises, eau turquoise) + voile nuit ── */
+  background:
+    linear-gradient(rgba(10,5,0,0.74), rgba(10,5,0,0.74)),
+    url('/jerbi-guide/data/Images/img-001.jpg') center top / cover fixed;
+  color:var(--tb);
+  transition:background .5s,color .3s;
+  -webkit-tap-highlight-color:transparent;
+  overscroll-behavior:none;
+}
+
+/* ══ DESKTOP LAYOUT ══ */
+#root{
+  display:flex; height:100vh; height:100dvh; width:100%;
+  overflow:hidden;
+}
+
+/* Desktop sidebar */
+#sidebar{
+  display:none; /* mobile: hidden */
+  width:260px; flex-shrink:0;
+  background:var(--nav); border-right:1px solid var(--border);
+  flex-direction:column; padding:28px 0 24px;
+  transition:background .3s;
+}
+#sidebar-logo{
+  padding:0 24px 28px; cursor:pointer;
+  border-bottom:1px solid var(--border); margin-bottom:20px;
+  display:flex; align-items:center;
+}
+#sidebar-logo em{color:var(--tq);font-style:italic;}
+.sidebar-nav-item{
+  display:flex; align-items:center; gap:12px;
+  padding:12px 24px; cursor:pointer;
+  font-size:.88rem; font-weight:500; color:var(--ts);
+  border-radius:0; transition:all .2s;
+  border-left:3px solid transparent;
+}
+.sidebar-nav-item:hover{background:var(--card); color:var(--th);}
+.sidebar-nav-item.active{
+  color:var(--tq); background:rgba(212,168,67,.08);
+  border-left-color:var(--tq); font-weight:600;
+}
+.sidebar-nav-icon{font-size:1.1rem; width:20px; text-align:center;}
+.sidebar-bottom{margin-top:auto; padding:0 24px;}
+.sidebar-theme-btn{
+  display:flex; align-items:center; gap:8px;
+  padding:10px 14px; border-radius:12px;
+  background:var(--card); border:1px solid var(--border);
+  cursor:pointer; font-size:.8rem; color:var(--ts);
+  transition:all .2s;
+}
+.sidebar-theme-btn:hover{background:var(--cardh); color:var(--th);}
+
+/* Desktop main content area */
+#main-content{
+  flex:1; display:flex; flex-direction:column;
+  min-width:0; overflow:hidden;
+}
+
+/* Mobile app shell (inside main-content) */
+#app{
+  display:flex; flex-direction:column;
+  height:100%; position:relative; overflow:hidden;
+}
+
+/* ══ TOPBAR ══ */
+#topbar{
+  display:flex; align-items:center; justify-content:space-between;
+  padding:8px 16px 6px;
+  min-height:60px;
+  background:var(--nav); border-bottom:1px solid var(--border);
+  backdrop-filter:blur(20px); flex-shrink:0; z-index:50;
+  transition:background .3s;
+}
+.topbar-logo{
+  font-family:'Playfair Display',serif;
+  font-size:1.1rem; color:var(--th); cursor:pointer;
+}
+.topbar-logo em{color:var(--tq); font-style:italic;}
+/* Logo wrapper — logo transparent, fonctionne sur tous les fonds */
+.logo-wrap{
+  display:inline-flex; align-items:center; justify-content:center;
+  border-radius:8px; overflow:hidden;
+  background:transparent;
+}
+.logo-wrap img{
+  display:block;
+  mix-blend-mode:normal;
+  image-rendering:auto;
+  /* Filtre pour rendre l'or plus visible en light mode */
+}
+/* Light mode : légère ombre portée pour contraste sur fond crème */
+body.light .logo-wrap img{
+  filter: drop-shadow(0 1px 3px rgba(0,0,0,.4));
+}
+.topbar-right{display:flex; align-items:center; gap:8px;}
+.home-btn{
+  display:flex; align-items:center; gap:5px;
+  background:var(--card); border:1px solid var(--border);
+  border-radius:10px; padding:5px 10px;
+  font-size:.72rem; font-weight:500; color:var(--ts);
+  cursor:pointer; transition:all .2s;
+}
+.home-btn:hover{background:var(--cardh); color:var(--th);}
+/* Logo sponsor */
+#sponsor-logo-wrap{
+  display:none; align-items:center; justify-content:center;
+  height:46px; cursor:pointer;
+  opacity:.9; transition:opacity .2s;
+}
+#sponsor-logo-wrap:hover{opacity:1;}
+#sponsor-logo-wrap img{
+  height:100%; width:auto; max-width:140px;
+  object-fit:contain; display:block;
+  filter:drop-shadow(0 1px 4px rgba(0,0,0,.3));
+}
+#sponsor-logo-wrap.visible{display:flex;}
+
+.theme-btn{
+  width:34px; height:34px; border-radius:10px;
+  background:var(--card); border:1px solid var(--border);
+  display:flex; align-items:center; justify-content:center;
+  font-size:1rem; cursor:pointer; transition:all .2s;
+}
+
+/* ══ SCREENS ══ */
+#screens{flex:1; overflow:hidden; position:relative;}
+.screen{
+  position:absolute; inset:0;
+  overflow-y:auto; overflow-x:hidden;
+  opacity:0; pointer-events:none;
+  transform:translateX(20px);
+  transition:opacity .22s ease, transform .22s ease;
+  scrollbar-width:thin;
+  scrollbar-color:var(--border) transparent;
+}
+.screen::-webkit-scrollbar{width:4px;}
+.screen::-webkit-scrollbar-thumb{background:var(--border); border-radius:2px;}
+.screen.active{opacity:1; pointer-events:all; transform:translateX(0);}
+
+/* ══ BOTTOM NAV (mobile only) ══ */
+#bottom-nav{
+  display:flex; justify-content:space-around;
+  padding:6px 0 0;
+  padding-bottom:max(12px,env(safe-area-inset-bottom));
+  background:var(--nav); border-top:1px solid var(--border);
+  backdrop-filter:blur(20px); flex-shrink:0; z-index:50;
+  transition:background .3s;
+  /* Garantit visibilité sur tous les appareils */
+  min-height:56px;
+  position:relative;
+}
+.nav-item{
+  display:flex; flex-direction:column; align-items:center; gap:2px;
+  padding:4px 10px; border-radius:12px; cursor:pointer;
+  transition:background .2s; flex:1; max-width:72px;
+}
+.nav-item.active{background:rgba(212,168,67,.12);}
+.nav-icon{font-size:1.1rem; line-height:1;}
+.nav-label{font-size:.55rem; letter-spacing:.3px; color:var(--tm); transition:color .2s; white-space:nowrap;}
+.nav-item.active .nav-label{color:var(--tq); font-weight:600;}
+
+/* ══ DESKTOP MEDIA QUERY ══ */
+@media(min-width:768px){
+  #sidebar{display:flex;}
+  #topbar .home-btn{display:none;}
+  #bottom-nav{display:none;}
+  #topbar{padding:12px 24px 10px;}
+  .screen{scrollbar-width:thin;}
+  #app{max-width:none;}
+  /* Larger map on desktop */
+  #map{height:340px !important; margin:0 24px 16px !important;}
+  .exp-slider-wrap{padding:0 24px;}
+  .exp-slider-track .exp-card{width:360px !important;}
+  .place-list{padding:0 24px 40px !important;}
+  .filter-row{padding:0 24px 12px !important;}
+  .guide-header{padding:20px 24px 12px !important;}
+  .home-section{padding:20px 24px 12px !important;}
+  .gallery-grid{grid-template-columns:repeat(3,1fr) !important;}
+}
+
+/* ══ HOME ══ */
+.home-hero{
+  min-height:200px; position:relative; overflow:hidden;
+  background:linear-gradient(135deg,#1f1300 0%,#2d1a00 50%,#d4a843 100%);
+  display:flex; align-items:flex-end; padding:24px 20px;
+}
+body.light .home-hero{background:linear-gradient(135deg,#5a3e00,#a07020);}
+.home-hero-wave{
+  position:absolute; bottom:0; left:0; right:0; height:40px;
+  background:var(--bg); clip-path:ellipse(55% 100% at 50% 100%);
+  transition:background .3s;
+}
+.home-hero-text{position:relative; z-index:2; padding-bottom:16px;}
+.home-hero-tag{font-size:.6rem; letter-spacing:3px; text-transform:uppercase; color:rgba(255,255,255,.6); margin-bottom:6px;}
+.home-hero-title{font-family:'Playfair Display',serif; font-size:2rem; line-height:1.1; color:#fff; margin-bottom:4px;}
+.home-hero-title em{color:#7ee8fa; font-style:italic;}
+.home-hero-sub{font-size:.8rem; color:rgba(255,255,255,.65);}
+.home-section{padding:16px 16px 8px;}
+.section-title{font-family:'Playfair Display',serif; font-size:1.1rem; color:var(--th); margin-bottom:12px;}
+.section-row{display:flex; align-items:center; justify-content:space-between; margin-bottom:12px;}
+.see-all{font-size:.7rem; color:var(--tq); cursor:pointer;}
+
+.weather-row{display:flex; gap:8px; margin-bottom:16px; overflow-x:auto; scrollbar-width:none; padding-bottom:2px;}
+.weather-row::-webkit-scrollbar{display:none;}
+.weather-chip{
+  flex-shrink:0; display:flex; align-items:center; gap:6px;
+  background:var(--card); border:1px solid var(--border);
+  border-radius:12px; padding:8px 14px; font-size:.75rem; color:var(--tb);
+  transition:background .3s,border .3s;
+}
+.weather-chip b{color:var(--tq);}
+/* Couleur UV selon niveau */
+.uv-low b   {color:var(--green);}
+.uv-mod b   {color:#e8a020;}
+.uv-high b  {color:var(--coral);}
+.uv-vhigh b {color:var(--red);}
+.uv-ext b   {color:#9b1de8;}
+
+/* Quick buttons */
+.quick-grid{display:grid; grid-template-columns:1fr 1fr; gap:10px;}
+.quick-btn{
+  display:flex; align-items:center; gap:10px;
+  background:var(--card); border:1px solid var(--border);
+  border-radius:16px; padding:14px; cursor:pointer; transition:all .2s;
+}
+.quick-btn:active{background:var(--cardh); transform:scale(.98);}
+.quick-btn-icon{font-size:1.4rem;}
+.quick-btn-label{font-size:.78rem; font-weight:600; color:var(--th); line-height:1.2;}
+.quick-btn-sub{font-size:.65rem; color:var(--tm);}
+
+/* ══ EXPÉRIENCES — SLIDER ══ */
+.exp-hero{
+  background:linear-gradient(135deg,#1f1300,#d4a843);
+  padding:48px 20px 28px; text-align:center; position:relative; overflow:hidden;
+}
+.exp-hero-emoji{font-size:4rem; opacity:.2; position:absolute; top:10px; right:20px;}
+.exp-hero-tag{font-size:.6rem; letter-spacing:3px; text-transform:uppercase; color:rgba(255,255,255,.6); margin-bottom:6px;}
+.exp-hero-title{font-family:'Playfair Display',serif; font-size:1.8rem; color:#fff; margin-bottom:4px;}
+.exp-hero-sub{font-size:.8rem; color:rgba(255,255,255,.6);}
+
+/* Slider wrapper */
+.exp-slider-wrap{
+  position:relative; padding:16px 0 8px;
+}
+.exp-slider-nav{
+  position:absolute; top:50%; z-index:10;
+  width:36px; height:36px; border-radius:50%;
+  background:var(--bg2); border:1px solid var(--border);
+  display:flex; align-items:center; justify-content:center;
+  cursor:pointer; color:var(--th); font-size:1rem;
+  transform:translateY(-50%); transition:all .2s;
+  box-shadow:0 2px 12px rgba(0,0,0,.3);
+  user-select:none;
+}
+.exp-slider-nav:hover{background:var(--bg3); border-color:var(--tq);}
+.exp-slider-nav.prev{left:8px;}
+.exp-slider-nav.next{right:8px;}
+.exp-slider-nav.disabled{opacity:.3; pointer-events:none;}
+
+.exp-slider-overflow{
+  overflow:hidden; margin:0 52px;
+}
+.exp-slider-track{
+  display:flex; gap:14px;
+  transition:transform .35s cubic-bezier(.4,0,.2,1);
+}
+.exp-card{
+  flex-shrink:0; width:calc(100% - 0px);
+  background:var(--card); border:1px solid var(--border);
+  border-radius:20px; overflow:hidden; cursor:pointer;
+  transition:transform .2s,background .3s;
+}
+.exp-card:active{transform:scale(.99);}
+.exp-card-media{
+  height:160px; display:flex; align-items:center; justify-content:center;
+  font-size:4rem; position:relative;
+  background:linear-gradient(135deg,rgba(212,168,67,.15),rgba(244,132,95,.1));
+}
+.exp-card-rating{
+  position:absolute; top:10px; right:10px;
+  background:rgba(0,0,0,.55); border-radius:8px;
+  padding:3px 9px; font-size:.7rem; color:#fff;
+  backdrop-filter:blur(8px);
+}
+.exp-card-rating span{color:var(--gold);}
+.exp-card-body{padding:14px;}
+.exp-card-name{font-family:'Playfair Display',serif; font-size:1rem; color:var(--th); margin-bottom:4px;}
+.exp-card-desc{font-size:.75rem; color:var(--ts); line-height:1.5; margin-bottom:12px;}
+.exp-card-footer{display:flex; align-items:center; justify-content:space-between;}
+.exp-price{font-size:.82rem; color:var(--tb);}
+.exp-price b{font-size:1rem; color:var(--tq);}
+.btn-reserve{
+  background:var(--tq); color:#0a0500;
+  border:none; border-radius:10px; padding:7px 16px;
+  font-size:.75rem; font-weight:700; cursor:pointer;
+  font-family:'DM Sans',sans-serif; transition:opacity .2s;
+}
+.btn-reserve:active{opacity:.8;}
+
+/* Slider dots */
+.exp-dots{
+  display:flex; justify-content:center; gap:6px;
+  padding:8px 0 4px;
+}
+.exp-dot{
+  width:6px; height:6px; border-radius:50%;
+  background:var(--border); transition:all .2s; cursor:pointer;
+}
+.exp-dot.active{background:var(--tq); width:18px; border-radius:3px;}
+
+/* Témoignages */
+.testi-list{padding:0 16px 16px; display:flex; flex-direction:column; gap:10px;}
+.testi-card{
+  background:var(--card); border:1px solid var(--border);
+  border-radius:14px; padding:14px; transition:background .3s;
+}
+.testi-stars{color:var(--gold); font-size:.8rem; margin-bottom:6px;}
+.testi-text{font-size:.76rem; color:var(--ts); line-height:1.5; font-style:italic; margin-bottom:8px;}
+.testi-author{display:flex; align-items:center; gap:8px;}
+.testi-avatar{
+  width:28px; height:28px; border-radius:50%; flex-shrink:0;
+  background:linear-gradient(135deg,var(--tq),var(--coral));
+  display:flex; align-items:center; justify-content:center;
+  font-size:.65rem; font-weight:700; color:#fff;
+}
+.testi-name{font-size:.75rem; font-weight:600; color:var(--th);}
+.testi-loc{font-size:.65rem; color:var(--tm);}
+
+/* ══ GUIDE ══ */
+.guide-header{padding:16px 16px 12px; transition:background .3s;}
+.guide-title{font-family:'Playfair Display',serif; font-size:1.4rem; color:var(--th); margin-bottom:2px;}
+.guide-sub{font-size:.72rem; color:var(--ts);}
+
+#map{
+  margin:0 16px 12px; border-radius:18px; overflow:hidden;
+  height:260px; border:1px solid var(--border);
+  position:relative; z-index:1; transition:border .3s;
+  /* Fix: ensure tiles load by giving explicit size */
+  min-height:260px;
+}
+
+.filter-row{
+  display:flex; gap:8px; padding:0 16px 10px;
+  overflow-x:auto; scrollbar-width:none; flex-shrink:0;
+}
+.filter-row::-webkit-scrollbar{display:none;}
+.filter-pill{
+  flex-shrink:0; padding:6px 14px; border-radius:20px;
+  font-size:.7rem; cursor:pointer; white-space:nowrap;
+  border:1px solid var(--border);
+  background:var(--pill); color:var(--pillt); transition:all .2s;
+}
+.filter-pill.active{background:var(--tq); color:#0a0500; border-color:var(--tq); font-weight:700;}
+
+.place-list{padding:0 16px 80px; display:flex; flex-direction:column;}
+.ville-sep{
+  font-size:.58rem; letter-spacing:3px; text-transform:uppercase;
+  color:var(--tm); padding:10px 0 6px;
+  display:flex; align-items:center; gap:8px;
+}
+.ville-sep::after{content:''; flex:1; height:1px; background:var(--border);}
+
+.place-item{
+  display:flex; align-items:center; gap:12px;
+  padding:11px; border-radius:14px; margin-bottom:8px;
+  background:var(--card); border:1px solid var(--border);
+  cursor:pointer; transition:all .2s;
+}
+.place-item:active{background:var(--cardh);}
+.place-item.starred{border-color:var(--bgold); background:rgba(212,168,67,.06);}
+.place-emoji-wrap{
+  width:46px; height:46px; border-radius:13px; flex-shrink:0;
+  display:flex; align-items:center; justify-content:center; font-size:1.4rem;
+  background:rgba(212,168,67,.1);
+}
+.place-item.starred .place-emoji-wrap{background:rgba(212,168,67,.12);}
+.place-info{flex:1; min-width:0;}
+.place-name{
+  font-size:.82rem; font-weight:600; color:var(--th);
+  display:flex; align-items:center; gap:5px; flex-wrap:wrap;
+}
+.star-tag{font-size:.58rem; color:var(--gold);}
+.place-meta{font-size:.68rem; color:var(--tm); margin:2px 0; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
+.place-quote{font-size:.66rem; color:var(--ts); font-style:italic; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
+.place-price{font-size:.72rem; color:var(--tq); font-weight:600; flex-shrink:0;}
+
+/* ══ FICHE ══ */
+.fiche-media{
+  height:240px; position:relative;
+  display:flex; align-items:center; justify-content:center; font-size:5rem;
+  background:linear-gradient(135deg,#1f1300,#d4a843); flex-shrink:0;
+  overflow:hidden;
+}
+.fiche-media-img{
+  position:absolute; inset:0;
+  width:100%; height:100%; object-fit:cover; display:block;
+  z-index:0;
+}
+.fiche-media-overlay{
+  position:absolute; inset:0;
+  background:linear-gradient(0deg,rgba(0,0,0,.55) 0%,rgba(0,0,0,.1) 60%,transparent 100%);
+  z-index:1;
+}
+.fiche-media > span#fiche-emoji{ position:relative; z-index:2; }
+.fiche-media.has-img > span#fiche-emoji{ display:none; }
+.fiche-back,.fiche-home-btn{
+  position:absolute; top:14px;
+  width:36px; height:36px; border-radius:50%;
+  background:rgba(0,0,0,.4); backdrop-filter:blur(10px);
+  border:1px solid rgba(255,255,255,.2);
+  display:flex; align-items:center; justify-content:center;
+  cursor:pointer; color:#fff; z-index:5; transition:background .2s;
+}
+.fiche-back{left:14px; font-size:1rem;}
+.fiche-home-btn{right:14px; font-size:.9rem;}
+.fiche-back:active,.fiche-home-btn:active{background:rgba(0,0,0,.65);}
+.fiche-body{padding:18px;}
+.fiche-cat{font-size:.6rem; letter-spacing:2px; text-transform:uppercase; color:var(--tq); margin-bottom:6px;}
+.fiche-title{font-family:'Playfair Display',serif; font-size:1.4rem; color:var(--th); line-height:1.2; margin-bottom:4px;}
+.fiche-loc{font-size:.75rem; color:var(--tm); margin-bottom:14px;}
+.haykel-box{background:rgba(212,168,67,.07); border:1px solid var(--bgold); border-radius:14px; padding:14px 16px; margin-bottom:14px;}
+.haykel-label{font-size:.6rem; letter-spacing:2px; text-transform:uppercase; color:var(--gold); margin-bottom:6px; display:flex; align-items:center; gap:5px;}
+.haykel-text{font-size:.78rem; color:var(--tb); line-height:1.6; font-style:italic;}
+.haykel-sig{font-size:.68rem; color:var(--tm); margin-top:6px;}
+.info-chips{display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-bottom:14px;}
+.info-chip{background:var(--card); border:1px solid var(--border); border-radius:12px; padding:10px 13px; transition:background .3s;}
+.chip-label{font-size:.58rem; color:var(--tm); text-transform:uppercase; letter-spacing:1px; margin-bottom:2px;}
+.chip-val{font-size:.8rem; font-weight:600; color:var(--th);}
+.fiche-actions{display:flex; gap:8px; margin-bottom:16px; flex-wrap:wrap;}
+.fiche-btn{
+  flex:1; min-width:80px; border:none; border-radius:13px; padding:12px 6px;
+  display:flex; flex-direction:column; align-items:center; gap:4px;
+  cursor:pointer; font-family:'DM Sans',sans-serif; transition:all .2s;
+}
+.fiche-btn:active{transform:scale(.97);}
+.fiche-btn.primary{background:var(--tq); color:#0a0500;}
+.fiche-btn.whatsapp{background:rgba(37,211,102,.15); border:1px solid rgba(37,211,102,.3); color:#25d366;}
+.fiche-btn.secondary{background:var(--card); border:1px solid var(--border); color:var(--tb);}
+.fiche-btn-icon{font-size:1.1rem;}
+.fiche-btn-label{font-size:.62rem; font-weight:600;}
+.fiche-desc{font-size:.8rem; color:var(--ts); line-height:1.7; margin-bottom:14px;}
+
+/* ══ GALERIE ══════════════════════════════════════════════ */
+.gallery-header{padding:20px 16px 12px;}
+.gallery-title{font-family:'Playfair Display',serif; font-size:1.4rem; color:var(--th); margin-bottom:4px;}
+.gallery-sub{font-size:.75rem; color:var(--ts); margin-bottom:4px;}
+
+/* Grille photos : masonry-like avec colonnes auto */
+.gallery-grid{
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:6px; padding:0 12px 80px;
+}
+@media(min-width:768px){.gallery-grid{grid-template-columns:repeat(4,1fr);gap:8px;padding:0 16px 80px;}}
+
+.gallery-item{
+  border-radius:10px; overflow:hidden; position:relative;
+  aspect-ratio:1; background:var(--bg3);
+  cursor:pointer; transition:transform .15s;
+}
+.gallery-item:active{transform:scale(.95);}
+.gallery-item img{
+  width:100%; height:100%; object-fit:cover; display:block;
+  /* Empêche clic droit / enregistrement */
+  -webkit-touch-callout:none; pointer-events:none;
+}
+.gallery-item-play{
+  position:absolute; inset:0;
+  display:flex; align-items:center; justify-content:center;
+  background:rgba(0,0,0,.25);
+}
+.gallery-item-play span{
+  width:36px; height:36px; border-radius:50%;
+  background:rgba(212,168,67,.92);
+  display:flex; align-items:center; justify-content:center;
+  font-size:1rem; padding-left:3px; color:#0a0500; font-weight:700;
+}
+.gallery-item-caption{
+  position:absolute; bottom:0; left:0; right:0;
+  background:linear-gradient(0,rgba(0,0,0,.7),transparent);
+  padding:18px 6px 6px;
+  font-size:.58rem; color:rgba(255,255,255,.9);
+  white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+}
+.gallery-empty{
+  grid-column:1/-1; text-align:center;
+  padding:40px 20px; color:var(--tm); font-size:.85rem;
+}
+
+/* Lightbox */
+#gallery-lightbox{
+  display:none; position:fixed; inset:0; z-index:8000;
+  background:rgba(0,0,0,.96); align-items:center; justify-content:center;
+  flex-direction:column;
+  /* Empêche téléchargement natif */
+  -webkit-touch-callout:none; user-select:none;
+}
+#gallery-lightbox.open{display:flex;}
+#lightbox-media{
+  max-width:96vw; max-height:76vh;
+  display:flex; align-items:center; justify-content:center;
+  position:relative;
+}
+#lightbox-media img{
+  max-width:96vw; max-height:76vh;
+  border-radius:8px; object-fit:contain; display:block;
+  /* Anti-téléchargement */
+  -webkit-touch-callout:none;
+  pointer-events:none;
+}
+#lightbox-media iframe,#lightbox-media video{
+  width:min(92vw,560px); aspect-ratio:16/9; border-radius:8px; border:none;
+}
+#lightbox-info{
+  margin-top:12px; text-align:center; max-width:80vw;
+}
+#lightbox-caption{font-size:.88rem; color:#f8f5ef; margin-bottom:4px;}
+#lightbox-date{font-size:.7rem; color:rgba(248,245,239,.45);}
+#lightbox-prev,#lightbox-next{
+  position:fixed; top:50%; transform:translateY(-50%);
+  background:rgba(255,255,255,.1); border:none; color:#fff;
+  font-size:1.8rem; width:44px; height:44px; border-radius:50%;
+  cursor:pointer; display:flex; align-items:center; justify-content:center;
+}
+#lightbox-prev{left:10px;}
+#lightbox-next{right:10px;}
+#lightbox-prev:hover,#lightbox-next:hover{background:rgba(212,168,67,.35);}
+#lightbox-close{
+  position:fixed; top:14px; right:14px;
+  background:rgba(255,255,255,.15); border:none; color:#fff;
+  font-size:1rem; width:36px; height:36px; border-radius:50%;
+  cursor:pointer; display:flex; align-items:center; justify-content:center;
+}
+/* Offline badge sur item vidéo */
+.gallery-item-offline{
+  position:absolute; top:6px; left:6px;
+  background:rgba(0,0,0,.6); border-radius:6px;
+  font-size:.55rem; color:rgba(255,255,255,.7); padding:2px 5px;
+}
+
+/* Admin galerie */
+.admin-gallery-add{
+  background:var(--bg3); border:1px solid var(--border);
+  border-radius:14px; padding:16px; margin-bottom:16px;
+}
+.admin-gallery-add input,.admin-gallery-add select,.admin-gallery-add textarea{
+  width:100%; background:var(--bg2); border:1px solid var(--border);
+  border-radius:10px; padding:10px 14px; font-size:.82rem;
+  color:var(--th); font-family:'DM Sans',sans-serif;
+  margin-bottom:10px; outline:none;
+}
+.admin-gallery-submit{
+  width:100%; padding:11px; border-radius:12px;
+  background:var(--tq); color:#0a0500; border:none;
+  font-size:.85rem; font-weight:700; cursor:pointer;
+  font-family:'DM Sans',sans-serif;
+}
+.admin-media-card{
+  display:flex; gap:10px; align-items:flex-start;
+  background:var(--card); border:1px solid var(--border);
+  border-radius:12px; padding:12px; margin-bottom:8px;
+}
+.admin-media-thumb{
+  width:60px; height:60px; border-radius:8px; flex-shrink:0;
+  background:var(--bg3); display:flex; align-items:center;
+  justify-content:center; font-size:1.4rem; overflow:hidden;
+}
+.admin-media-thumb img{width:100%;height:100%;object-fit:cover;border-radius:8px;}
+.admin-media-info{flex:1;min-width:0;}
+.admin-media-caption{font-size:.82rem;color:var(--th);font-weight:500;}
+.admin-media-meta{font-size:.7rem;color:var(--tm);margin-top:2px;}
+.admin-media-del{
+  background:rgba(231,76,60,.15);border:1px solid rgba(231,76,60,.3);
+  color:var(--coral);border-radius:8px;padding:5px 10px;
+  font-size:.72rem;cursor:pointer;white-space:nowrap;margin-top:6px;
+}
+
+/* ══ FAB COUP DE CŒUR ══ */
+#fab-coeur{
+  position:fixed; bottom:152px; right:16px; z-index:200;
+  width:52px; height:52px; border-radius:50%;
+  background:linear-gradient(135deg,#e74c3c,#c0392b);
+  box-shadow:0 4px 20px rgba(231,76,60,.5);
+  display:flex; align-items:center; justify-content:center;
+  cursor:pointer; border:none;
+  transition:transform .2s,opacity .3s; font-size:1.4rem;
+}
+#fab-coeur:active{transform:scale(.9);}
+#fab-coeur.hidden{opacity:0; pointer-events:none; transform:scale(.5);}
+#fab-badge{
+  position:absolute; top:-4px; right:-4px;
+  width:20px; height:20px; border-radius:50%;
+  background:var(--gold); border:2px solid var(--bg);
+  display:flex; align-items:center; justify-content:center;
+  font-size:.62rem; font-weight:700; color:#0a0500;
+}
+
+/* ══ COUP DE CŒUR POPUP ══ */
+#coeur-overlay{
+  position:fixed; inset:0; z-index:300;
+  background:rgba(0,0,0,.6); backdrop-filter:blur(4px);
+  display:flex; align-items:flex-end; justify-content:center;
+  opacity:0; pointer-events:none; transition:opacity .25s;
+}
+#coeur-overlay.visible{opacity:1; pointer-events:all;}
+#coeur-popup{
+  width:100%; max-width:600px;
+  background:var(--bg2); border-radius:24px 24px 0 0;
+  border-top:1px solid var(--border);
+  padding:20px 20px max(20px,env(safe-area-inset-bottom));
+  transform:translateY(100%); transition:transform .3s cubic-bezier(.4,0,.2,1);
+}
+#coeur-overlay.visible #coeur-popup{transform:translateY(0);}
+.coeur-handle{width:36px; height:4px; border-radius:2px; background:var(--border); margin:0 auto 16px;}
+.coeur-header{display:flex; align-items:center; justify-content:space-between; margin-bottom:14px;}
+.coeur-title{font-family:'Playfair Display',serif; font-size:1.1rem; color:var(--th);}
+.coeur-close{
+  width:30px; height:30px; border-radius:50%;
+  background:var(--card); border:1px solid var(--border);
+  display:flex; align-items:center; justify-content:center;
+  font-size:.85rem; cursor:pointer; color:var(--ts);
+}
+.coeur-card{background:var(--card); border:1px solid var(--bgold); border-radius:16px; padding:16px; margin-bottom:12px;}
+.coeur-card-name{font-family:'Playfair Display',serif; font-size:1rem; color:var(--th); margin-bottom:2px;}
+.coeur-card-meta{font-size:.7rem; color:var(--tm); margin-bottom:10px;}
+.coeur-citation{
+  font-size:.78rem; color:var(--tb); font-style:italic; line-height:1.6;
+  padding:10px 12px; background:rgba(212,168,67,.07);
+  border-left:3px solid var(--gold); border-radius:0 8px 8px 0; margin-bottom:10px;
+}
+.coeur-chips{display:flex; gap:6px; flex-wrap:wrap;}
+.coeur-chip{font-size:.62rem; padding:3px 8px; border-radius:8px; background:rgba(212,168,67,.1); color:var(--tq);}
+.coeur-nav{display:flex; align-items:center; justify-content:space-between; margin-top:12px;}
+.coeur-nav-btn{
+  padding:8px 18px; border-radius:10px;
+  background:var(--card); border:1px solid var(--border);
+  font-size:.75rem; font-weight:600; color:var(--tb);
+  cursor:pointer; transition:all .2s; font-family:'DM Sans',sans-serif;
+}
+.coeur-nav-btn:disabled{opacity:.3; cursor:not-allowed;}
+.coeur-counter{font-size:.72rem; color:var(--tm);}
+
+/* ══ LEAFLET ══ */
+.leaflet-tile-pane{filter:none !important;}
+.leaflet-popup-content-wrapper{
+  background:var(--bg2) !important; border:1px solid var(--border) !important;
+  border-radius:12px !important; box-shadow:0 4px 20px rgba(0,0,0,.4) !important;
+  color:var(--th) !important;
+}
+.leaflet-popup-tip{background:var(--bg2) !important;}
+.leaflet-control-zoom{border:none !important;}
+.leaflet-control-zoom a{background:var(--bg2) !important; color:var(--th) !important; border:1px solid var(--border) !important;}
+.leaflet-popup-content{color:var(--tb) !important; font-family:'DM Sans',sans-serif;}
+
+/* ══ SPLASH ══ */
+#splash{
+  position:fixed; inset:0; z-index:999;
+  background:var(--bg); display:flex; flex-direction:column;
+  align-items:center; justify-content:center; gap:14px;
+  transition:opacity .3s ease;
+}
+#splash.hide{opacity:0; visibility:hidden; pointer-events:none;}
+.splash-logo-img{height:120px;width:auto;display:block;}
+.splash-logo em{color:var(--tq); font-style:italic;}
+.splash-tag{font-size:.7rem; letter-spacing:3px; text-transform:uppercase; color:var(--tm);}
+.splash-bar{
+  width:50px; height:3px; border-radius:2px;
+  background:linear-gradient(90deg,var(--tq),var(--coral));
+  animation:pbar 1.5s ease-in-out infinite;
+}
+@keyframes pbar{0%,100%{transform:scaleX(1)}50%{transform:scaleX(.5);opacity:.5}}
+/* ══ ADMIN PANEL ══ */
+#admin-overlay {
+  position:fixed; inset:0; z-index:500;
+  background:rgba(0,0,0,.7); backdrop-filter:blur(6px);
+  display:flex; align-items:center; justify-content:center;
+  padding:16px;
+  opacity:0; pointer-events:none; transition:opacity .25s;
+}
+#admin-overlay.visible { opacity:1; pointer-events:all; }
+#admin-panel {
+  width:100%; max-width:520px; max-height:85vh;
+  background:var(--bg2); border-radius:24px;
+  border:1px solid var(--border);
+  display:flex; flex-direction:column;
+  box-shadow:0 20px 60px rgba(0,0,0,.6);
+  overflow:hidden;
+}
+#admin-header {
+  display:flex; align-items:center; justify-content:space-between;
+  padding:16px 20px; border-bottom:1px solid var(--border);
+  flex-shrink:0;
+}
+#admin-header-title {
+  font-family:'Playfair Display',serif; font-size:1.1rem; color:var(--th);
+  display:flex; align-items:center; gap:8px;
+}
+.admin-close {
+  width:30px; height:30px; border-radius:50%;
+  background:var(--card); border:1px solid var(--border);
+  display:flex; align-items:center; justify-content:center;
+  font-size:.85rem; cursor:pointer; color:var(--ts);
+}
+#admin-login {
+  padding:24px 20px; text-align:center;
+}
+#admin-login p { font-size:.82rem; color:var(--ts); margin-bottom:16px; line-height:1.5; }
+#admin-pwd-input {
+  width:100%; background:var(--bg3); border:1px solid var(--border);
+  border-radius:12px; padding:12px 16px; font-size:.88rem;
+  color:var(--th); font-family:'DM Sans',sans-serif;
+  outline:none; text-align:center; letter-spacing:3px;
+  margin-bottom:8px; transition:border .2s;
+}
+#admin-pwd-input:focus { border-color:var(--tq); }
+#admin-error { font-size:.75rem; color:var(--coral); margin-bottom:12px; min-height:20px; }
+#admin-login-btn {
+  width:100%; padding:12px; border-radius:12px;
+  background:var(--tq); color:#0a0500; border:none;
+  font-size:.85rem; font-weight:700; cursor:pointer;
+  font-family:'DM Sans',sans-serif; transition:opacity .2s;
+}
+#admin-login-btn:active { opacity:.8; }
+#admin-content {
+  flex:1; overflow-y:auto; padding:16px 20px;
+  scrollbar-width:thin; scrollbar-color:var(--border) transparent;
+}
+#admin-content::-webkit-scrollbar { width:4px; }
+#admin-content::-webkit-scrollbar-thumb { background:var(--border); border-radius:2px; }
+.admin-photo-card {
+  display:flex; gap:12px;
+  background:var(--card); border:1px solid var(--border);
+  border-radius:14px; padding:12px; margin-bottom:12px;
+  transition:background .2s;
+}
+.admin-photo-img {
+  width:80px; height:80px; border-radius:10px;
+  overflow:hidden; flex-shrink:0;
+  background:var(--bg3);
+}
+.admin-photo-img img { width:100%; height:100%; object-fit:cover; display:block; }
+.admin-photo-info { flex:1; min-width:0; display:flex; flex-direction:column; gap:3px; }
+.admin-photo-author { font-size:.82rem; font-weight:600; color:var(--th); }
+.admin-photo-meta { font-size:.7rem; color:var(--tm); }
+.admin-photo-caption { font-size:.7rem; color:var(--ts); font-style:italic; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.admin-photo-date { font-size:.65rem; color:var(--tm); margin-top:auto; }
+.admin-photo-actions { display:flex; gap:8px; margin-top:8px; }
+.admin-btn {
+  flex:1; padding:7px; border-radius:9px; border:none;
+  font-size:.72rem; font-weight:700; cursor:pointer;
+  font-family:'DM Sans',sans-serif; transition:all .15s;
+}
+.admin-btn:active { transform:scale(.96); }
+.admin-btn.ok  { background:rgba(46,204,113,.2); border:1px solid rgba(46,204,113,.4); color:var(--green); }
+.admin-btn.ko  { background:rgba(231,76,60,.15); border:1px solid rgba(231,76,60,.35); color:var(--coral); }
+.admin-btn.ok:hover  { background:rgba(46,204,113,.3); }
+.admin-btn.ko:hover  { background:rgba(231,76,60,.25); }
+
+/* Admin FAB supprimé — accès via triple-clic sur le logo topbar */
+
+/* ══ FAB MESSAGE ADMIN ════════════════════════════════════ */
+#fab-msg{
+  position:fixed; bottom:222px; right:16px; z-index:200;
+  width:52px; height:52px; border-radius:50%;
+  background:linear-gradient(135deg,#1e7e34,#28a745);
+  box-shadow:0 4px 20px rgba(40,167,69,.5);
+  display:flex; align-items:center; justify-content:center;
+  cursor:pointer; border:none;
+  transition:transform .2s, opacity .3s; font-size:1.35rem;
+  opacity:0; pointer-events:none; transform:scale(.5);
+}
+#fab-msg.visible{ opacity:1; pointer-events:all; transform:scale(1); }
+#fab-msg:active{ transform:scale(.9); }
+#fab-msg-badge{
+  position:absolute; top:-4px; right:-4px;
+  min-width:20px; height:20px; border-radius:10px; padding:0 4px;
+  background:#e74c3c; border:2px solid var(--bg);
+  display:flex; align-items:center; justify-content:center;
+  font-size:.6rem; font-weight:700; color:#fff;
+}
+
+/* ══ POPUP MESSAGES ADMIN ════════════════════════════════= */
+#msg-overlay{
+  position:fixed; inset:0; z-index:500;
+  background:rgba(0,0,0,.65); backdrop-filter:blur(4px);
+  display:flex; align-items:flex-end; justify-content:center;
+  opacity:0; pointer-events:none; transition:opacity .25s;
+}
+#msg-overlay.visible{ opacity:1; pointer-events:all; }
+#msg-popup{
+  width:100%; max-width:560px;
+  background:var(--bg2); border-radius:24px 24px 0 0;
+  border-top:2px solid #28a745;
+  padding:0 0 max(24px,env(safe-area-inset-bottom));
+  transform:translateY(30px); transition:transform .3s ease;
+  max-height:75vh; display:flex; flex-direction:column;
+}
+#msg-overlay.visible #msg-popup{ transform:translateY(0); }
+.msg-handle{
+  width:40px; height:4px; border-radius:2px;
+  background:var(--border); margin:12px auto 0;
+}
+.msg-header{
+  display:flex; align-items:center; justify-content:space-between;
+  padding:14px 20px 10px; flex-shrink:0;
+}
+.msg-title{
+  font-size:.92rem; font-weight:700; color:var(--th);
+  display:flex; align-items:center; gap:8px;
+}
+.msg-title span.msg-counter{
+  font-size:.72rem; font-weight:500; color:var(--ts);
+  background:var(--card); border-radius:10px; padding:2px 8px;
+}
+.msg-close{
+  width:30px; height:30px; border-radius:50%; background:var(--card);
+  display:flex; align-items:center; justify-content:center;
+  cursor:pointer; font-size:.9rem; color:var(--ts); flex-shrink:0;
+  border:1px solid var(--border);
+}
+.msg-body{
+  padding:8px 20px 16px; overflow-y:auto; flex:1;
+  font-size:.88rem; line-height:1.65; color:var(--tb);
+  white-space:pre-wrap; word-break:break-word;
+}
+.msg-nav{
+  display:flex; gap:10px; padding:0 20px 6px; flex-shrink:0;
+  justify-content:space-between; align-items:center;
+}
+.msg-nav-btn{
+  flex:1; padding:10px; border-radius:14px;
+  background:var(--card); border:1px solid var(--border);
+  color:var(--th); font-size:.8rem; font-weight:600;
+  cursor:pointer; text-align:center;
+  transition:background .15s;
+}
+.msg-nav-btn:hover{ background:var(--cardh); }
+.msg-nav-btn:disabled{ opacity:.35; cursor:default; }
+.msg-date{
+  font-size:.68rem; color:var(--tm); text-align:center;
+  padding:0 20px 12px; flex-shrink:0;
+}
+
+/* ══ BANNERS GLOBAUX ══ */
+#update-banner{
+  display:none; position:fixed; top:0; left:0; right:0; z-index:9000;
+  background:linear-gradient(90deg,#1f1300,#d4a843);
+  color:#fff; font-size:.78rem; font-weight:600;
+  padding:10px 16px; text-align:center; cursor:pointer;
+  box-shadow:0 2px 12px rgba(212,168,67,.4);
+  animation:slideDown .4s ease;
+}
+@keyframes slideDown{from{transform:translateY(-100%)}to{transform:translateY(0)}}
+
+#offline-banner{
+  display:none; position:fixed; bottom:80px; left:50%; transform:translateX(-50%);
+  background:rgba(10,30,45,.95); color:var(--ts); font-size:.72rem;
+  padding:8px 16px; border-radius:20px; z-index:8000;
+  border:1px solid var(--border); backdrop-filter:blur(10px);
+  white-space:nowrap; pointer-events:none;
+}
+
+/* ══ INSTALL BANNER ══ */
+#install-banner{
+  display:none; position:fixed; bottom:0; left:0; right:0; z-index:8500;
+  background:var(--bg2); border-top:1px solid var(--border);
+  padding:16px 20px max(16px,env(safe-area-inset-bottom));
+  backdrop-filter:blur(20px);
+  box-shadow:0 -8px 32px rgba(0,0,0,.4);
+  animation:slideUp .4s cubic-bezier(.4,0,.2,1);
+}
+@keyframes slideUp{from{transform:translateY(100%)}to{transform:translateY(0)}}
+.install-banner-row{display:flex;align-items:center;gap:14px;}
+.install-banner-icon{font-size:2rem;flex-shrink:0;}
+.install-banner-text{flex:1;}
+.install-banner-title{font-size:.88rem;font-weight:700;color:var(--th);margin-bottom:2px;}
+.install-banner-sub{font-size:.72rem;color:var(--ts);}
+.install-banner-btns{display:flex;gap:8px;margin-top:12px;}
+.install-btn-primary{
+  flex:1;padding:10px;border-radius:12px;
+  background:var(--tq);color:#0a0500;border:none;
+  font-size:.8rem;font-weight:700;cursor:pointer;
+  font-family:'DM Sans',sans-serif;
+}
+.install-btn-dismiss{
+  padding:10px 16px;border-radius:12px;
+  background:var(--card);border:1px solid var(--border);
+  font-size:.8rem;color:var(--ts);cursor:pointer;
+  font-family:'DM Sans',sans-serif;
+}
+
+/* ══ RECHERCHE GLOBALE ══ */
+#search-overlay{
+  position:fixed;inset:0;z-index:7000;
+  background:rgba(0,0,0,.75);backdrop-filter:blur(12px);
+  opacity:0;pointer-events:none;transition:opacity .25s;
+  display:flex;flex-direction:column;
+}
+#search-overlay.visible{opacity:1;pointer-events:all;}
+#search-box{
+  margin:60px 16px 0;padding:14px 18px;
+  background:var(--bg2);border:1px solid var(--tq);
+  border-radius:18px;font-size:.9rem;color:var(--th);
+  font-family:'DM Sans',sans-serif;outline:none;
+  display:flex;align-items:center;gap:10px;
+}
+#search-input{
+  flex:1;background:none;border:none;outline:none;
+  font-size:.9rem;color:var(--th);font-family:'DM Sans',sans-serif;
+}
+#search-clear{cursor:pointer;font-size:.9rem;color:var(--ts);padding:4px;}
+#search-results{
+  flex:1;overflow-y:auto;padding:12px 16px 40px;
+  scrollbar-width:thin;scrollbar-color:var(--border) transparent;
+}
+.search-group-label{
+  font-size:.6rem;letter-spacing:2px;text-transform:uppercase;
+  color:var(--tm);padding:10px 0 6px;
+}
+.search-result-item{
+  display:flex;align-items:center;gap:12px;
+  padding:11px 12px;border-radius:12px;
+  background:var(--card);border:1px solid var(--border);
+  margin-bottom:7px;cursor:pointer;transition:background .15s;
+}
+.search-result-item:active{background:var(--cardh);}
+.search-result-icon{font-size:1.2rem;flex-shrink:0;width:36px;height:36px;border-radius:10px;
+  background:rgba(212,168,67,.1);display:flex;align-items:center;justify-content:center;}
+.search-result-name{font-size:.82rem;font-weight:600;color:var(--th);}
+.search-result-meta{font-size:.68rem;color:var(--tm);margin-top:1px;}
+.search-empty{text-align:center;padding:40px;color:var(--tm);font-size:.85rem;}
+
+/* ══ BONNES ADRESSES ══ */
+#screen-adresses .section-header{
+  padding:20px 16px 12px;
+  display:flex;align-items:flex-end;justify-content:space-between;
+}
+.adresses-title{font-family:'Playfair Display',serif;font-size:1.4rem;color:var(--th);margin-bottom:3px;}
+.adresses-sub{font-size:.72rem;color:var(--ts);}
+.partner-grid{
+  display:grid;grid-template-columns:repeat(2,1fr);
+  gap:12px;padding:0 16px 80px;
+}
+@media(min-width:768px){.partner-grid{grid-template-columns:repeat(3,1fr);padding:0 24px 80px;}}
+.partner-card{
+  background:var(--card);border:1px solid var(--border);
+  border-radius:16px;overflow:hidden;cursor:pointer;
+  transition:transform .2s,background .3s;position:relative;
+}
+.partner-card:active{transform:scale(.98);}
+.partner-card-img{
+  width:100%; aspect-ratio:3/2; object-fit:cover;
+  background:linear-gradient(135deg,var(--bg2),var(--bg3));
+  display:flex; align-items:center; justify-content:center;
+  font-size:2.8rem; overflow:hidden; position:relative;
+}
+.partner-card-img img{
+  width:100%; height:100%; object-fit:cover; display:block;
+  transition:transform .3s;
+}
+.partner-card:active .partner-card-img img{ transform:scale(1.04); }
+.partner-card-body{padding:10px;}
+.partner-card-name{font-size:.8rem;font-weight:700;color:var(--th);margin-bottom:2px;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.partner-card-cat{font-size:.65rem;color:var(--tq);margin-bottom:2px;}
+.partner-card-ville{font-size:.65rem;color:var(--tm);}
+.partner-promo-badge{
+  position:absolute;top:8px;right:8px;
+  background:linear-gradient(135deg,#e74c3c,#f39c12);
+  color:#fff;font-size:.58rem;font-weight:700;
+  padding:3px 7px;border-radius:8px;
+}
+.partner-fav-btn{
+  position:absolute;top:8px;left:8px;
+  width:28px;height:28px;border-radius:50%;
+  background:rgba(0,0,0,.4);backdrop-filter:blur(8px);
+  border:none;font-size:.85rem;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;
+  transition:transform .2s;
+}
+.partner-fav-btn:active{transform:scale(.85);}
+.partner-fav-btn.active{background:rgba(231,76,60,.8);}
+
+/* ══ MODAL PARTENAIRE ══ */
+#partner-modal-overlay{
+  position:fixed;inset:0;z-index:600;
+  background:rgba(0,0,0,.7);backdrop-filter:blur(8px);
+  display:flex;align-items:flex-end;justify-content:center;
+  opacity:0;pointer-events:none;transition:opacity .25s;
+}
+#partner-modal-overlay.visible{opacity:1;pointer-events:all;}
+#partner-modal{
+  width:100%;max-width:600px;max-height:90vh;
+  background:var(--bg2);border-radius:24px 24px 0 0;
+  border-top:1px solid var(--border);
+  overflow-y:auto;scrollbar-width:thin;
+  transform:translateY(100%);transition:transform .3s cubic-bezier(.4,0,.2,1);
+}
+#partner-modal-overlay.visible #partner-modal{transform:translateY(0);}
+.modal-handle{width:36px;height:4px;border-radius:2px;background:var(--border);margin:14px auto 0;}
+.modal-img{width:100%;height:220px;position:relative;overflow:hidden;
+  background:linear-gradient(135deg,var(--bg2),var(--bg3));
+  display:flex;align-items:center;justify-content:center;font-size:4rem;flex-shrink:0;}
+.modal-img img{width:100%;height:100%;object-fit:cover;display:block;
+  transition:opacity .3s;}
+/* Carrousel photos partenaire */
+.modal-carousel{
+  position:absolute;inset:0;display:flex;
+  transition:transform .35s cubic-bezier(.4,0,.2,1);
+  will-change:transform;
+}
+.modal-carousel-slide{
+  width:100%;height:100%;flex-shrink:0;overflow:hidden;
+}
+.modal-carousel-slide img{width:100%;height:100%;object-fit:cover;display:block;}
+.modal-carousel-dots{
+  position:absolute;bottom:8px;left:50%;transform:translateX(-50%);
+  display:flex;gap:5px;z-index:5;
+}
+.modal-carousel-dot{
+  width:6px;height:6px;border-radius:50%;
+  background:rgba(255,255,255,.5);cursor:pointer;transition:background .2s;
+}
+.modal-carousel-dot.active{background:#fff;}
+.modal-carousel-btn{
+  position:absolute;top:50%;transform:translateY(-50%);
+  width:32px;height:32px;border-radius:50%;z-index:5;
+  background:rgba(0,0,0,.45);border:none;color:#fff;
+  font-size:1rem;cursor:pointer;display:flex;align-items:center;justify-content:center;
+}
+.modal-carousel-btn.prev{left:8px;}
+.modal-carousel-btn.next{right:8px;}
+.modal-body{padding:18px;}
+.modal-promo-bar{
+  background:linear-gradient(135deg,rgba(231,76,60,.15),rgba(243,156,18,.1));
+  border:1px solid rgba(231,76,60,.3);border-radius:12px;
+  padding:10px 14px;margin-bottom:14px;
+  font-size:.8rem;color:var(--coral);font-weight:600;
+}
+.modal-title{font-family:'Playfair Display',serif;font-size:1.3rem;color:var(--th);margin-bottom:4px;}
+.modal-meta{font-size:.72rem;color:var(--tm);margin-bottom:12px;}
+.modal-desc{font-size:.8rem;color:var(--ts);line-height:1.7;margin-bottom:16px;}
+.modal-actions{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px;}
+.modal-btn{
+  flex:1;min-width:90px;padding:11px 8px;border-radius:13px;
+  border:none;font-size:.75rem;font-weight:700;cursor:pointer;
+  font-family:'DM Sans',sans-serif;
+  display:flex;flex-direction:column;align-items:center;gap:4px;
+  transition:opacity .2s;
+}
+.modal-btn-icon{font-size:1.1rem;}
+.modal-btn:active{opacity:.75;}
+.modal-btn.whatsapp{background:rgba(37,211,102,.15);border:1px solid rgba(37,211,102,.3);color:#25d366;}
+.modal-btn.instagram{background:rgba(225,48,108,.12);border:1px solid rgba(225,48,108,.25);color:#e1306c;}
+.modal-btn.share{background:var(--card);border:1px solid var(--border);color:var(--tb);}
+.modal-btn.fav{background:rgba(231,76,60,.1);border:1px solid rgba(231,76,60,.25);color:var(--coral);}
+
+/* ══ AGENDA ══ */
+#screen-agenda .agenda-header{padding:20px 16px 12px;}
+.agenda-title{font-family:'Playfair Display',serif;font-size:1.4rem;color:var(--th);margin-bottom:3px;}
+.agenda-sub{font-size:.72rem;color:var(--ts);}
+.event-list{padding:0 16px 80px;display:flex;flex-direction:column;gap:10px;}
+.event-card{
+  background:var(--card);border:1px solid var(--border);
+  border-radius:16px;overflow:hidden;cursor:pointer;
+  transition:background .2s;display:flex;gap:0;
+}
+.event-card:active{background:var(--cardh);}
+.event-card.past{opacity:.55;}
+.event-date-col{
+  width:58px;flex-shrink:0;
+  background:linear-gradient(180deg,var(--tq),#b07010);
+  display:flex;flex-direction:column;align-items:center;
+  justify-content:center;padding:12px 6px;
+}
+.event-card.past .event-date-col{background:var(--bg3);}
+.event-day{font-size:1.5rem;font-weight:800;color:var(--th);line-height:1;}
+.event-month{font-size:.58rem;letter-spacing:1px;text-transform:uppercase;color:var(--tb);margin-top:2px;opacity:.85;}
+/* Dark mode : texte blanc sur fond doré foncé */
+:root .event-day{color:#fff;}
+:root .event-month{color:rgba(255,255,255,.82);}
+:root .event-card.past .event-day,:root .event-card.past .event-month{color:var(--ts);}
+/* Light mode : texte sombre sur fond doré clair */
+body.light .event-day{color:#1a1200;}
+body.light .event-month{color:rgba(26,18,0,.75);}
+body.light .event-date-col{background:linear-gradient(180deg,#c8920a,#a07020);}
+body.light .event-card.past .event-date-col{background:var(--bg3);}
+body.light .event-card.past .event-day{color:var(--ts);}
+body.light .event-card.past .event-month{color:var(--tm);}
+.event-main{flex:1;padding:12px 14px;min-width:0;}
+.event-title{font-size:.85rem;font-weight:700;color:var(--th);margin-bottom:3px;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.event-lieu{font-size:.7rem;color:var(--ts);margin-bottom:4px;}
+.event-badges{display:flex;gap:6px;flex-wrap:wrap;}
+.event-badge{
+  font-size:.6rem;padding:3px 8px;border-radius:8px;font-weight:600;
+}
+.event-badge.gratuit{background:rgba(46,204,113,.15);color:var(--green);border:1px solid rgba(46,204,113,.25);}
+.event-badge.payant{background:rgba(212,168,67,.12);color:var(--tq);border:1px solid rgba(212,168,67,.2);}
+.event-badge.nouveau{background:rgba(231,76,60,.15);color:var(--coral);border:1px solid rgba(231,76,60,.25);}
+.event-badge.passe{background:var(--bg3);color:var(--tm);border:1px solid var(--border);}
+
+/* ══ FAVORIS ══ */
+.favoris-title{font-family:'Playfair Display',serif;font-size:1.4rem;color:var(--th);margin-bottom:3px;}
+.favoris-sub{font-size:.72rem;color:var(--ts);}
+.favoris-group-label{
+  font-size:.58rem;letter-spacing:2px;text-transform:uppercase;
+  color:var(--tm);padding:10px 16px 6px;
+  display:flex;align-items:center;gap:8px;
+}
+.favoris-group-label::after{content:'';flex:1;height:1px;background:var(--border);}
+.favoris-empty{
+  padding:60px 20px;text-align:center;color:var(--tm);font-size:.85rem;line-height:1.8;
+}
+
+/* ══ VERSION FOOTER ══ */
+#version-footer{
+  text-align:center;padding:8px;font-size:.58rem;
+  color:var(--tm);letter-spacing:1px;
+}
+
+/* ══ SKELETON LOADERS ══ */
+.skeleton{
+  background:linear-gradient(90deg,var(--card) 25%,var(--cardh) 50%,var(--card) 75%);
+  background-size:200% 100%;
+  animation:shimmer 1.5s infinite;
+  border-radius:10px;
+}
+@keyframes shimmer{0%{background-position:200% 0}100%{background-position:-200% 0}}
+.skeleton-card{height:160px;border-radius:16px;margin-bottom:10px;}
+
+/* ══ FILTRE VILLE (Guide) ══ */
+#city-filter-row{
+  display:flex;gap:6px;padding:0 16px 6px;
+  overflow-x:auto;scrollbar-width:none;flex-shrink:0;
+}
+#city-filter-row::-webkit-scrollbar{display:none;}
+
+/* Topbar search button */
+.search-btn{
+  width:34px;height:34px;border-radius:10px;
+  background:var(--card);border:1px solid var(--border);
+  display:flex;align-items:center;justify-content:center;
+  font-size:1rem;cursor:pointer;transition:all .2s;
+}
+.search-btn:hover{background:var(--cardh);}
+
+/* Badge agenda sur nav */
+.nav-badge{
+  position:absolute;top:2px;right:10px;
+  width:8px;height:8px;border-radius:50%;
+  background:var(--coral);border:2px solid var(--nav);
+}
+.nav-item{position:relative;}
+
+/* Bouton install accueil */
+.install-home-btn{
+  display:flex;align-items:center;gap:10px;
+  background:rgba(212,168,67,.08);border:1px solid rgba(212,168,67,.2);
+  border-radius:16px;padding:14px;cursor:pointer;
+  transition:all .2s;margin-bottom:10px;
+}
+.install-home-btn:active{background:rgba(212,168,67,.15);}
+
+</style>
+</head>
+<body>
+
+<!-- Banner mise à jour SW -->
+<div id="update-banner" onclick="applyUpdate()" role="alert" aria-live="polite">
+  🆕 Mise à jour disponible — Touchez pour actualiser
+</div>
+
+<!-- Banner hors-ligne -->
+<div id="offline-banner" role="status">
+  📡 Mode hors-ligne — <span id="offline-date"></span>
+</div>
+
+<!-- Banner installation PWA -->
+<div id="install-banner">
+  <div class="install-banner-row">
+    <div class="install-banner-icon">📲</div>
+    <div class="install-banner-text">
+      <div class="install-banner-title">Installer Jerbi Explore</div>
+      <div class="install-banner-sub" id="install-banner-sub">Accès rapide, fonctionne hors-ligne</div>
+    </div>
+  </div>
+  <div class="install-banner-btns">
+    <button class="install-btn-primary" id="install-primary-btn" onclick="doInstall()">📲 Installer l'app</button>
+    <button class="install-btn-dismiss" onclick="dismissInstall()">Plus tard</button>
+  </div>
+</div>
+
+<!-- Overlay de recherche globale -->
+<div id="search-overlay" onclick="if(event.target===this)closeSearch()">
+  <div id="search-box">
+    <span style="cursor:pointer;font-size:1rem;padding:2px 4px;color:var(--ts)" onclick="closeSearch()" aria-label="Fermer">←</span>
+    <input type="text" id="search-input" placeholder="Rechercher un lieu, adresse, événement…"
+      oninput="doSearch(this.value)" autocomplete="off" maxlength="100">
+    <span id="search-clear" onclick="clearSearch()" style="display:none">✕</span>
+  </div>
+  <div id="search-results">
+    <div class="search-empty">Tapez pour rechercher…</div>
+  </div>
+  <div style="padding:12px 16px;text-align:center;">
+    <button onclick="closeSearch()" style="background:var(--card);border:1px solid var(--border);border-radius:14px;padding:10px 32px;color:var(--ts);font-size:.82rem;cursor:pointer;font-family:inherit;">✕ Fermer la recherche</button>
+  </div>
+</div>
+
+<!-- Modal partenaire -->
+<div id="partner-modal-overlay" onclick="if(event.target===this)closePartnerModal()">
+  <div id="partner-modal">
+    <div class="modal-handle"></div>
+    <div id="modal-img-wrap" class="modal-img"></div>
+    <div class="modal-body">
+      <div id="modal-promo-bar" class="modal-promo-bar" style="display:none"></div>
+      <div class="modal-title" id="modal-title"></div>
+      <div class="modal-meta" id="modal-meta"></div>
+      <div class="modal-desc" id="modal-desc"></div>
+      <div class="modal-actions" id="modal-actions"></div>
+    </div>
+  </div>
+</div>
+
+<div id="splash">
+  <div class="logo-wrap" style="border-radius:12px;padding:6px 10px;">
+    <img src="/jerbi-guide/logo.png" alt="Jerbi Explore" class="splash-logo-img">
+  </div>
+  <div class="splash-tag">Cap Bon · Guide & Expériences</div>
+  <div class="splash-bar"></div>
+</div>
+
+<div id="root">
+
+  <!-- SIDEBAR (desktop) -->
+  <div id="sidebar">
+    <div id="sidebar-logo" onclick="navigate('home')">
+      <div class="logo-wrap" style="padding:4px 8px;border-radius:8px;">
+        <img src="/jerbi-guide/logo.png" alt="Jerbi Explore" style="height:58px;width:auto;display:block;">
+      </div>
+    </div>
+    <div class="sidebar-nav-item active" data-screen="home" onclick="navigate('home')">
+      <span class="sidebar-nav-icon">🏠</span> Accueil
+    </div>
+    <div class="sidebar-nav-item" data-screen="exp" onclick="navigate('exp')">
+      <span class="sidebar-nav-icon">🎬</span> Expériences
+    </div>
+    <div class="sidebar-nav-item" data-screen="adresses" onclick="navigate('adresses')">
+      <span class="sidebar-nav-icon">🛍️</span> Adresses
+    </div>
+    <div class="sidebar-nav-item" data-screen="agenda" onclick="navigate('agenda')">
+      <span class="sidebar-nav-icon">📅</span> Agenda
+    </div>
+    <div class="sidebar-nav-item" data-screen="guide" onclick="navigate('guide')">
+      <span class="sidebar-nav-icon">🗺️</span> Guide Cap Bon
+    </div>
+
+    <div class="sidebar-nav-item" data-screen="gallery" onclick="navigate('gallery')">
+      <span class="sidebar-nav-icon">📸</span> Galerie
+    </div>
+    <div class="sidebar-bottom">
+      <div class="sidebar-theme-btn" onclick="toggleTheme()">
+        <span id="sidebar-theme-icon">🌙</span>
+        <span id="sidebar-theme-label">Mode sombre</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- MAIN -->
+  <div id="main-content">
+    <div id="app">
+
+      <!-- TOPBAR -->
+      <div id="topbar">
+        <div class="topbar-logo" id="topbar-logo-btn" onclick="navigate('home')" title="Accueil">
+          <div class="logo-wrap" style="padding:3px 6px;border-radius:6px;">
+            <img src="/jerbi-guide/logo.png" alt="Jerbi Explore" style="height:42px;width:auto;display:block;">
+          </div>
+        </div>
+        <div class="topbar-right">
+          <div class="home-btn" onclick="navigate('home')">🏠 Accueil</div>
+          <!-- Logo sponsor — visible si SPONSOR_ACTIF:true dans config.js -->
+          <div id="sponsor-logo-wrap" onclick="openSponsor()">
+            <img id="sponsor-img" src="" alt="">
+          </div>
+          <button id="topbar-msg-btn" onclick="openMsgPopup()" aria-label="Annonces" style="display:none;position:relative;background:none;border:none;cursor:pointer;font-size:1.25rem;padding:4px;line-height:1;">📢<span id="topbar-msg-badge" style="position:absolute;top:-2px;right:-4px;min-width:16px;height:16px;border-radius:8px;padding:0 3px;background:#e74c3c;color:#fff;font-size:.58rem;font-weight:700;display:flex;align-items:center;justify-content:center;border:1.5px solid var(--bg);">0</span></button>
+          <div class="search-btn" onclick="openSearch()" aria-label="Rechercher">🔍</div>
+          <div class="theme-btn" id="theme-btn" onclick="toggleTheme()">🌙</div>
+        </div>
+      </div>
+
+      <!-- SCREENS -->
+      <div id="screens">
+
+        <!-- ══ ACCUEIL ══ -->
+        <div class="screen active" id="screen-home">
+          <div class="home-hero">
+            <div class="home-hero-wave"></div>
+            <div class="home-hero-text">
+              <div class="home-hero-tag">Cap Bon · Tunisie</div>
+              <div class="home-hero-title">Vivez le Cap Bon<br><em>autrement</em></div>
+              <div class="home-hero-sub">Expériences & bons plans locaux — offline</div>
+            </div>
+          </div>
+          <div class="home-section">
+            <div class="weather-row" id="weather-row">
+              <div class="weather-chip">🌤️ <b id="w-desc">…</b></div>
+              <div class="weather-chip">🌡️ <b id="w-temp">…</b> <span style="color:var(--tm);font-size:.68rem">/ ressenti <b id="w-ressenti">…</b></span></div>
+              <div class="weather-chip">💨 <b id="w-vent">…</b> <span id="w-dir" style="color:var(--tm);font-size:.68rem"></span></div>
+              <div class="weather-chip">🌊 Mer <b id="w-mer">…</b></div>
+              <div class="weather-chip">💧 <b id="w-hum">…</b></div>
+              <div class="weather-chip" id="w-uv-chip">☀️ UV <b id="w-uv">…</b></div>
+              <div class="weather-chip">👁️ <b id="w-vis">…</b></div>
+            </div>
+            <div class="section-row">
+              <div class="section-title">Nos expériences</div>
+              <div class="see-all" onclick="navigate('exp')">Voir tout →</div>
+            </div>
+            <!-- mini cards home -->
+            <div class="acts-scroll" style="display:flex;gap:12px;overflow-x:auto;scrollbar-width:none;margin:0 -16px;padding:0 16px 8px;">
+              <div onclick="navigate('exp')" style="flex-shrink:0;width:130px;height:160px;border-radius:18px;overflow:hidden;position:relative;cursor:pointer;border:1px solid var(--border);">
+                <div style="position:absolute;inset:0;background:linear-gradient(135deg,#1f1300,#d4a843);display:flex;align-items:center;justify-content:center;font-size:3rem;">🏝️</div>
+                <div style="position:absolute;inset:0;background:linear-gradient(180deg,transparent 40%,rgba(0,0,0,.75) 100%);display:flex;flex-direction:column;justify-content:flex-end;padding:10px;">
+                  <div style="font-size:.75rem;font-weight:600;color:#fff;">Journée Crique</div>
+                  <div style="font-size:.58rem;color:rgba(255,255,255,.6);text-transform:uppercase;letter-spacing:1px;margin-top:2px;">Haouaria</div>
+                </div>
+                <div style="position:absolute;top:8px;right:8px;background:var(--coral);border-radius:7px;font-size:.52rem;padding:2px 6px;font-weight:600;color:#fff;">Populaire</div>
+              </div>
+              <div onclick="navigate('exp')" style="flex-shrink:0;width:130px;height:160px;border-radius:18px;overflow:hidden;position:relative;cursor:pointer;border:1px solid var(--border);">
+                <div style="position:absolute;inset:0;background:linear-gradient(135deg,#1a5276,#2980b9);display:flex;align-items:center;justify-content:center;font-size:3rem;">⛵</div>
+                <div style="position:absolute;inset:0;background:linear-gradient(180deg,transparent 40%,rgba(0,0,0,.75) 100%);display:flex;flex-direction:column;justify-content:flex-end;padding:10px;">
+                  <div style="font-size:.75rem;font-weight:600;color:#fff;">Balade en Mer</div>
+                  <div style="font-size:.58rem;color:rgba(255,255,255,.6);text-transform:uppercase;letter-spacing:1px;margin-top:2px;">Bateau</div>
+                </div>
+              </div>
+              <div onclick="navigate('exp')" style="flex-shrink:0;width:130px;height:160px;border-radius:18px;overflow:hidden;position:relative;cursor:pointer;border:1px solid var(--border);">
+                <div style="position:absolute;inset:0;background:linear-gradient(135deg,#1e4d2b,#27ae60);display:flex;align-items:center;justify-content:center;font-size:3rem;">🏕️</div>
+                <div style="position:absolute;inset:0;background:linear-gradient(180deg,transparent 40%,rgba(0,0,0,.75) 100%);display:flex;flex-direction:column;justify-content:flex-end;padding:10px;">
+                  <div style="font-size:.75rem;font-weight:600;color:#fff;">Camping</div>
+                  <div style="font-size:.58rem;color:rgba(255,255,255,.6);text-transform:uppercase;letter-spacing:1px;margin-top:2px;">Nature</div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="home-section">
+            <div class="section-title">Explorer</div>
+            <div id="install-home-btn" class="install-home-btn" onclick="doInstall()" style="display:none">
+              <div style="font-size:1.4rem">📲</div>
+              <div>
+                <div class="quick-btn-label">Installer l'app</div>
+                <div class="quick-btn-sub">Accès rapide hors-ligne</div>
+              </div>
+            </div>
+            <div class="quick-grid">
+              <div class="quick-btn" onclick="navigate('guide')">
+                <div class="quick-btn-icon">🗺️</div>
+                <div><div class="quick-btn-label">Guide terrain</div><div class="quick-btn-sub">Carte offline</div></div>
+              </div>
+              <div class="quick-btn" onclick="navigate('adresses')">
+                <div class="quick-btn-icon">⭐</div>
+                <div><div class="quick-btn-label">Bons plans</div><div class="quick-btn-sub">Bonnes adresses</div></div>
+              </div>
+              <div class="quick-btn" onclick="navigate('gallery')">
+                <div class="quick-btn-icon">📸</div>
+                <div><div class="quick-btn-label">Galerie</div><div class="quick-btn-sub">Photos & vidéos</div></div>
+              </div>
+              <div class="quick-btn" onclick="window.open('https://wa.me/21624055055','_blank')">
+                <div class="quick-btn-icon">💬</div>
+                <div><div class="quick-btn-label">Nous contacter</div><div class="quick-btn-sub">WhatsApp</div></div>
+              </div>
+            </div>
+          </div>
+          <div style="height:20px"></div>
+        </div>
+
+        <!-- ══ EXPÉRIENCES ══ -->
+        <div class="screen" id="screen-exp">
+          <div class="exp-hero">
+            <div class="exp-hero-emoji">🌊</div>
+            <div class="exp-hero-tag">Jerbi Explore · Cap Bon</div>
+            <div class="exp-hero-title">Nos Expériences</div>
+            <div class="exp-hero-sub">Des moments inoubliables</div>
+          </div>
+
+          <!-- SLIDER -->
+          <div class="exp-slider-wrap">
+            <div class="exp-slider-nav prev" id="exp-prev" onclick="sliderNav(-1)">‹</div>
+            <div class="exp-slider-nav next" id="exp-next" onclick="sliderNav(1)">›</div>
+            <div class="exp-slider-overflow" id="exp-slider-overflow">
+              <div class="exp-slider-track" id="exp-slider-track">
+                <!-- EXP 1 -->
+                <div class="exp-card" onclick="showFiche({id:'e1',emoji:'🏝️',nom:'Journée Crique · Haouaria',categorie:'activite',ville:'El Haouaria',description:'Une journée inoubliable dans les criques sauvages du Cap Bon. Accès exclusif à des sites inaccessibles par la route, déjeuner local inclus, eau turquoise garantie.',citation_haykel:'Le spot le plus secret du Cap Bon — eau cristalline et criques vierges réservées à nos clients.',horaires:'Départ 9h · Retour 17h',prix:'65 TND/pers.',tel:'+21624055055',lien:'https://jerbievents.com/activite/3'})">
+                  <div class="exp-card-media" style="background:linear-gradient(135deg,rgba(80,50,0,.25),rgba(212,168,67,.15))">
+                    🏝️<div class="exp-card-rating">⭐ <span>4.9</span> (128)</div>
+                  </div>
+                  <div class="exp-card-body">
+                    <div class="exp-card-name">Journée Crique · Haouaria</div>
+                    <div class="exp-card-desc">Criques sauvages, accès exclusif, déjeuner local inclus.</div>
+                    <div class="exp-card-footer">
+                      <div class="exp-price">Dès <b>65 TND</b>/pers.</div>
+                      <button class="btn-reserve" onclick="event.stopPropagation();window.open('https://jerbievents.com/activite/3','_blank')">Réserver →</button>
+                    </div>
+                  </div>
+                </div>
+                <!-- EXP 2 -->
+                <div class="exp-card" onclick="showFiche({id:'e2',emoji:'⛵',nom:'Balade en Mer',categorie:'activite',ville:'Cap Bon',description:'Votre bateau, votre itinéraire. Haykel vous guide vers les spots secrets inaccessibles par la route. Privatisation possible.',citation_haykel:'Les criques que nous visitons ne sont accessibles que depuis la mer — un privilège exclusif.',horaires:'Demi-journée ou journée complète',prix:'120 TND/pers.',tel:'+21624055055',lien:'https://jerbievents.com/activite/5'})">
+                  <div class="exp-card-media" style="background:linear-gradient(135deg,rgba(26,82,118,.25),rgba(41,128,185,.15))">
+                    ⛵<div class="exp-card-rating">⭐ <span>4.8</span> (89)</div>
+                  </div>
+                  <div class="exp-card-body">
+                    <div class="exp-card-name">Balade en Mer · Privatisation</div>
+                    <div class="exp-card-desc">Spots secrets, privatisation possible pour groupes et incentives.</div>
+                    <div class="exp-card-footer">
+                      <div class="exp-price">Dès <b>120 TND</b>/pers.</div>
+                      <button class="btn-reserve" onclick="event.stopPropagation();window.open('https://jerbievents.com/activite/5','_blank')">Réserver →</button>
+                    </div>
+                  </div>
+                </div>
+                <!-- EXP 3 -->
+                <div class="exp-card" onclick="showFiche({id:'e3',emoji:'🏕️',nom:'Camping Expérience',categorie:'activite',ville:'Cap Bon',description:'Bivouac dans un cadre naturel exceptionnel. Repas du soir, feu de camp, lever de soleil sur mer inclus. Matériel fourni.',citation_haykel:'Dormir sous les étoiles avec la mer à vos pieds — une expérience qui change la vie.',horaires:'Départ 16h · Retour lendemain 10h',prix:'85 TND/pers.',tel:'+21624055055',lien:'https://jerbievents.com/activite/11'})">
+                  <div class="exp-card-media" style="background:linear-gradient(135deg,rgba(30,77,43,.25),rgba(39,174,96,.15))">
+                    🏕️<div class="exp-card-rating">⭐ <span>4.7</span> (42)</div>
+                  </div>
+                  <div class="exp-card-body">
+                    <div class="exp-card-name">Camping Expérience</div>
+                    <div class="exp-card-desc">Nuit sous les étoiles, feu de camp, lever de soleil sur mer.</div>
+                    <div class="exp-card-footer">
+                      <div class="exp-price">Dès <b>85 TND</b>/pers.</div>
+                      <button class="btn-reserve" onclick="event.stopPropagation();window.open('https://jerbievents.com/activite/11','_blank')">Réserver →</button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="exp-dots" id="exp-dots"></div>
+          </div>
+
+          <div style="padding:0 16px 8px"><div class="section-title">Ce qu'ils disent</div></div>
+          <div class="testi-list">
+            <div class="testi-card">
+              <div class="testi-stars">★★★★★</div>
+              <div class="testi-text">"L'eau était d'un tel bleu que je n'en crois pas mes yeux ! Déjeuner savoureux, équipe chaleureuse. On reviendra."</div>
+              <div class="testi-author"><div class="testi-avatar">EL</div><div><div class="testi-name">Elodie L.</div><div class="testi-loc">🇫🇷 France · Journée Crique</div></div></div>
+            </div>
+            <div class="testi-card">
+              <div class="testi-stars">★★★★★</div>
+              <div class="testi-text">"Excellent crew, beautiful coast. Professional and friendly. Highly recommend!"</div>
+              <div class="testi-author"><div class="testi-avatar">WB</div><div><div class="testi-name">Willy B.</div><div class="testi-loc">🇧🇪 Belgique · Catamaran</div></div></div>
+            </div>
+            <div class="testi-card">
+              <div class="testi-stars">★★★★★</div>
+              <div class="testi-text">"Haykel nous a donné d'excellents conseils pour naviguer entre les criques. Bateau en parfait état."</div>
+              <div class="testi-author"><div class="testi-avatar">YT</div><div><div class="testi-name">Yasmine & Talel</div><div class="testi-loc">🇹🇳 Tunisie · Privatisation</div></div></div>
+            </div>
+          </div>
+          <div style="height:20px"></div>
+        </div>
+
+        <!-- ══ GUIDE ══ -->
+        <div class="screen" id="screen-guide">
+          <div class="guide-header">
+            <div class="guide-title">Guide Cap Bon</div>
+            <div class="guide-sub" id="guide-sub">Chargement des adresses… <span id="drive-status"></span></div>
+          </div>
+          <div id="map"></div>
+          <!-- Filtre catégorie -->
+          <div class="filter-row">
+            <div class="filter-pill active" onclick="filterPlaces('tous',this)">Tous</div>
+            <div class="filter-pill" onclick="filterPlaces('restaurant',this)">🍽️ Restos</div>
+            <div class="filter-pill" onclick="filterPlaces('plage',this)">🏖️ Plages</div>
+            <div class="filter-pill" onclick="filterPlaces('hebergement',this)">🛏️ Héberg.</div>
+            <div class="filter-pill" onclick="filterPlaces('activite',this)">🎯 Activités</div>
+            <div class="filter-pill" onclick="filterPlaces('randonnee',this)">🥾 Rando</div>
+            <div class="filter-pill" onclick="filterPlaces('starred',this)">⭐ Coups de cœur</div>
+          </div>
+          <!-- Filtre ville dynamique -->
+          <div class="filter-row" id="city-filter-row">
+            <div class="filter-pill active" onclick="filterByVille('toutes',this)">📍 Toutes</div>
+          </div>
+          <div class="place-list" id="place-list"></div>
+        </div>
+
+        <!-- ══ FICHE ══ -->
+        <div class="screen" id="screen-fiche">
+          <div class="fiche-media" id="fiche-media">
+            <div class="fiche-back" onclick="goBack()">←</div>
+            <div class="fiche-home-btn" onclick="navigate('home')">🏠</div>
+            <span id="fiche-emoji">📍</span>
+          </div>
+          <div class="fiche-body">
+            <div class="fiche-cat" id="fiche-cat"></div>
+            <div class="fiche-title" id="fiche-title"></div>
+            <div class="fiche-loc" id="fiche-loc"></div>
+            <div class="haykel-box" id="haykel-box">
+              <div class="haykel-label">⭐ Coup de cœur Haykel</div>
+              <div class="haykel-text" id="haykel-text"></div>
+              <div class="haykel-sig">— Haykel, Jerbi Explore</div>
+            </div>
+            <div class="info-chips">
+              <div class="info-chip"><div class="chip-label">Horaires</div><div class="chip-val" id="fiche-horaires">—</div></div>
+              <div class="info-chip"><div class="chip-label">Budget</div><div class="chip-val" id="fiche-prix">—</div></div>
+            </div>
+            <div class="fiche-desc" id="fiche-desc"></div>
+            <div class="fiche-actions" id="fiche-actions"></div>
+          </div>
+        </div>
+
+        <!-- ══ GALERIE ══ -->
+        <div class="screen" id="screen-gallery">
+          <div class="gallery-header">
+            <div class="gallery-title">📸 Galerie Jerbi Explore</div>
+            <div class="gallery-sub" id="gallery-sub">Chargement…</div>
+          </div>
+          <!-- Filtres type -->
+          <div class="filter-row" id="gallery-type-filter">
+            <div class="filter-pill active" onclick="filterGallery('tous',this)">Tout</div>
+            <div class="filter-pill" onclick="filterGallery('photo',this)">📷 Photos</div>
+            <div class="filter-pill" onclick="filterGallery('video',this)">🎬 Vidéos</div>
+          </div>
+          <!-- Grille médias (générée dynamiquement) -->
+          <div class="gallery-grid" id="gallery-grid">
+            <div class="gallery-empty">Chargement de la galerie…</div>
+          </div>
+          <!-- Lightbox (photos uniquement, désactivée offline) -->
+          <div id="gallery-lightbox" oncontextmenu="return false" onclick="closeLightbox()">
+            <div id="lightbox-media"></div>
+            <div id="lightbox-info">
+              <div id="lightbox-caption"></div>
+              <div id="lightbox-date"></div>
+            </div>
+            <button id="lightbox-prev" onclick="event.stopPropagation();lightboxNav(-1)">‹</button>
+            <button id="lightbox-next" onclick="event.stopPropagation();lightboxNav(1)">›</button>
+            <button id="lightbox-close" onclick="closeLightbox()">✕</button>
+          </div>
+          <div style="height:20px"></div>
+        </div>
+
+
+        <!-- ══ BONNES ADRESSES & PARTENAIRES ══ -->
+        <div class="screen" id="screen-adresses">
+          <div class="section-header" style="padding:20px 16px 12px;">
+            <div class="adresses-title">🛍️ Bonnes Adresses</div>
+            <div class="adresses-sub" id="adresses-sub">Chargement… <span id="adresses-status"></span></div>
+          </div>
+          <!-- Filtres catégories dynamiques -->
+          <div class="filter-row" id="adresses-cat-filter">
+            <div class="filter-pill active" onclick="filterAdresses('tous',this)">Toutes</div>
+          </div>
+          <!-- Filtres villes dynamiques -->
+          <div class="filter-row" id="adresses-city-filter">
+            <div class="filter-pill active" onclick="filterAdressesByVille('toutes',this)">📍 Toutes</div>
+          </div>
+          <!-- Skeleton loader -->
+          <div id="adresses-skeleton" style="padding:0 16px">
+            <div class="skeleton skeleton-card"></div>
+            <div class="skeleton skeleton-card"></div>
+          </div>
+          <!-- Grille partenaires -->
+          <div class="partner-grid" id="partner-grid"></div>
+        </div>
+
+        <!-- ══ AGENDA ÉVÉNEMENTS ══ -->
+        <div class="screen" id="screen-agenda">
+          <div class="agenda-header">
+            <div class="agenda-title">📅 Agenda Cap Bon</div>
+            <div class="agenda-sub" id="agenda-sub">Événements à venir</div>
+          </div>
+          <!-- Filtre type (statique) -->
+          <div class="filter-row" id="agenda-type-filter">
+            <div class="filter-pill active" onclick="filterAgenda('tous',this,'type')">Tous</div>
+            <div class="filter-pill" onclick="filterAgenda('culture',this,'type')">🎭 Culture</div>
+            <div class="filter-pill" onclick="filterAgenda('nature',this,'type')">🌿 Nature</div>
+            <div class="filter-pill" onclick="filterAgenda('sport',this,'type')">🏄 Sport</div>
+            <div class="filter-pill" onclick="filterAgenda('gratuit',this,'type')">✅ Gratuit</div>
+          </div>
+          <!-- Filtres mois + ville (peuplés dynamiquement) -->
+          <div class="filter-row" id="agenda-month-filter"></div>
+          <div class="filter-row" id="agenda-city-filter"></div>
+          <!-- Skeleton -->
+          <div id="agenda-skeleton" style="padding:0 16px">
+            <div class="skeleton skeleton-card"></div>
+            <div class="skeleton skeleton-card"></div>
+          </div>
+          <div class="event-list" id="event-list"></div>
+        </div>
+
+
+
+      </div><!-- /screens -->
+
+      <!-- BOTTOM NAV -->
+      <div id="bottom-nav">
+        <div class="nav-item active" data-screen="home" onclick="navigate('home')">
+          <div class="nav-icon">🏠</div><div class="nav-label">Accueil</div>
+        </div>
+        <div class="nav-item" data-screen="adresses" onclick="navigate('adresses')">
+          <div class="nav-icon">🛍️</div><div class="nav-label">Adresses</div>
+        </div>
+        <div class="nav-item" data-screen="agenda" onclick="navigate('agenda')">
+          <div class="nav-icon">📅</div><div class="nav-label">Agenda</div>
+          <div class="nav-badge" id="agenda-nav-badge" style="display:none"></div>
+        </div>
+        <div class="nav-item" data-screen="guide" onclick="navigate('guide')">
+          <div class="nav-icon">🗺️</div><div class="nav-label">Guide</div>
+        </div>
+        <div class="nav-item" data-screen="gallery" onclick="navigate('gallery')">
+          <div class="nav-icon">📸</div><div class="nav-label">Galerie</div>
+        </div>
+      </div>
+
+    </div><!-- /app -->
+    <div id="version-footer">v3.0.0 · Jerbi Explore</div>
+  </div><!-- /main-content -->
+</div><!-- /root -->
+
+<!-- FAB MESSAGE ADMIN -->
+<button id="fab-msg" onclick="openMsgPopup()" aria-label="Annonces admin">📢<div id="fab-msg-badge">0</div></button>
+
+<!-- FAB + POPUP COUP DE CŒUR -->
+<button id="fab-coeur" class="hidden" onclick="openCoeur()">❤️<div id="fab-badge">0</div></button>
+
+<!-- POPUP MESSAGES ADMIN -->
+<div id="msg-overlay" onclick="if(event.target===this)closeMsgPopup()">
+  <div id="msg-popup">
+    <div class="msg-handle"></div>
+    <div class="msg-header">
+      <div class="msg-title">📢 Annonces
+        <span class="msg-counter" id="msg-counter"></span>
+      </div>
+      <div class="msg-close" onclick="closeMsgPopup()">✕</div>
+    </div>
+    <div class="msg-body" id="msg-body"></div>
+    <div class="msg-date" id="msg-date"></div>
+    <div class="msg-nav" id="msg-nav">
+      <button class="msg-nav-btn" id="msg-prev" onclick="msgNav(-1)">◀ Préc.</button>
+      <button class="msg-nav-btn" id="msg-next" onclick="msgNav(1)">Suiv. ▶</button>
+    </div>
+  </div>
+</div>
+<div id="coeur-overlay" onclick="if(event.target===this)closeCoeur()">
+  <div id="coeur-popup">
+    <div class="coeur-handle"></div>
+    <div class="coeur-header">
+      <div class="coeur-title">❤️ Coup de cœur de la semaine</div>
+      <div class="coeur-close" onclick="closeCoeur()">✕</div>
+    </div>
+    <div id="coeur-content"></div>
+    <div class="coeur-nav">
+      <button class="coeur-nav-btn" id="coeur-prev" onclick="coeurNav(-1)">← Préc.</button>
+      <span class="coeur-counter" id="coeur-counter"></span>
+      <button class="coeur-nav-btn" id="coeur-next" onclick="coeurNav(1)">Suiv. →</button>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ══════════════════════════════════════════════════════════
+   JERBI EXPLORE – Cap Bon · v3.0.0
+   Script principal — toutes fonctionnalités
+   
+   ⚠️  Sécurité : toutes les données externes passent par
+       escHtml() avant injection dans le DOM.
+   ⚠️  Les URLs de photos sont validées avant affichage.
+   ⚠️  La source Google Drive est vérifiée par whitelist.
+══════════════════════════════════════════════════════════ */
+
+/* ══ CONFIG GOOGLE DRIVE ════════════════════════════════
+   Utilise APP_CONFIG depuis config.js si disponible,
+   sinon valeurs par défaut.
+   
+   MISE À JOUR DES DONNÉES :
+   1. Aller sur GitHub → dossier /jerbi-guide/data/
+   2. Cliquer sur le fichier CSV à modifier (lieux.csv, etc.)
+   3. Cliquer sur l'icône crayon (Edit) en haut à droite
+   4. Modifier directement dans l'éditeur web → Commit changes
+   
+   Structure des CSV :
+   ─ lieux.csv       : bonnes adresses et guide
+   ─ partenaires.csv : partenaires commerciaux
+   ─ evenements.csv  : agenda des événements
+══════════════════════════════════════════════════════════ */
+
+// Lecture de la config centralisée (config.js)
+const CFG = (typeof APP_CONFIG !== 'undefined') ? APP_CONFIG : {
+  VERSION: '3.0.0',
+  GITHUB_REPO_PATH: '/jerbi-guide',
+  get CSV_LIEUX()       { return `${this.GITHUB_REPO_PATH}/data/lieux.csv`; },
+  get CSV_PARTENAIRES() { return `${this.GITHUB_REPO_PATH}/data/partenaires.csv`; },
+  get CSV_EVENEMENTS()  { return `${this.GITHUB_REPO_PATH}/data/evenements.csv`; },
+  REFRESH_INTERVAL_MS: 300000,
+  MAP_CENTER: [36.9, 11.0],
+  MAP_ZOOM_DEFAULT: 10,
+  ADMIN_HASH: 'fbb92231f37c00f33064e2a93524d9bfcffca85f69a30f6879427f888acd0d8c',
+  ADMIN_SESSION_MINUTES: 30,
+  ADMIN_MAX_ATTEMPTS: 5,
+  ADMIN_LOCKOUT_MINUTES: 15,
+  INSTALL_PROMPT_DELAY_MS: 3000,
+  INSTALL_SNOOZE_DAYS: 7,
+  CONTACT_WHATSAPP: '+216XXXXXXXX',
+  SPONSOR_ACTIF:   true,
+  SPONSOR_LOGO:    '/jerbi-guide/data/logo_sponsor.png',
+  SPONSOR_LIEN:    'https://www.svr-lab.com',
+  SPONSOR_ALT:     'SVR Sun Secure',
+};
+
+// Helpers chemins CSV locaux
+function getCsvPath(name) {
+  const paths = {
+    lieux:       CFG.CSV_LIEUX,
+    partenaires: CFG.CSV_PARTENAIRES,
+    evenements:  CFG.CSV_EVENEMENTS,
+  };
+  return paths[name] || `${CFG.GITHUB_REPO_PATH}/data/${name}.csv`;
+}
+
+// Parse un texte CSV avec PapaParse
+function parseCsv(text) {
+  if (typeof Papa === 'undefined') {
+    console.warn('[parseCsv] PapaParse non chargé — retour tableau vide');
+    return { data: [], errors: [{ message: 'PapaParse indisponible' }] };
+  }
+  return Papa.parse(text, {
+    header: true,
+    skipEmptyLines: true,
+    dynamicTyping: false,
+    transformHeader: h => h.trim()
+  });
+}
+
+// Validation URL photos (anti-XSS)
+function safeImgUrl(url) {
+  if (!url || typeof url !== 'string') return '';
+  url = url.trim();
+  // Accepter URL absolues http/https
+  if (url.startsWith('http://') || url.startsWith('https://')) return url;
+  // Accepter chemins relatifs locaux /jerbi-guide/... ou data/...
+  if (url.startsWith('/jerbi-guide/') || url.startsWith('./') || url.startsWith('../')) return url;
+  // Rejeter javascript:, data:, blob: et tout autre schéma non autorisé
+  return '';
+}
+
+/* ══ DONNÉES FALLBACK (intégrées) ════════════════════════ */
+const DATA_FALLBACK = [{"id":1,"nom":"Restaurant El Mansourah","categorie":"restaurant","ville":"Kelibia","description":"Tables les pieds dans l'eau, fruits de mer ultra-frais, vue paradisiaque sur mer turquoise.","coup_de_coeur":"OUI","citation_haykel":"Réservez une table sur les rochers en bord de mer – le muscat de Kélibia est parfait avec la dorade grillée.","gps_lat":36.872,"gps_lng":11.105,"photo_url":"","tel":"+216 72 295 169","horaires":"8h-1h · Ouvert 7j/7","prix":"Non précisé","tags":"fruits de mer, vue mer, romantique, local, poisson frais","actif":"OUI"},{"id":2,"nom":"Le Petit Pêcheur","categorie":"restaurant","ville":"Kelibia","description":"Près du port, pizzas au feu de bois et frituras de mer à petit prix, ambiance locale.","coup_de_coeur":"NON","citation_haykel":"Essayez les farfalles aux chevrettes ou la pizza fruits de mer – généreux et savoureux.","gps_lat":36.8455,"gps_lng":11.096,"photo_url":"","tel":"+216 72 274 873","horaires":"12h-22h · Fermé mardi","prix":"Non précisé","tags":"pizza, poisson, port, local, abordable","actif":"OUI"},{"id":3,"nom":"Restaurant Le Pêcheur Kélibia","categorie":"restaurant","ville":"Kelibia","description":"Vue panoramique sur la plage de Kélibia, fruits de mer frais et couchers de soleil époustouflants.","coup_de_coeur":"OUI","citation_haykel":"Installez-vous en terrasse pour le coucher de soleil avec une assiette de crevettes grillées.","gps_lat":36.848,"gps_lng":11.101,"photo_url":"","tel":"","horaires":"11h-23h · Ouvert 7j/7 en saison","prix":"Non précisé","tags":"vue mer, coucher de soleil, fruits de mer, terrasse","actif":"OUI"},{"id":9,"nom":"Plage de la Mansoura","categorie":"plage","ville":"Kelibia","description":"L'une des plus belles plages de Méditerranée : sable blanc immaculé, eau turquoise cristalline.","coup_de_coeur":"OUI","citation_haykel":"La plage de mes rêves en Tunisie – venez tôt le matin pour la trouver quasi déserte.","gps_lat":36.878,"gps_lng":11.11,"photo_url":"","tel":"","horaires":"Accès libre","prix":"Gratuit","tags":"sable blanc, eau turquoise, famille, baignade, snorkeling","actif":"OUI"},{"id":11,"nom":"Plage d'El Haouaria","categorie":"plage","ville":"El Haouaria","description":"Plage de sable fin bordée de criques rocheuses, eau translucide, idéale pour le snorkeling.","coup_de_coeur":"OUI","citation_haykel":"Eau parmi les plus claires de Tunisie – apportez masque et tuba, les fonds sont splendides.","gps_lat":37.048,"gps_lng":11.002,"photo_url":"","tel":"","horaires":"Accès libre","prix":"Gratuit","tags":"eau cristalline, snorkeling, nature, criques, calme","actif":"OUI"},{"id":17,"nom":"Fort de Kélibia","categorie":"activite","ville":"Kelibia","description":"Citadelle byzantine du XVIe siècle sur promontoire de 150m, plus grand fort de Tunisie.","coup_de_coeur":"OUI","citation_haykel":"Montez au crépuscule pour admirer les deux mers simultanément – vue jusqu'en Sicile par temps clair.","gps_lat":36.85,"gps_lng":11.094,"photo_url":"","tel":"","horaires":"8h-18h · Tous les jours","prix":"Non précisé","tags":"histoire, panorama, fort, byzantin, vue mer","actif":"OUI"},{"id":18,"nom":"Site Punique de Kerkouane","categorie":"activite","ville":"Kelibia","description":"Seul site punique intact au monde, classé UNESCO. Ruines carthaginoises exceptionnellement préservées.","coup_de_coeur":"OUI","citation_haykel":"Un must absolu – la seule ville carthaginoise jamais reconstruite par les Romains. Prévoir 2h.","gps_lat":36.946,"gps_lng":11.062,"photo_url":"","tel":"","horaires":"9h-17h · Fermé lundi","prix":"Non précisé","tags":"UNESCO, carthaginois, punique, archéologie, histoire","actif":"OUI"},{"id":19,"nom":"Grottes Romaines de Ghar el-Kebir","categorie":"activite","ville":"El Haouaria","description":"Carrières romaines souterraines creusées par des esclaves pour bâtir Carthage. Site saisissant.","coup_de_coeur":"OUI","citation_haykel":"Les grottes les plus impressionnantes de Tunisie – les pierres d'El Jem ont été taillées ici.","gps_lat":37.053,"gps_lng":11.001,"photo_url":"","tel":"","horaires":"8h-19h (avr-sept) · 9h-17h (mars)","prix":"Non précisé","tags":"grottes, romain, carthage, histoire, archéologie","actif":"OUI"},{"id":24,"nom":"Randonnée Cap Bon – Ras Adar","categorie":"randonnee","ville":"El Haouaria","description":"Sentier jusqu'au sommet du Ras Adar (350m), point le plus haut du cap, vue Sicile par temps clair.","coup_de_coeur":"OUI","citation_haykel":"Le bout du monde tunisien – au sommet on voit les deux mers et la Sicile à 140km. Magique.","gps_lat":37.059,"gps_lng":11.01,"photo_url":"","tel":"","horaires":"Accessible toute l'année","prix":"Gratuit","tags":"randonnée, panorama, sommet, vue mer, nature, Sicile","actif":"OUI"},{"id":14,"nom":"Cap Bon Kelibia Beach Hotel & Spa","categorie":"hebergement","ville":"Kelibia","description":"Seul hôtel 4★ sur la plage de la Mansoura, piscines, spa et accès direct à la mer turquoise.","coup_de_coeur":"OUI","citation_haykel":"Le meilleur hôtel du Cap Bon – demandez une chambre vue mer côté nord pour le lever du soleil.","gps_lat":36.878,"gps_lng":11.108,"photo_url":"","tel":"+216 72 277 777","horaires":"Réception 24h/24","prix":"Non précisé","tags":"4 étoiles, plage, piscine, spa, vue mer, famille","actif":"OUI"}];
+
+const COEUR_FALLBACK = DATA_FALLBACK.filter(p => p.coup_de_coeur === 'OUI');
+
+const CAT_EMOJI = {restaurant:'🍽️',plage:'🏖️',hebergement:'🛏️',activite:'🎯',randonnee:'🥾'};
+
+/* ══ ÉTAT GLOBAL ══════════════════════════════════════════ */
+let currentScreen = 'home';
+let prevScreen = 'home';
+let mapReady = false;
+let leafletMap = null;
+let isLight = false;
+
+/* ══ ITEM STORE — évite JSON.stringify dans les onclick ══ */
+/* Stocke les objets par clé, les onclick utilisent uniquement l'id */
+const _itemStore = new Map();
+let _itemStoreIdx = 0;
+function storeItem(obj) {
+  // Réutilise la même clé si l'objet a déjà un id
+  const nom = obj.nom || obj.Nom || obj.Titre || obj.titre || '';
+  const key = obj.id ? `${obj.id}` : `item_${_itemStoreIdx++}_${encodeURIComponent(nom).slice(0,20)}`;
+  _itemStore.set(key, obj);
+  return key;
+}
+function getItem(key) { return _itemStore.get(key); }
+
+// Données
+let bonnesAdresses = [...DATA_FALLBACK];
+let coeurData = [...COEUR_FALLBACK];
+let partenaires = [];     // onglet Partenaires
+let evenements = [];      // onglet Evenements
+// gallery remplacé par mediaLibrary (cf. galerie éditoriale)
+
+// Filtres guide
+let currentFilter = 'tous';
+let currentVilleFilter = 'toutes';
+
+// Filtres adresses
+let currentAdressesFilter = 'tous';
+let currentAdressesVille = 'toutes';
+
+// Filtres agenda
+let currentAgendaMonth = 'tous';
+let currentAgendaVille = 'toutes';
+let currentAgendaType  = 'tous';
+
+// Favoris
+let favoris = {};  // { 'lieu-12': {...}, 'adresse-3': {...} }
+
+// Notes (étoiles)
+let notes = {};    // { 'lieu-12': { score: 4, count: 1 } }
+
+// Slider
+let expIdx = 0;
+let coeurIdx = 0;
+
+// Admin
+let adminUnlocked = false;
+let adminSessionTimer = null;
+let adminLoginAttempts = 0;
+
+// PWA install
+let deferredInstallPrompt = null;
+let swRegistration = null;
+
+/* ══ SÉCURITÉ : Échappement HTML ══════════════════════════ */
+function escHtml(s) {
+  if (s == null) return '';
+  return String(s)
+    .replace(/&/g,'&amp;')
+    .replace(/</g,'&lt;')
+    .replace(/>/g,'&gt;')
+    .replace(/"/g,'&quot;')
+    .replace(/'/g,'&#39;');
+}
+
+/* ══ NAVIGATION ═══════════════════════════════════════════ */
+function navigate(id) {
+  // Permettre de revenir sur home même si currentScreen === 'home'
+  // (cas du rechargement après splash)
+  if (currentScreen === id && id !== 'home') return;
+  prevScreen = currentScreen;
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  const el = document.getElementById('screen-' + id);
+  if (!el) return;
+  el.classList.add('active');
+  document.querySelectorAll('.nav-item').forEach(n =>
+    n.classList.toggle('active', n.dataset.screen === id));
+  document.querySelectorAll('.sidebar-nav-item').forEach(n =>
+    n.classList.toggle('active', n.dataset.screen === id));
+  currentScreen = id;
+  if (id === 'guide') setTimeout(initMap, 80);
+  if (id === 'adresses') renderPartenaires();
+  if (id === 'agenda') renderEvenements();
+  if (id === 'gallery') { if (!galleryLoaded) loadGallery(); else renderGallery(); }
+}
+function goBack() { navigate(prevScreen === currentScreen ? 'home' : prevScreen); }
+
+/* ══ SPONSOR ══════════════════════════════════════════════
+   Configuration dans config.js :
+     SPONSOR_ACTIF : true/false
+     SPONSOR_LOGO  : chemin vers data/logo_sponsor.png
+     SPONSOR_LIEN  : URL du sponsor (ouvre dans nouvel onglet)
+     SPONSOR_ALT   : texte alternatif du logo
+   Pour désactiver : mettre SPONSOR_ACTIF: false dans config.js
+   Pour changer    : remplacer data/logo_sponsor.png et adapter config.js
+   ══════════════════════════════════════════════════════════ */
+function initSponsor() {
+  const wrap = document.getElementById('sponsor-logo-wrap');
+  const img  = document.getElementById('sponsor-img');
+  if (!wrap || !img) return;
+  if (!CFG.SPONSOR_ACTIF || !CFG.SPONSOR_LOGO) {
+    wrap.classList.remove('visible');
+    return;
+  }
+  img.src = CFG.SPONSOR_LOGO;
+  img.alt = CFG.SPONSOR_ALT || 'Sponsor';
+  img.onload  = () => wrap.classList.add('visible');
+  img.onerror = () => wrap.classList.remove('visible'); // masqué si fichier absent
+}
+function openSponsor() {
+  if (CFG.SPONSOR_LIEN) window.open(CFG.SPONSOR_LIEN, '_blank', 'noopener noreferrer');
+}
+
+/* ══ THÈME ════════════════════════════════════════════════ */
+function toggleTheme() {
+  isLight = !isLight;
+  document.body.classList.toggle('light', isLight);
+  const icon = isLight ? '☀️' : '🌙';
+  document.getElementById('theme-btn').textContent = icon;
+  const si = document.getElementById('sidebar-theme-icon');
+  const sl = document.getElementById('sidebar-theme-label');
+  if (si) si.textContent = icon;
+  if (sl) sl.textContent = isLight ? 'Mode clair' : 'Mode sombre';
+  if (leafletMap) updateMapTiles();
+}
+
+/* ══ CARTE ════════════════════════════════════════════════ */
+function initMap() {
+  if (mapReady) return;
+  mapReady = true;
+  const mapEl = document.getElementById('map');
+  leafletMap = L.map(mapEl, {
+    center: CFG.MAP_CENTER, zoom: CFG.MAP_ZOOM_DEFAULT,
+    zoomControl: true, attributionControl: false
+  });
+  L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+    maxZoom: 19, attribution: 'Esri'
+  }).addTo(leafletMap);
+  L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_only_labels/{z}/{x}/{y}{r}.png', {
+    maxZoom: 19, opacity: 0.8
+  }).addTo(leafletMap);
+  addMapPins();
+  setTimeout(() => leafletMap.invalidateSize(), 200);
+}
+
+function updateMapTiles() {
+  if (!leafletMap) return;
+  leafletMap.eachLayer(l => {
+    if (l._url && l._url.includes('only_labels')) {
+      l.setUrl(isLight
+        ? 'https://{s}.basemaps.cartocdn.com/light_only_labels/{z}/{x}/{y}{r}.png'
+        : 'https://{s}.basemaps.cartocdn.com/dark_only_labels/{z}/{x}/{y}{r}.png');
+    }
+  });
+}
+
+function parseCoord(v) {
+  if (!v && v !== 0) return NaN;
+  return parseFloat(String(v).replace(',', '.'));
+}
+
+function addMapPins() {
+  bonnesAdresses.filter(p => p.actif === 'OUI' && p.gps_lat && p.gps_lng).forEach(p => {
+    const lat = parseCoord(p.gps_lat);
+    const lng = parseCoord(p.gps_lng);
+    if (isNaN(lat) || isNaN(lng)) return;
+    const starred = p.coup_de_coeur === 'OUI';
+    const emoji = CAT_EMOJI[p.categorie] || '📍';
+    const bg = starred ? 'rgba(212,168,67,.95)' : 'rgba(212,168,67,.95)';
+    const bc = starred ? '#d4a843' : '#c49030';
+    const icon = L.divIcon({
+      html:`<div style="background:${bg};border:2px solid ${bc};border-radius:50% 50% 50% 0;transform:rotate(-45deg);width:30px;height:30px;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 10px rgba(0,0,0,.5)"><span style="transform:rotate(45deg);font-size:13px">${emoji}</span></div>`,
+      className:'', iconSize:[30,30], iconAnchor:[15,30], popupAnchor:[0,-32]
+    });
+    const popsk = storeItem(p);
+    const popup = `<div style="font-family:'DM Sans',sans-serif;min-width:190px;padding:4px 0">
+      <div style="font-weight:700;font-size:13px;margin-bottom:3px">${emoji} ${escHtml(p.nom)}</div>
+      <div style="font-size:11px;opacity:.7;margin-bottom:4px">${escHtml(p.categorie)} · ${escHtml(p.ville)}</div>
+      ${starred ? '<div style="font-size:11px;color:#d4a843;margin-bottom:3px">⭐ Coup de cœur Haykel</div>' : ''}
+      <div style="font-size:10px;opacity:.6;margin-bottom:8px">${escHtml(p.horaires||'')}</div>
+      <div onclick="showFiche(getItem('${popsk}'))"
+           style="font-size:11px;color:#d4a843;font-weight:700;cursor:pointer;padding:5px 8px;background:rgba(212,168,67,.1);border-radius:8px;text-align:center">
+        Voir le détail →
+      </div>
+    </div>`;
+    const marker = L.marker([lat, lng], {icon});
+    marker._isJerbiPin = true;
+    marker._jerbiData = p;
+    marker._popupOpen = false;
+    marker.bindPopup(popup, {maxWidth:220, autoPanPadding:[20,20]});
+    marker.on('click', function() {
+      if (this._popupOpen) {
+        // 2ème clic — ouvrir la fiche détail
+        this._popupOpen = false;
+        this.closePopup();
+        showFiche(this._jerbiData);
+      } else {
+        // 1er clic — afficher le popup mini
+        this._popupOpen = true;
+        this.openPopup();
+      }
+    });
+    marker.on('popupclose', function() { this._popupOpen = false; });
+    marker.addTo(leafletMap);
+  });
+}
+
+/* ══ FILTRE GUIDE ══ */
+function filterPlaces(cat, el) {
+  currentFilter = cat;
+  document.querySelectorAll('#screen-guide .filter-row:first-of-type .filter-pill')
+    .forEach(p => p.classList.remove('active'));
+  el.classList.add('active');
+  renderPlaces();
+}
+
+function filterByVille(ville, el) {
+  currentVilleFilter = ville;
+  document.querySelectorAll('#city-filter-row .filter-pill')
+    .forEach(p => p.classList.remove('active'));
+  el.classList.add('active');
+  renderPlaces();
+}
+
+function buildCityFilter() {
+  const villes = [...new Set(
+    bonnesAdresses.filter(p => p.actif === 'OUI').map(p => p.ville).filter(Boolean)
+  )].sort();
+  const row = document.getElementById('city-filter-row');
+  if (!row) return;
+  const current = currentVilleFilter;
+  row.innerHTML = `<div class="filter-pill${current==='toutes'?' active':''}" onclick="filterByVille('toutes',this)">📍 Toutes</div>`
+    + villes.map(v =>
+        `<div class="filter-pill${current===v?' active':''}" onclick="filterByVille('${escHtml(v)}',this)">${escHtml(v)}</div>`
+      ).join('');
+}
+
+function renderPlaces() {
+  const list = document.getElementById('place-list');
+  if (!list) return;
+  buildCityFilter();
+
+  const active = bonnesAdresses.filter(p => {
+    if (p.actif !== 'OUI') return false;
+    if (currentFilter === 'starred' && p.coup_de_coeur !== 'OUI') return false;
+    if (currentFilter !== 'tous' && currentFilter !== 'starred' && p.categorie !== currentFilter) return false;
+    if (currentVilleFilter !== 'toutes' && p.ville !== currentVilleFilter) return false;
+    return true;
+  });
+
+  const byVille = {};
+  active.forEach(p => { (byVille[p.ville] = byVille[p.ville] || []).push(p); });
+
+  let html = '';
+  for (const [ville, places] of Object.entries(byVille)) {
+    html += `<div class="ville-sep">📍 ${escHtml(ville)}</div>`;
+    places.forEach(p => {
+      const s = p.coup_de_coeur === 'OUI';
+      const e = CAT_EMOJI[p.categorie] || '📍';
+      const fKey = 'lieu-' + p.id;
+      const isFav = !!favoris[fKey];
+      const sk = storeItem(p);
+      html += `<div class="place-item${s?' starred':''}" onclick="showFiche(getItem('${sk}'))">
+        <div class="place-emoji-wrap">${e}</div>
+        <div class="place-info">
+          <div class="place-name">${escHtml(p.nom)}${s?` <span class="star-tag">⭐ Haykel</span>`:''}</div>
+          <div class="place-meta">${escHtml(p.categorie)} · ${escHtml(p.ville)}</div>
+          <div class="place-quote">"${escHtml(p.citation_haykel||'')}"</div>
+        </div>
+      </div>`;
+    });
+  }
+  if (!html) html = `<div style="padding:32px;text-align:center;color:var(--tm);font-size:.85rem">Aucun résultat</div>`;
+  list.innerHTML = html;
+  const sub = document.getElementById('guide-sub');
+  if (sub) sub.textContent = `${active.length} adresses · ${Object.keys(byVille).length} villes`;
+}
+
+/* ══ FICHE ════════════════════════════════════════════════ */
+function showFiche(p) {
+  const e = CAT_EMOJI[p.categorie] || '📍';
+  const photoUrl = safeImgUrl(p.photo_url || p.Photo_URL || p.image || '');
+
+  // Bannière media : image si disponible, sinon gradient + emoji
+  const ficheMedia = document.getElementById('fiche-media');
+  if (ficheMedia) {
+    // Nettoyer les anciennes images injectées
+    ficheMedia.querySelectorAll('.fiche-media-img,.fiche-media-overlay').forEach(el => el.remove());
+    if (photoUrl) {
+      ficheMedia.classList.add('has-img');
+      const img = document.createElement('img');
+      img.src = photoUrl;
+      img.alt = p.nom || '';
+      img.className = 'fiche-media-img';
+      img.onerror = () => { ficheMedia.classList.remove('has-img'); img.remove(); overlay.remove(); };
+      const overlay = document.createElement('div');
+      overlay.className = 'fiche-media-overlay';
+      ficheMedia.insertBefore(overlay, ficheMedia.firstChild);
+      ficheMedia.insertBefore(img, ficheMedia.firstChild);
+    } else {
+      ficheMedia.classList.remove('has-img');
+    }
+  }
+
+  document.getElementById('fiche-emoji').textContent = e;
+  document.getElementById('fiche-cat').textContent = `${e} ${escHtml(p.categorie)} · ${escHtml(p.ville)}`;
+  document.getElementById('fiche-title').textContent = p.nom || '';
+  document.getElementById('fiche-loc').textContent = `📍 ${p.ville || ''}`;
+  document.getElementById('haykel-text').textContent = p.citation_haykel || '';
+  document.getElementById('fiche-horaires').textContent = p.horaires || '—';
+  document.getElementById('fiche-prix').textContent = p.prix || '—';
+  document.getElementById('fiche-desc').textContent = p.description || '';
+  document.getElementById('haykel-box').style.display = p.citation_haykel ? 'block' : 'none';
+
+  let act = '';
+  if (p.tel) {
+    const telClean = String(p.tel).replace(/\D/g,'');
+    act += `<button class="fiche-btn primary" onclick="window.open('tel:${escHtml(p.tel)}')"><div class="fiche-btn-icon">📞</div><div class="fiche-btn-label">Appeler</div></button>`;
+    act += `<button class="fiche-btn whatsapp" onclick="window.open('https://wa.me/${telClean}','_blank','noopener noreferrer')"><div class="fiche-btn-icon">💬</div><div class="fiche-btn-label">WhatsApp</div></button>`;
+  }
+  if (p.gps_lat && p.gps_lng)
+    act += `<button class="fiche-btn secondary" onclick="window.open('https://www.google.com/maps/dir/?api=1&destination=${parseCoord(p.gps_lat)},${parseCoord(p.gps_lng)}','_blank','noopener noreferrer')"><div class="fiche-btn-icon">🗺️</div><div class="fiche-btn-label">Itinéraire</div></button>`;
+  
+  const shareUrl = `${location.origin}${CFG.GITHUB_REPO_PATH}/#lieu-${p.id}`;
+  act += `<button class="fiche-btn secondary" onclick="shareItem('${escHtml(p.nom)}','${escHtml(shareUrl)}')"><div class="fiche-btn-icon">↗️</div><div class="fiche-btn-label">Partager</div></button>`;
+  
+  document.getElementById('fiche-actions').innerHTML = act;
+  navigate('fiche');
+}
+
+/* ══ EXP SLIDER ══════════════════════════════════════════ */
+function initSlider() {
+  const cards = document.querySelectorAll('#exp-slider-track .exp-card');
+  const n = cards.length;
+  expIdx = 0;
+  const overflow = document.getElementById('exp-slider-overflow');
+  if (!overflow) return;
+  cards.forEach(c => c.style.width = overflow.offsetWidth + 'px');
+  const dots = document.getElementById('exp-dots');
+  if (dots) dots.innerHTML = Array.from({length:n}, (_,i) =>
+    `<div class="exp-dot${i===0?' active':''}" onclick="goSlide(${i})"></div>`).join('');
+  updateSlider();
+  let startX = 0;
+  const track = document.getElementById('exp-slider-track');
+  if (!track) return;
+  track.addEventListener('touchstart', e => { startX = e.touches[0].clientX; }, {passive:true});
+  track.addEventListener('touchend', e => {
+    const dx = e.changedTouches[0].clientX - startX;
+    if (Math.abs(dx) > 40) sliderNav(dx < 0 ? 1 : -1);
+  });
+}
+function sliderNav(dir) {
+  const n = document.querySelectorAll('#exp-slider-track .exp-card').length;
+  expIdx = Math.max(0, Math.min(n - 1, expIdx + dir));
+  updateSlider();
+}
+function goSlide(i) { expIdx = i; updateSlider(); }
+function updateSlider() {
+  const n = document.querySelectorAll('#exp-slider-track .exp-card').length;
+  const overflow = document.getElementById('exp-slider-overflow');
+  if (!overflow) return;
+  const w = overflow.offsetWidth + 14;
+  const track = document.getElementById('exp-slider-track');
+  if (track) track.style.transform = `translateX(-${expIdx * w}px)`;
+  document.querySelectorAll('.exp-dot').forEach((d,i) => d.classList.toggle('active', i === expIdx));
+  const prev = document.getElementById('exp-prev');
+  const next = document.getElementById('exp-next');
+  if (prev) prev.classList.toggle('disabled', expIdx === 0);
+  if (next) next.classList.toggle('disabled', expIdx === n - 1);
+}
+
+/* ══ COUP DE CŒUR ════════════════════════════════════════ */
+function refreshCoeur() {
+  const active = coeurData.filter(p => p.actif === 'OUI');
+  const fab = document.getElementById('fab-coeur');
+  if (!fab) return;
+  const badge = document.getElementById('fab-badge');
+  if (badge) badge.textContent = active.length;
+  fab.classList.toggle('hidden', active.length === 0);
+  coeurIdx = Math.min(coeurIdx, Math.max(0, active.length - 1));
+}
+function openCoeur() {
+  document.getElementById('coeur-overlay').classList.add('visible');
+  renderCoeur();
+}
+function closeCoeur() { document.getElementById('coeur-overlay').classList.remove('visible'); }
+function coeurNav(d) {
+  coeurIdx = Math.max(0, Math.min(coeurData.filter(p=>p.actif==='OUI').length-1, coeurIdx+d));
+  renderCoeur();
+}
+function renderCoeur() {
+  const active = coeurData.filter(p => p.actif === 'OUI');
+  if (!active.length) return;
+  const p = active[coeurIdx];
+  const e = CAT_EMOJI[p.categorie] || '📍';
+  const tags = (p.tags||'').split(',').map(t=>`<span class="coeur-chip">${escHtml(t.trim())}</span>`).join('');
+  document.getElementById('coeur-content').innerHTML = `
+    <div class="coeur-card">
+      <div class="coeur-card-name">${e} ${escHtml(p.nom)}</div>
+      <div class="coeur-card-meta">${escHtml(p.categorie)} · ${escHtml(p.ville)} · ${escHtml(p.horaires||'')}</div>
+      <div class="coeur-citation">${escHtml(p.citation_haykel||p.description||'')}</div>
+      <div class="coeur-chips">${tags}</div>
+    </div>`;
+  const counter = document.getElementById('coeur-counter');
+  if (counter) counter.textContent = `${coeurIdx+1} / ${active.length}`;
+  const prev = document.getElementById('coeur-prev');
+  const next = document.getElementById('coeur-next');
+  if (prev) prev.disabled = coeurIdx === 0;
+  if (next) next.disabled = coeurIdx === active.length-1;
+}
+
+/* ══ BONNES ADRESSES & PARTENAIRES ════════════════════════ */
+const CAT_PARTENAIRE_EMOJI = {
+  'Locations de vacances':'🏠','Produits du terroir':'🧑‍🌾',
+  'Poissonneries':'🐟','Restaurants & Cafés':'🍽️',
+  'Artisans locaux':'🎨','Bien-être & Spa':'💆',
+  restaurant:'🍽️', plage:'🏖️', hebergement:'🛏️', activite:'🎯',
+};
+function getCatEmoji(cat) {
+  if (!cat) return '🏪';
+  for (const [k,v] of Object.entries(CAT_PARTENAIRE_EMOJI)) {
+    if (cat.toLowerCase().includes(k.toLowerCase())) return v;
+  }
+  return '🏪';
+}
+
+function buildAdressesFilters() {
+  const source = partenaires.length > 0 ? partenaires : bonnesAdresses;
+  // Catégories
+  const cats = [...new Set(source.map(p => p.Categorie || p.categorie).filter(Boolean))].sort();
+  const catRow = document.getElementById('adresses-cat-filter');
+  if (catRow) {
+    catRow.innerHTML = `<div class="filter-pill active" onclick="filterAdresses('tous',this)">Toutes</div>`
+      + cats.map(cat => `<div class="filter-pill" onclick="filterAdresses('${escHtml(cat)}',this)">${getCatEmoji(cat)} ${escHtml(cat)}</div>`).join('');
+    catRow.querySelectorAll('.filter-pill').forEach(pill => {
+      const val = pill.getAttribute('onclick')?.match(/filterAdresses\('([^']+)'/)?.[1];
+      pill.classList.toggle('active', val === currentAdressesFilter);
+    });
+  }
+  // Villes
+  const villes = [...new Set(source.map(p => p.Ville || p.ville).filter(Boolean))].sort();
+  const cityRow = document.getElementById('adresses-city-filter');
+  if (cityRow) {
+    cityRow.innerHTML = `<div class="filter-pill active" onclick="filterAdressesByVille('toutes',this)">📍 Toutes</div>`
+      + villes.map(v => `<div class="filter-pill" onclick="filterAdressesByVille('${escHtml(v)}',this)">${escHtml(v)}</div>`).join('');
+    cityRow.querySelectorAll('.filter-pill').forEach(pill => {
+      const val = pill.getAttribute('onclick')?.match(/filterAdressesByVille\('([^']+)'/)?.[1];
+      pill.classList.toggle('active', val === currentAdressesVille);
+    });
+  }
+}
+
+function filterAdresses(cat, el) {
+  currentAdressesFilter = cat;
+  document.querySelectorAll('#adresses-cat-filter .filter-pill').forEach(p => p.classList.remove('active'));
+  el.classList.add('active');
+  renderPartenaires();
+}
+function filterAdressesByVille(ville, el) {
+  currentAdressesVille = ville;
+  document.querySelectorAll('#adresses-city-filter .filter-pill').forEach(p => p.classList.remove('active'));
+  el.classList.add('active');
+  renderPartenaires();
+}
+
+function renderPartenaires() {
+  const grid = document.getElementById('partner-grid');
+  const skeleton = document.getElementById('adresses-skeleton');
+  const sub = document.getElementById('adresses-sub');
+  if (!grid) return;
+
+  // Si aucune donnée partenaire chargée, afficher info
+  const source = partenaires.length > 0 ? partenaires : bonnesAdresses;
+  const isUsingFallback = partenaires.length === 0;
+
+  if (skeleton) skeleton.style.display = 'none';
+
+  const active = source.filter(p => {
+    const statut = p.Statut || p.actif;
+    if (statut && statut.toLowerCase() !== 'oui' && statut.toLowerCase() !== 'actif') return false;
+    const cat = p.Categorie || p.categorie || '';
+    const ville = p.Ville || p.ville || '';
+    if (currentAdressesFilter !== 'tous' && cat !== currentAdressesFilter) return false;
+    if (currentAdressesVille !== 'toutes' && ville !== currentAdressesVille) return false;
+    return true;
+  });
+
+  if (sub) sub.textContent = isUsingFallback
+    ? `(${active.length} adresses — données locales)`
+    : `${active.length} adresses · Cap Bon`;
+
+  if (!active.length) {
+    grid.innerHTML = `<div style="grid-column:1/-1;text-align:center;padding:40px;color:var(--tm);font-size:.85rem">Aucun résultat</div>`;
+    return;
+  }
+
+  grid.innerHTML = active.map(p => {
+    const nom = p.Nom || p.nom || '';
+    const cat = p.Categorie || p.categorie || '';
+    const ville = p.Ville || p.ville || '';
+    const promo = p.Promo || '';
+    const photoUrl = safeImgUrl(p.Photo_URL || p.photo_url || '');
+    const fKey = 'adresse-' + (p.id || escHtml(nom));
+    const isFav = !!favoris[fKey];
+    const emoji = getCatEmoji(cat);
+    const sk = storeItem(p);
+    return `<div class="partner-card" onclick="openPartnerModal(getItem('${sk}'))">
+      <div class="partner-card-img">
+        ${photoUrl
+          ? `<img src="${escHtml(photoUrl)}" alt="${escHtml(nom)}" loading="lazy" onerror="this.parentElement.innerHTML='${emoji}'">`
+          : emoji}
+      </div>
+      ${promo ? `<div class="partner-promo-badge">PROMO 🔥</div>` : ''}
+
+      <div class="partner-card-body">
+        <div class="partner-card-name">${escHtml(nom)}</div>
+        <div class="partner-card-cat">${getCatEmoji(cat)} ${escHtml(cat)}</div>
+        <div class="partner-card-ville">📍 ${escHtml(ville)}</div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+/* ── Carrousel photos modal partenaire ──────────────────── */
+function modalCarouselGo(idx) {
+  const total = window._modalCarouselTotal || 0;
+  if (!total) return;
+  window._modalCarouselIdx = Math.max(0, Math.min(total - 1, idx));
+  // Déplacer le container entier (plus robuste que transform par slide)
+  const track = document.getElementById('modal-carousel');
+  if (track) track.style.transform = `translateX(-${window._modalCarouselIdx * 100}%)`;
+  document.querySelectorAll('#carousel-dots .modal-carousel-dot').forEach((d, i) => {
+    d.classList.toggle('active', i === window._modalCarouselIdx);
+  });
+}
+function modalCarouselNav(dir) {
+  modalCarouselGo((window._modalCarouselIdx || 0) + dir);
+}
+
+function openPartnerModal(p) {
+  const nom = p.Nom || p.nom || '';
+  const cat = p.Categorie || p.categorie || '';
+  const ville = p.Ville || p.ville || '';
+  const desc = p.Description || p.description || '';
+  const sk = storeItem(p);
+  const promo = p.Promo || '';
+  const prixPromo = p.Prix_Promo || '';
+  const wa = p.WhatsApp || (p.tel ? p.tel.replace(/\D/g,'') : '');
+  const ig = p.Instagram || '';
+  const photoUrl = safeImgUrl(p.Photo_URL || p.photo_url || '');
+  const photosRaw = p.Photos_URL || p.photos_url || '';
+  const emoji = getCatEmoji(cat);
+
+  // Construire la liste de photos (Photos_URL séparées par |)
+  const extraPhotos = photosRaw
+    ? photosRaw.split('|').map(u => safeImgUrl(u.trim())).filter(Boolean)
+    : [];
+  // Photo cover + extras (dédupliqués)
+  const allPhotos = photoUrl
+    ? [photoUrl, ...extraPhotos.filter(u => u !== photoUrl)]
+    : extraPhotos;
+
+  const imgWrap = document.getElementById('modal-img-wrap');
+  if (imgWrap) {
+    if (allPhotos.length > 1) {
+      // Carrousel
+      let carouselIdx = 0;
+      const slides = allPhotos.map((url, i) =>
+        `<div class="modal-carousel-slide"><img src="${escHtml(url)}" alt="${escHtml(nom)} ${i+1}" onerror="this.style.display='none'"></div>`
+      ).join('');
+      const dots = allPhotos.map((_, i) =>
+        `<div class="modal-carousel-dot${i===0?' active':''}" onclick="modalCarouselGo(${i})"></div>`
+      ).join('');
+      imgWrap.innerHTML = `
+        <div class="modal-carousel" id="modal-carousel">
+          ${slides}
+        </div>
+        <button class="modal-carousel-btn prev" onclick="modalCarouselNav(-1)">‹</button>
+        <button class="modal-carousel-btn next" onclick="modalCarouselNav(1)">›</button>
+        <div class="modal-carousel-dots" id="carousel-dots">${dots}</div>`;
+      // Init carrousel state
+      window._modalCarouselIdx = 0;
+      window._modalCarouselTotal = allPhotos.length;
+      // Positionner les slides au départ (sinon elles s'empilent)
+      requestAnimationFrame(() => modalCarouselGo(0));
+    } else if (allPhotos.length === 1) {
+      imgWrap.innerHTML = `<img src="${escHtml(allPhotos[0])}" alt="${escHtml(nom)}" style="width:100%;height:100%;object-fit:cover;display:block" onerror="this.parentElement.innerHTML='<div style=height:220px;display:flex;align-items:center;justify-content:center;font-size:4rem>${emoji}</div>'">`;
+    } else {
+      imgWrap.innerHTML = `<div style="height:220px;display:flex;align-items:center;justify-content:center;font-size:4rem;background:linear-gradient(135deg,var(--bg2),var(--bg3))">${emoji}</div>`;
+    }
+  }
+
+  const promoBar = document.getElementById('modal-promo-bar');
+  if (promoBar) {
+    if (promo) {
+      promoBar.style.display = 'block';
+      promoBar.textContent = `🔥 PROMO : ${escHtml(promo)}${prixPromo ? ' — ' + escHtml(prixPromo) : ''}`;
+    } else {
+      promoBar.style.display = 'none';
+    }
+  }
+
+  const titleEl = document.getElementById('modal-title');
+  if (titleEl) titleEl.textContent = nom;
+  const metaEl = document.getElementById('modal-meta');
+  if (metaEl) metaEl.textContent = `${getCatEmoji(cat)} ${cat} · 📍 ${ville}`;
+  const descEl = document.getElementById('modal-desc');
+  if (descEl) descEl.textContent = desc;
+
+  let actions = '';
+  if (wa) {
+    actions += `<button class="modal-btn whatsapp" onclick="window.open('https://wa.me/${wa}','_blank','noopener noreferrer')"><div class="modal-btn-icon">💬</div><div>WhatsApp</div></button>`;
+  }
+  if (ig) {
+    const igUrl = ig.startsWith('http') ? ig : `https://instagram.com/${ig.replace('@','')}`;
+    actions += `<button class="modal-btn instagram" onclick="window.open('${escHtml(igUrl)}','_blank','noopener noreferrer')"><div class="modal-btn-icon">📸</div><div>Instagram</div></button>`;
+  }
+  const shareUrl = `${location.origin}${CFG.GITHUB_REPO_PATH}/#adresse-${encodeURIComponent(nom)}`;
+  actions += `<button class="modal-btn share" onclick="shareItem('${escHtml(nom)}','${escHtml(shareUrl)}')"><div class="modal-btn-icon">↗️</div><div>Partager</div></button>`;
+
+  const actionsEl = document.getElementById('modal-actions');
+  if (actionsEl) actionsEl.innerHTML = actions;
+
+  document.getElementById('partner-modal-overlay').classList.add('visible');
+}
+function closePartnerModal() {
+  document.getElementById('partner-modal-overlay').classList.remove('visible');
+}
+
+/* ══ AGENDA ÉVÉNEMENTS ════════════════════════════════════ */
+let _agendaFiltersBuilt = false; // flag : évite de réécrire les pills à chaque render
+
+function buildAgendaFilters() {
+  // Mois (dynamique depuis les données)
+  const mois = [...new Set(evenements.map(e => {
+    const d = parseDate(e.Date || e.date);
+    return d ? `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}` : null;
+  }).filter(Boolean))].sort();
+  const monthRow = document.getElementById('agenda-month-filter');
+  if (monthRow) {
+    if (mois.length > 1) {
+      monthRow.innerHTML = `<div class="filter-pill active" onclick="filterAgenda('tous',this,'month')">Tous</div>`
+        + mois.map(m => {
+          const [y,mo] = m.split('-');
+          const label = new Date(y,mo-1).toLocaleDateString('fr-FR',{month:'long',year:'numeric'});
+          return `<div class="filter-pill" onclick="filterAgenda('${m}',this,'month')">${label}</div>`;
+        }).join('');
+      monthRow.style.display = '';
+      monthRow.querySelectorAll('.filter-pill').forEach(pill => {
+        const val = pill.getAttribute('onclick')?.match(/filterAgenda\('([^']+)'/)?.[1];
+        pill.classList.toggle('active', val === currentAgendaMonth);
+      });
+    } else {
+      monthRow.style.display = 'none'; // masquer si un seul mois ou aucun
+    }
+  }
+  // Villes (dynamique)
+  const villes = [...new Set(evenements.map(e => e.Ville || e.ville).filter(Boolean))].sort();
+  const cityRow = document.getElementById('agenda-city-filter');
+  if (cityRow) {
+    if (villes.length > 1) {
+      cityRow.innerHTML = `<div class="filter-pill active" onclick="filterAgenda('toutes',this,'ville')">📍 Toutes</div>`
+        + villes.map(v => `<div class="filter-pill" onclick="filterAgenda('${escHtml(v)}',this,'ville')">${escHtml(v)}</div>`).join('');
+      cityRow.style.display = '';
+      cityRow.querySelectorAll('.filter-pill').forEach(pill => {
+        const val = pill.getAttribute('onclick')?.match(/filterAgenda\('([^']+)'/)?.[1];
+        pill.classList.toggle('active', val === currentAgendaVille);
+      });
+    } else {
+      cityRow.style.display = 'none';
+    }
+  }
+}
+
+function filterAgenda(val, el, type) {
+  if (type === 'month') currentAgendaMonth = val;
+  if (type === 'ville') currentAgendaVille = val;
+  if (type === 'type')  currentAgendaType  = val;
+  document.querySelectorAll(`#agenda-${type==='month'?'month':type==='ville'?'city':'type'}-filter .filter-pill`)
+    .forEach(p => p.classList.remove('active'));
+  el.classList.add('active');
+  renderEvenements();
+}
+
+function parseDate(s) {
+  if (!s) return null;
+  const d = new Date(s);
+  return isNaN(d.getTime()) ? null : d;
+}
+
+function renderEvenements() {
+  const list = document.getElementById('event-list');
+  const skeleton = document.getElementById('agenda-skeleton');
+  const sub = document.getElementById('agenda-sub');
+  if (!list) return;
+  if (skeleton) skeleton.style.display = 'none';
+
+  buildAgendaFilters();
+
+  const now = new Date();
+  now.setHours(0,0,0,0);
+
+  // Récupérer la dernière visite pour le badge "nouveau"
+  const lastVisit = localStorage.getItem('jerbi_last_visit');
+  const lastVisitDate = lastVisit ? new Date(lastVisit) : null;
+
+  let source = evenements.length > 0 ? evenements : [];
+
+  // Exemples de démonstration si aucune donnée
+  if (!source.length) {
+    source = [
+      {Titre:'Festival de la Fauconnerie',Date:'2025-06-15',Heure:'10h00',Lieu:'El Haouaria',Ville:'El Haouaria',Description:'Festival annuel célébrant la tradition millénaire de fauconnerie.',Lien_Billetterie:'',Statut:'actif',prix:'Gratuit'},
+      {Titre:'Nuit des Musées – Kerkouane',Date:'2025-05-18',Heure:'20h00',Lieu:'Site de Kerkouane',Ville:'Kelibia',Description:'Visite nocturne du site punique classé UNESCO.',Lien_Billetterie:'',Statut:'actif',prix:'Payant'},
+      {Titre:'Fête du Muscat de Kélibia',Date:'2025-08-20',Heure:'18h00',Lieu:'Kelibia',Ville:'Kelibia',Description:'Dégustation du célèbre vin de muscat de Kélibia.',Lien_Billetterie:'',Statut:'actif',prix:'Gratuit'},
+    ];
+  }
+
+  const filtered = source.filter(ev => {
+    if ((ev.Statut||ev.actif||'actif').toLowerCase() !== 'actif') return false;
+    const ville = ev.Ville || ev.ville || '';
+    const type  = (ev.type  || ev.Type  || '').toLowerCase();
+    const prix  = (ev.prix  || ev.Prix  || '').toLowerCase();
+    if (currentAgendaVille !== 'toutes' && ville !== currentAgendaVille) return false;
+    if (currentAgendaMonth !== 'tous') {
+      const d = parseDate(ev.Date);
+      if (!d) return false;
+      const key = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`;
+      if (key !== currentAgendaMonth) return false;
+    }
+    if (currentAgendaType !== 'tous') {
+      if (currentAgendaType === 'gratuit') {
+        if (prix !== 'gratuit') return false;
+      } else {
+        if (!type.includes(currentAgendaType)) return false;
+      }
+    }
+    return true;
+  }).sort((a,b) => {
+    const da = parseDate(a.Date), db = parseDate(b.Date);
+    if (!da && !db) return 0;
+    if (!da) return 1;
+    if (!db) return -1;
+    return da - db;
+  });
+
+  if (sub) sub.textContent = `${filtered.length} événement${filtered.length>1?'s':''} · Cap Bon`;
+
+  if (!filtered.length) {
+    list.innerHTML = `<div style="text-align:center;padding:40px;color:var(--tm);font-size:.85rem">Aucun événement pour cette période</div>`;
+    return;
+  }
+
+  list.innerHTML = filtered.map(ev => {
+    const d = parseDate(ev.Date);
+    const isPast = d ? d < now : false;
+    const isNew = lastVisitDate && d && d > lastVisitDate;
+    const day = d ? d.getDate() : '?';
+    const month = d ? d.toLocaleDateString('fr-FR',{month:'short'}).replace('.','') : '';
+    const prix = ev.prix || ev.Prix || '';
+    const titre = ev.Titre || ev.titre || '';
+    const lieu = ev.Lieu || ev.lieu || '';
+    const ville = ev.Ville || ev.ville || '';
+    const evsk = storeItem(ev);
+    return `<div class="event-card${isPast?' past':''}" onclick="openEventModal(getItem('${evsk}'))">
+      <div class="event-date-col">
+        <div class="event-day">${escHtml(String(day))}</div>
+        <div class="event-month">${escHtml(month)}</div>
+      </div>
+      <div class="event-main">
+        <div class="event-title">${escHtml(titre)}</div>
+        <div class="event-lieu">📍 ${escHtml(lieu)} · ${escHtml(ville)}</div>
+        <div class="event-badges">
+          ${prix.toLowerCase()==='gratuit' ? '<span class="event-badge gratuit">Gratuit</span>' : prix ? '<span class="event-badge payant">Payant</span>' : ''}
+          ${isNew ? '<span class="event-badge nouveau">🆕 Nouveau</span>' : ''}
+          ${isPast ? '<span class="event-badge passe">Passé</span>' : ''}
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function openEventModal(ev) {
+  // Réutiliser la modal partenaire pour l'événement
+  const nom = ev.Titre || ev.titre || '';
+  const lieu = ev.Lieu || '';
+  const ville = ev.Ville || '';
+  const esk = storeItem(ev);
+  const desc = ev.Description || '';
+  const lien = ev.Lien_Billetterie || '';
+  const d = parseDate(ev.Date);
+  const dateStr = d ? d.toLocaleDateString('fr-FR',{weekday:'long',day:'numeric',month:'long',year:'numeric'}) : '';
+
+  const imgWrap = document.getElementById('modal-img-wrap');
+  if (imgWrap) imgWrap.innerHTML = `<div style="height:120px;display:flex;align-items:center;justify-content:center;font-size:4rem;background:linear-gradient(135deg,var(--tq),#0085a8)">📅</div>`;
+
+  const promoBar = document.getElementById('modal-promo-bar');
+  if (promoBar) {
+    promoBar.style.display = dateStr ? 'block' : 'none';
+    promoBar.style.background = 'rgba(212,168,67,.1)';
+    promoBar.style.borderColor = 'rgba(212,168,67,.2)';
+    promoBar.style.color = 'var(--tq)';
+    promoBar.textContent = `📅 ${dateStr}${ev.Heure ? ' · ' + ev.Heure : ''}`;
+  }
+
+  const titleEl = document.getElementById('modal-title');
+  if (titleEl) titleEl.textContent = nom;
+  const metaEl = document.getElementById('modal-meta');
+  if (metaEl) metaEl.textContent = `📍 ${lieu} · ${ville}`;
+  const descEl = document.getElementById('modal-desc');
+  if (descEl) descEl.textContent = desc;
+
+  let actions = '';
+  if (lien) {
+    const safeLink = safeImgUrl(lien);
+    if (safeLink) actions += `<button class="modal-btn share" onclick="window.open('${escHtml(safeLink)}','_blank','noopener noreferrer')"><div class="modal-btn-icon">🎟️</div><div>Réserver / Infos</div></button>`;
+  }
+  const shareUrl = `${location.origin}${CFG.GITHUB_REPO_PATH}/#agenda-${encodeURIComponent(nom)}`;
+  actions += `<button class="modal-btn share" onclick="shareItem('${escHtml(nom)}','${escHtml(shareUrl)}')"><div class="modal-btn-icon">↗️</div><div>Partager</div></button>`;
+
+  const actionsEl = document.getElementById('modal-actions');
+  if (actionsEl) actionsEl.innerHTML = actions;
+
+  document.getElementById('partner-modal-overlay').classList.add('visible');
+}
+
+/* ══ FAVORIS ══════════════════════════════════════════════ */
+function loadFavoris() {
+  try {
+    const raw = localStorage.getItem('jerbi_favoris');
+    favoris = raw ? JSON.parse(raw) : {};
+  } catch { favoris = {}; }
+}
+function saveFavoris() {
+  try { localStorage.setItem('jerbi_favoris', JSON.stringify(favoris)); } catch(e) {}
+}
+function toggleFav(type, item) {
+  const nom = item.nom || item.Nom || item.Titre || item.titre || '';
+  const key = `${type}-${item.id || encodeURIComponent(nom)}`;
+  if (favoris[key]) {
+    delete favoris[key];
+    showToast('🤍 Retiré des favoris');
+  } else {
+    favoris[key] = { type, item, addedAt: new Date().toISOString() };
+    showToast('❤️ Ajouté aux favoris !');
+  }
+  saveFavoris();
+  // Rafraîchir le bouton fav dans le DOM si visible
+  const btn = document.getElementById('modal-fav-btn');
+  if (btn) btn.textContent = favoris[key] ? '❤️ Favori' : '🤍 Favori';
+  if (currentScreen === 'guide') renderPlaces();
+  if (currentScreen === 'adresses') renderPartenaires();
+}
+
+function renderFavoris() {
+  const container = document.getElementById('favoris-content');
+  if (!container) return;
+  const all = Object.values(favoris);
+  if (!all.length) {
+    container.innerHTML = `<div class="favoris-empty">❤️<br><br>Vous n'avez encore aucun favori.<br>Appuyez sur 🤍 sur n'importe quelle card<br>pour sauvegarder un lieu.</div>`;
+    return;
+  }
+  const byType = {lieu:[], adresse:[], event:[]};
+  all.forEach(f => {
+    if (byType[f.type] !== undefined) byType[f.type].push(f);
+  });
+  let html = '';
+  const typeLabels = {lieu:'🗺️ Lieux & Adresses', adresse:'🛍️ Partenaires', event:'📅 Événements'};
+  for (const [type, items] of Object.entries(byType)) {
+    if (!items.length) continue;
+    html += `<div class="favoris-group-label">${typeLabels[type]}</div>`;
+    items.forEach(f => {
+      const p = f.item;
+      const nom = p.nom || p.Nom || p.Titre || p.titre || '';
+      const cat = p.categorie || p.Categorie || '';
+      const ville = p.ville || p.Ville || '';
+      const emoji = type === 'lieu' ? (CAT_EMOJI[cat] || '📍') : type === 'adresse' ? getCatEmoji(cat) : '📅';
+      const fsk = storeItem(p);
+      const clickAction = type==='lieu'
+        ? `showFiche(getItem('${fsk}'))`
+        : type==='adresse'
+          ? `openPartnerModal(getItem('${fsk}'))`
+          : `openEventModal(getItem('${fsk}'))`;
+      html += `<div class="place-item" style="margin:0 16px 8px" onclick="${clickAction}">
+        <div class="place-emoji-wrap">${emoji}</div>
+        <div class="place-info">
+          <div class="place-name">${escHtml(nom)}</div>
+          <div class="place-meta">${escHtml(cat)} · ${escHtml(ville)}</div>
+        </div>
+      </div>`;
+    });
+  }
+  container.innerHTML = html;
+}
+
+/* ══ PARTAGE ══════════════════════════════════════════════ */
+async function shareItem(title, url) {
+  if (navigator.share) {
+    try {
+      await navigator.share({ title, url, text: `Découvrez "${title}" sur Jerbi Explore Cap Bon !` });
+      return;
+    } catch(e) {}
+  }
+  // Fallback : copier dans le presse-papier
+  try {
+    await navigator.clipboard.writeText(url);
+    showToast('🔗 Lien copié dans le presse-papier !');
+  } catch {
+    showToast(`🔗 ${url}`);
+  }
+}
+
+/* ══ RECHERCHE GLOBALE ════════════════════════════════════ */
+function openSearch() {
+  document.getElementById('search-overlay').classList.add('visible');
+  setTimeout(() => document.getElementById('search-input').focus(), 100);
+}
+function closeSearch() {
+  document.getElementById('search-overlay').classList.remove('visible');
+  clearSearch();
+}
+function clearSearch() {
+  const input = document.getElementById('search-input');
+  if (input) input.value = '';
+  const clear = document.getElementById('search-clear');
+  if (clear) clear.style.display = 'none';
+  const results = document.getElementById('search-results');
+  if (results) results.innerHTML = '<div class="search-empty">Tapez pour rechercher…</div>';
+}
+
+let searchTimer = null;
+function doSearch(q) {
+  const clear = document.getElementById('search-clear');
+  if (clear) clear.style.display = q ? 'block' : 'none';
+  clearTimeout(searchTimer);
+  if (!q.trim()) { clearSearch(); return; }
+  searchTimer = setTimeout(() => _runSearch(q.trim().toLowerCase()), 200);
+}
+
+function _runSearch(q) {
+  const results = document.getElementById('search-results');
+  if (!results) return;
+  let html = '';
+  let total = 0;
+
+  // Lieux
+  const lieux = bonnesAdresses.filter(p =>
+    p.actif === 'OUI' && (
+      (p.nom||'').toLowerCase().includes(q) ||
+      (p.ville||'').toLowerCase().includes(q) ||
+      (p.categorie||'').toLowerCase().includes(q) ||
+      (p.tags||'').toLowerCase().includes(q)
+    )
+  ).slice(0,5);
+  if (lieux.length) {
+    html += `<div class="search-group-label">🗺️ Lieux & Guide</div>`;
+    html += lieux.map(p => { const srk=storeItem(p); return `<div class="search-result-item" onclick="closeSearch();showFiche(getItem('${srk}'))">
+      <div class="search-result-icon">${CAT_EMOJI[p.categorie]||'📍'}</div>
+      <div><div class="search-result-name">${escHtml(p.nom)}</div><div class="search-result-meta">${escHtml(p.categorie)} · ${escHtml(p.ville)}</div></div>
+    </div>`; }).join('');
+    total += lieux.length;
+  }
+
+  // Partenaires
+  const pts = (partenaires.length ? partenaires : []).filter(p => {
+    const nom = (p.Nom||p.nom||'').toLowerCase();
+    const cat = (p.Categorie||p.categorie||'').toLowerCase();
+    const ville = (p.Ville||p.ville||'').toLowerCase();
+    return nom.includes(q) || cat.includes(q) || ville.includes(q);
+  }).slice(0,4);
+  if (pts.length) {
+    html += `<div class="search-group-label">🛍️ Bonnes Adresses</div>`;
+    html += pts.map(p => { const spk=storeItem(p); return `<div class="search-result-item" onclick="closeSearch();openPartnerModal(getItem('${spk}'))">
+      <div class="search-result-icon">${getCatEmoji(p.Categorie||p.categorie||'')}</div>
+      <div><div class="search-result-name">${escHtml(p.Nom||p.nom||'')}</div><div class="search-result-meta">${escHtml(p.Ville||p.ville||'')}</div></div>
+    </div>`; }).join('');
+    total += pts.length;
+  }
+
+  // Événements
+  const evs = evenements.filter(e => {
+    const t = (e.Titre||'').toLowerCase();
+    const l = (e.Lieu||'').toLowerCase();
+    const v = (e.Ville||'').toLowerCase();
+    return t.includes(q) || l.includes(q) || v.includes(q);
+  }).slice(0,3);
+  if (evs.length) {
+    html += `<div class="search-group-label">📅 Événements</div>`;
+    html += evs.map(e => { const sek=storeItem(e); return `<div class="search-result-item" onclick="closeSearch();navigate('agenda');openEventModal(getItem('${sek}'))">
+      <div class="search-result-icon">📅</div>
+      <div><div class="search-result-name">${escHtml(e.Titre||'')}</div><div class="search-result-meta">${escHtml(e.Ville||'')} · ${e.Date||''}</div></div>
+    </div>`; }).join('');
+    total += evs.length;
+  }
+
+  if (!total) html = `<div class="search-empty">Aucun résultat pour "${escHtml(q)}"</div>`;
+  results.innerHTML = html;
+}
+
+/* ══ DONNÉES LOCALES — Lecture CSV serveur ═════════════════
+   Fichiers dans /jerbi-guide/data/
+   Mise à jour : éditer directement sur GitHub (interface web)
+   ou glisser-déposer un nouveau fichier CSV.
+   Offline : précachés par le SW → disponibles sans réseau.
+   ══════════════════════════════════════════════════════════ */
+async function loadFromGoogleDrive() {   /* nom conservé pour compatibilité appels existants */
+  const statusEl = document.getElementById('drive-status');
+  if (statusEl) statusEl.textContent = '⏳ Chargement…';
+
+  let anyLoaded = false;
+
+  /* ── lieux.csv → bonnesAdresses ───────────────────── */
+  try {
+    const res = await fetch(getCsvPath('lieux'));
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    const { data, errors } = parseCsv(await res.text());
+    if (errors.length) console.warn('[CSV lieux] avertissements :', errors);
+    if (data.length > 0) {
+      bonnesAdresses = data;
+      coeurData = data.filter(p =>
+        (p.coup_de_coeur || p.Coup_de_coeur || '').toUpperCase() === 'OUI'
+      );
+      anyLoaded = true;
+    }
+  } catch(e) { console.warn('[CSV lieux] Erreur :', e.message); }
+
+  /* ── partenaires.csv → partenaires (optionnel) ────── */
+  try {
+    const res = await fetch(getCsvPath('partenaires'));
+    if (res.ok) {
+      const { data } = parseCsv(await res.text());
+      if (data.length > 0) partenaires = data;
+    }
+  } catch(e) { console.warn('[CSV partenaires] Erreur :', e.message); }
+
+  /* ── evenements.csv → evenements (optionnel) ─────── */
+  try {
+    const res = await fetch(getCsvPath('evenements'));
+    if (res.ok) {
+      const { data } = parseCsv(await res.text());
+      if (data.length > 0) {
+        evenements = data;
+        checkNewEvents();
+      }
+    }
+  } catch(e) { console.warn('[CSV evenements] Erreur :', e.message); }
+
+  /* ── Statut & date ────────────────────────────────── */
+  if (statusEl) {
+    if (anyLoaded) {
+      statusEl.textContent = `✅ ${new Date().toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'})}`;
+      localStorage.setItem('jerbi_last_data', new Date().toISOString());
+    } else {
+      const cachedDate = localStorage.getItem('jerbi_last_data');
+      statusEl.textContent = cachedDate
+        ? `⚠️ Hors-ligne · données du ${new Date(cachedDate).toLocaleDateString('fr-FR')}`
+        : '⚠️ Données non disponibles';
+    }
+  }
+
+  renderPlaces();
+  refreshCoeur();
+  buildAdressesFilters();
+
+  if (mapReady && leafletMap) {
+    leafletMap.eachLayer(l => { if (l._isJerbiPin) leafletMap.removeLayer(l); });
+    addMapPins();
+  }
+}
+
+/* ══ BADGE AGENDA : nouveau événement ════════════════════ */
+function checkNewEvents() {
+  const lastVisit = localStorage.getItem('jerbi_last_visit');
+  if (!lastVisit) return;
+  const last = new Date(lastVisit);
+  const hasNew = evenements.some(ev => {
+    const d = parseDate(ev.Date);
+    return d && d > last;
+  });
+  const badge = document.getElementById('agenda-nav-badge');
+  if (badge) badge.style.display = hasNew ? 'block' : 'none';
+  // Mettre à jour la date de visite
+  localStorage.setItem('jerbi_last_visit', new Date().toISOString());
+}
+
+/* ══ MODE HORS-LIGNE ══════════════════════════════════════ */
+function updateOfflineStatus() {
+  const banner = document.getElementById('offline-banner');
+  const dateEl = document.getElementById('offline-date');
+  if (!banner) return;
+  if (!navigator.onLine) {
+    banner.style.display = 'block';
+    const cached = localStorage.getItem('jerbi_last_data');
+    if (dateEl && cached) dateEl.textContent = `données du ${new Date(cached).toLocaleDateString('fr-FR')}`;
+  } else {
+    banner.style.display = 'none';
+  }
+}
+
+/* ══ INSTALLATION PWA ═════════════════════════════════════ */
+const _isIOS      = /iphone|ipad|ipod/i.test(navigator.userAgent);
+const _isSafari   = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
+const _isStandalone = window.matchMedia('(display-mode: standalone)').matches
+                    || window.navigator.standalone === true;
+
+/* Android/Chrome — événement natif */
+window.addEventListener('beforeinstallprompt', e => {
+  e.preventDefault();
+  deferredInstallPrompt = e;
+  const homeBtn = document.getElementById('install-home-btn');
+  if (homeBtn) { homeBtn.style.display = 'flex'; homeBtn.onclick = doInstall; }
+  const snoozed = localStorage.getItem('jerbi_install_snoozed');
+  if (snoozed && (Date.now() - parseInt(snoozed)) < CFG.INSTALL_SNOOZE_DAYS * 86400000) return;
+  setTimeout(showInstallBanner, CFG.INSTALL_PROMPT_DELAY_MS);
+});
+
+window.addEventListener('appinstalled', () => {
+  deferredInstallPrompt = null;
+  const banner = document.getElementById('install-banner');
+  if (banner) banner.style.display = 'none';
+  const homeBtn = document.getElementById('install-home-btn');
+  if (homeBtn) homeBtn.style.display = 'none';
+  showToast('✅ App installée avec succès !');
+});
+
+/* Initialiser l'UI d'installation (appelé au load) */
+function initInstallUI() {
+  if (_isStandalone) return; // déjà installée
+  const snoozed = localStorage.getItem('jerbi_install_snoozed');
+  const snoozedOk = snoozed && (Date.now() - parseInt(snoozed)) < CFG.INSTALL_SNOOZE_DAYS * 86400000;
+  if (snoozedOk) return;
+  if (_isIOS && _isSafari) {
+    const homeBtn = document.getElementById('install-home-btn');
+    if (homeBtn) { homeBtn.style.display = 'flex'; homeBtn.onclick = showIosTooltip; }
+    setTimeout(showInstallBanner, CFG.INSTALL_PROMPT_DELAY_MS);
+  }
+}
+
+function showInstallBanner() {
+  if (_isStandalone) return;
+  const banner = document.getElementById('install-banner');
+  if (!banner) return;
+  if (_isIOS && _isSafari) {
+    const sub = document.getElementById('install-banner-sub');
+    if (sub) sub.textContent = 'Touchez ⬆️ Partager puis "Sur l\'écran d\'accueil"';
+    const btn = document.getElementById('install-primary-btn');
+    if (btn) { btn.textContent = '📋 Voir les instructions'; btn.onclick = showIosTooltip; }
+    banner.style.display = 'block';
+  } else if (deferredInstallPrompt) {
+    banner.style.display = 'block';
+  }
+}
+
+/* Infobulle iOS — 4 étapes détaillées, fermeture auto 8s */
+function showIosTooltip() {
+  const existing = document.getElementById('ios-install-tooltip');
+  if (existing) { existing.remove(); return; }
+  const tt = document.createElement('div');
+  tt.id = 'ios-install-tooltip';
+  tt.style.cssText = 'position:fixed;bottom:0;left:0;right:0;z-index:9500;'
+    + 'background:var(--bg2);border-top:2px solid var(--tq);'
+    + 'border-radius:24px 24px 0 0;padding:20px 20px max(24px,env(safe-area-inset-bottom));'
+    + 'box-shadow:0 -8px 40px rgba(0,0,0,.5);animation:slideUp .35s cubic-bezier(.4,0,.2,1)';
+  tt.innerHTML = `
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+      <div style="font-weight:700;font-size:.95rem;color:var(--th)">📲 Installer Jerbi Explore</div>
+      <div onclick="document.getElementById('ios-install-tooltip').remove()"
+           style="cursor:pointer;font-size:1.1rem;color:var(--ts);padding:4px 8px;
+                  background:var(--card);border-radius:8px;border:1px solid var(--border)">✕</div>
+    </div>
+    <div style="font-size:.78rem;color:var(--ts);margin-bottom:14px">
+      Installez l'app sur votre écran d'accueil depuis <b style="color:var(--tq)">Safari</b> en suivant ces étapes :
+    </div>
+    <div style="display:flex;flex-direction:column;gap:12px">
+      <div style="display:flex;align-items:center;gap:12px">
+        <div style="width:34px;height:34px;border-radius:50%;background:var(--tq);color:#fff;
+                    display:flex;align-items:center;justify-content:center;font-weight:800;
+                    flex-shrink:0;font-size:.9rem">1</div>
+        <div style="font-size:.8rem;color:var(--tb)">
+          Ouvrir dans <b>Safari</b><br>
+          <span style="font-size:.72rem;color:var(--ts)">Obligatoire — pas Chrome ni Firefox</span>
+        </div>
+      </div>
+      <div style="display:flex;align-items:center;gap:12px">
+        <div style="width:34px;height:34px;border-radius:50%;background:var(--tq);color:#fff;
+                    display:flex;align-items:center;justify-content:center;font-weight:800;
+                    flex-shrink:0;font-size:.9rem">2</div>
+        <div style="font-size:.8rem;color:var(--tb)">Appuyer sur <b>Partager ⬆️</b> en bas de l'écran</div>
+      </div>
+      <div style="display:flex;align-items:center;gap:12px">
+        <div style="width:34px;height:34px;border-radius:50%;background:var(--tq);color:#fff;
+                    display:flex;align-items:center;justify-content:center;font-weight:800;
+                    flex-shrink:0;font-size:.9rem">3</div>
+        <div style="font-size:.8rem;color:var(--tb)">Choisir <b>"Sur l'écran d'accueil" ➕</b></div>
+      </div>
+      <div style="display:flex;align-items:center;gap:12px">
+        <div style="width:34px;height:34px;border-radius:50%;background:var(--tq);color:#fff;
+                    display:flex;align-items:center;justify-content:center;font-weight:800;
+                    flex-shrink:0;font-size:.9rem">4</div>
+        <div style="font-size:.8rem;color:var(--tb)">Confirmer avec <b>"Ajouter"</b> en haut à droite</div>
+      </div>
+    </div>
+    <div style="margin-top:16px;text-align:center;font-size:.68rem;color:var(--tm)">
+      Fermeture automatique dans <span id="ios-tt-cd">8</span>s
+    </div>`;
+  document.body.appendChild(tt);
+  let n = 8;
+  const tmr = setInterval(() => {
+    n--; const el = document.getElementById('ios-tt-cd');
+    if (el) el.textContent = n;
+    if (n <= 0) { clearInterval(tmr); if (tt.parentNode) tt.remove(); }
+  }, 1000);
+}
+
+async function doInstall() {
+  if (_isIOS) { showIosTooltip(); return; }
+  const banner = document.getElementById('install-banner');
+  if (deferredInstallPrompt) {
+    deferredInstallPrompt.prompt();
+    const { outcome } = await deferredInstallPrompt.userChoice;
+    if (outcome === 'accepted') {
+      deferredInstallPrompt = null;
+      if (banner) banner.style.display = 'none';
+    }
+  } else {
+    showToast('📲 Ouvrez le menu du navigateur pour installer');
+  }
+}
+
+function dismissInstall() {
+  const banner = document.getElementById('install-banner');
+  if (banner) banner.style.display = 'none';
+  localStorage.setItem('jerbi_install_snoozed', Date.now().toString());
+}
+
+/* ══ SERVICE WORKER & MISE À JOUR ═════════════════════════ */
+async function registerServiceWorker() {
+  if (!('serviceWorker' in navigator)) return;
+  try {
+    swRegistration = await navigator.serviceWorker.register(
+      `${CFG.GITHUB_REPO_PATH}/sw.js`,
+      { scope: CFG.GITHUB_REPO_PATH + '/' }
+    );
+
+    // Détecter SW en attente (nouvelle version disponible)
+    function checkWaiting(reg) {
+      if (reg.waiting) showUpdateBanner();
+    }
+    checkWaiting(swRegistration);
+    swRegistration.addEventListener('updatefound', () => {
+      const newWorker = swRegistration.installing;
+      newWorker.addEventListener('statechange', () => {
+        if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+          showUpdateBanner();
+        }
+      });
+    });
+
+    navigator.serviceWorker.addEventListener('controllerchange', () => {
+      window.location.reload();
+    });
+
+    // Vérifier les updates périodiquement
+    setInterval(() => { if (swRegistration) swRegistration.update(); }, 60000);
+
+  } catch(e) {
+    console.warn('[SW] Enregistrement échoué :', e);
+  }
+}
+
+function showUpdateBanner() {
+  const banner = document.getElementById('update-banner');
+  if (banner) banner.style.display = 'block';
+  // Badge application si disponible
+  if ('setAppBadge' in navigator) navigator.setAppBadge(1).catch(()=>{});
+}
+
+function applyUpdate() {
+  if (swRegistration && swRegistration.waiting) {
+    swRegistration.waiting.postMessage({ type: 'SKIP_WAITING' });
+  }
+  const banner = document.getElementById('update-banner');
+  if (banner) banner.style.display = 'none';
+}
+
+/* ══ GALERIE ══════════════════════════════════════════════ */
+/* ══ GALERIE ══════════════════════════════════════════════
+   Sources de médias (chargées au démarrage) :
+   1. Photos  : data/Images/*.jpg  — scan via fetch + index généré
+   2. Vidéos  : data/Videos/Video.csv — PapaParse
+   
+   Colonnes Video.csv : nom;description;type;stockage;url;dossier
+     type     : mp4 | short | youtube
+     stockage : local | en ligne
+     url      : URL YouTube (si en ligne)
+     dossier  : sous-dossier dans data/Videos/ (si local)
+   
+   Règles :
+   - Grille 3 colonnes (4 sur desktop), aspect-ratio 1:1
+   - Clic → lightbox (images) ou lecteur (vidéos)
+   - Téléchargement désactivé (context-menu:none, pointer-events:none)
+   - Hors-ligne : photos locales OK, vidéos en ligne désactivées
+   ══════════════════════════════════════════════════════════ */
+
+let mediaPhotos  = [];   // [{src, caption}]
+let mediaVideos  = [];   // [{nom, description, type, stockage, url, dossier}]
+let allMedia     = [];   // merged: {kind:'photo'|'video', ...}
+let galleryFilter = 'tous';
+let lightboxIndex = 0;
+let galleryLoaded = false;
+
+/* ── Chargement images depuis data/Images/ ───────────────
+   Principe : on tente de charger img-001.jpg, img-002.jpg…
+   jusqu'à la première erreur 404. Propre, sans backend.
+   Pour ajouter une photo : nommer img-NNN.jpg et déposer
+   dans data/Images/ — elle apparaît automatiquement.
+*/
+async function loadGalleryImages() {
+  const base = CFG.GITHUB_REPO_PATH + '/data/Images/';
+  const MAX_IMAGES = 50;
+  const TIMEOUT_MS = 4000;
+
+  // Test rapide sur img-001 pour savoir si la galerie est vide
+  const firstName = 'img-001.jpg';
+  try {
+    const ctrl0 = new AbortController();
+    const t0 = setTimeout(() => ctrl0.abort(), TIMEOUT_MS);
+    const probe = await fetch(base + firstName, { method: 'HEAD', signal: ctrl0.signal });
+    clearTimeout(t0);
+    if (!probe.ok) return []; // Aucune image → on sort immédiatement
+  } catch { return []; }
+
+  // Scan parallèle : toutes les URLs testées simultanément
+  const candidates = Array.from({ length: MAX_IMAGES }, (_, i) =>
+    'img-' + String(i + 1).padStart(3, '0') + '.jpg'
+  );
+
+  const results = await Promise.all(
+    candidates.map(async name => {
+      const url = base + name;
+      try {
+        const ctrl = new AbortController();
+        const t = setTimeout(() => ctrl.abort(), TIMEOUT_MS);
+        const res = await fetch(url, { method: 'HEAD', signal: ctrl.signal });
+        clearTimeout(t);
+        return res.ok ? { src: url, caption: '', kind: 'photo' } : null;
+      } catch { return null; }
+    })
+  );
+
+  // Conserver l'ordre et ne garder que les fichiers existants
+  const photos = [];
+  for (const r of results) {
+    if (r === null) break; // On s'arrête à la première absence (séquence continue)
+    photos.push(r);
+  }
+  return photos;
+}
+
+/* ── Chargement vidéos depuis Video.csv ───────────────── */
+async function loadGalleryVideos() {
+  const url = CFG.GITHUB_REPO_PATH + '/data/Videos/Video.csv';
+  try {
+    const res = await fetch(url);
+    if (!res.ok) return [];
+    const text = await res.text();
+    const { data } = parseCsv(text);
+    return data
+      .filter(r => r.nom || r['nom de la video'])
+      .map(r => ({
+        kind:        'video',
+        nom:         r.nom || r['nom de la video'] || '',
+        description: r.description || '',
+        type:        (r.type || '').trim().toLowerCase(),       // mp4 | short | youtube
+        stockage:    (r.stockage || '').trim().toLowerCase(),   // local | en ligne
+        url:         r.url || r.URL || '',
+        dossier:     r.dossier || '',
+        caption:     r.nom || r['nom de la video'] || '',
+      }));
+  } catch(e) {
+    console.warn('[Gallery] Videos CSV error:', e.message);
+    return [];
+  }
+}
+
+/* ── Chargement global galerie ────────────────────────── */
+async function loadGallery() {
+  if (galleryLoaded) return;
+  const [photos, videos] = await Promise.all([
+    loadGalleryImages(),
+    loadGalleryVideos(),
+  ]);
+  mediaPhotos = photos;
+  mediaVideos = videos;
+  // Merge : photos d'abord, puis vidéos
+  allMedia = [...photos, ...videos];
+  galleryLoaded = true;
+  renderGallery();
+}
+
+function saveGallery() { /* données viennent des fichiers, pas localStorage */ }
+
+/* ── Filtre ──────────────────────────────────────────── */
+function filterGallery(type, pill) {
+  galleryFilter = type;
+  document.querySelectorAll('#gallery-type-filter .filter-pill')
+    .forEach(p => p.classList.remove('active'));
+  if (pill) pill.classList.add('active');
+  renderGallery();
+}
+
+/* ── Rendu grille ────────────────────────────────────── */
+function renderGallery() {
+  const grid = document.getElementById('gallery-grid');
+  const sub  = document.getElementById('gallery-sub');
+  if (!grid) return;
+
+  const isOnline = navigator.onLine;
+
+  const items = allMedia.filter(m => {
+    if (galleryFilter === 'photo') return m.kind === 'photo';
+    if (galleryFilter === 'video') return m.kind === 'video';
+    return true;
+  });
+
+  const photoCount = allMedia.filter(m => m.kind === 'photo').length;
+  const videoCount = allMedia.filter(m => m.kind === 'video').length;
+  if (sub) sub.textContent = photoCount + ' photo' + (photoCount > 1 ? 's' : '')
+    + (videoCount ? ' · ' + videoCount + ' vidéo' + (videoCount > 1 ? 's' : '') : '')
+    + ' · Cap Bon';
+
+  if (!items.length) {
+    grid.innerHTML = '<div class="gallery-empty">Galerie en cours de chargement…</div>';
+    return;
+  }
+
+grid.innerHTML = items.map((m, visIdx) => {
+  const realIdx = allMedia.indexOf(m);
+  if (m.kind === 'photo') {
+    return '<div class="gallery-item" onclick="openLightbox(' + realIdx + ')">'
+      + '<img src="' + escHtml(m.src) + '" alt="' + escHtml(m.caption) + '" loading="lazy" draggable="false">'
+      + (m.caption ? '<div class="gallery-item-caption">' + escHtml(m.caption) + '</div>' : '')
+      + '</div>';
+  } else {
+    // Vidéo
+    const isOnlineVideo = m.stockage === 'en ligne';
+    const canPlay = isOnlineVideo ? isOnline : true;
+    const thumb = m.stockage === 'en ligne' && m.url
+      ? getYoutubeThumbnail(m.url)
+      : '';
+
+    const clickAction = canPlay
+      ? 'openLightbox(' + realIdx + ')'
+      : "showToast('📵 Vidéo non disponible hors-ligne')";
+
+    return '<div class="gallery-item" onclick="' + clickAction + '">'
+      + (thumb ? '<img src="' + escHtml(thumb) + '" alt="' + escHtml(m.nom) + '" loading="lazy" draggable="false">'
+               : '<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:2rem;background:var(--bg3)">🎬</div>')
+      + '<div class="gallery-item-play"><span>' + (canPlay ? '▶' : '📵') + '</span></div>'
+      + '<div class="gallery-item-caption">' + escHtml(m.nom || '') + '</div>'
+      + (!isOnline && isOnlineVideo ? '<div class="gallery-item-offline">Hors-ligne</div>' : '')
+      + '</div>';
+  }
+}).join('');
+}
+
+/* ── Helpers YouTube ─────────────────────────────────── */
+function getYoutubeThumbnail(url) {
+  const id = extractYoutubeId(url);
+  return id ? 'https://img.youtube.com/vi/' + id + '/mqdefault.jpg' : '';
+}
+
+function extractYoutubeId(url) {
+  if (!url) return null;
+  // Short: youtube.com/shorts/ID
+  let m = url.match(/shorts\/([a-zA-Z0-9_-]{11})/);
+  if (m) return m[1];
+  // Standard: youtube.com/watch?v=ID
+  m = url.match(/[?&]v=([a-zA-Z0-9_-]{11})/);
+  if (m) return m[1];
+  // youtu.be/ID
+  m = url.match(/youtu\.be\/([a-zA-Z0-9_-]{11})/);
+  if (m) return m[1];
+  // embed/ID
+  m = url.match(/embed\/([a-zA-Z0-9_-]{11})/);
+  if (m) return m[1];
+  return null;
+}
+
+/* ── Lightbox ────────────────────────────────────────── */
+function openLightbox(idx) {
+  lightboxIndex = idx;
+  const lb = document.getElementById('gallery-lightbox');
+  if (!lb) return;
+  lb.classList.add('open');
+  renderLightboxItem();
+  document.addEventListener('keydown', lightboxKeyHandler);
+}
+
+function closeLightbox() {
+  const lb = document.getElementById('gallery-lightbox');
+  if (lb) lb.classList.remove('open');
+  const med = document.getElementById('lightbox-media');
+  if (med) med.innerHTML = '';
+  document.removeEventListener('keydown', lightboxKeyHandler);
+}
+
+function lightboxKeyHandler(e) {
+  if (e.key === 'ArrowLeft')  lightboxNav(-1);
+  if (e.key === 'ArrowRight') lightboxNav(1);
+  if (e.key === 'Escape')     closeLightbox();
+}
+
+function lightboxNav(dir) {
+  const items = allMedia.filter(m =>
+    galleryFilter === 'tous' ? true :
+    galleryFilter === 'photo' ? m.kind === 'photo' :
+    m.kind === 'video'
+  );
+  const curVisible = items.findIndex((m, i) => allMedia.indexOf(m) === lightboxIndex);
+  const newVisible = (curVisible + dir + items.length) % items.length;
+  lightboxIndex = allMedia.indexOf(items[newVisible]);
+  renderLightboxItem();
+}
+
+function renderLightboxItem() {
+  const m = allMedia[lightboxIndex];
+  if (!m) return;
+  const med  = document.getElementById('lightbox-media');
+  const cap  = document.getElementById('lightbox-caption');
+  if (!med) return;
+
+  if (m.kind === 'photo') {
+    // Image : pointer-events:none empêche le clic droit natif
+    med.innerHTML = '<img src="' + escHtml(m.src) + '" alt="' + escHtml(m.caption || '') + '" draggable="false" oncontextmenu="return false">';
+  } else if (m.kind === 'video') {
+    if (m.stockage === 'en ligne') {
+      const id = extractYoutubeId(m.url);
+      if (id) {
+        // Short YouTube → embed normal (shorts/ID → embed/ID)
+        med.innerHTML = '<iframe src="https://www.youtube.com/embed/' + escHtml(id) + '?autoplay=1&rel=0" allow="autoplay;encrypted-media" allowfullscreen></iframe>';
+      }
+    } else {
+      // Vidéo locale
+      const src = CFG.GITHUB_REPO_PATH + '/data/Videos/' + escHtml(m.dossier || '') + '/' + escHtml(m.nom) + '.mp4';
+      med.innerHTML = '<video src="' + src + '" controls autoplay playsinline controlslist="nodownload" oncontextmenu="return false"></video>';
+    }
+  }
+
+  if (cap) cap.textContent = m.caption || m.nom || '';
+
+  // Afficher/masquer les flèches selon le nb de médias visibles
+  const visCount = allMedia.filter(mm =>
+    galleryFilter === 'tous' ? true :
+    galleryFilter === 'photo' ? mm.kind === 'photo' : mm.kind === 'video'
+  ).length;
+  document.getElementById('lightbox-prev').style.display = visCount > 1 ? 'flex' : 'none';
+  document.getElementById('lightbox-next').style.display = visCount > 1 ? 'flex' : 'none';
+}
+
+/* ── Admin galerie (conservé pour compatibilité) ─────── */
+function renderAdminGallery() {
+  const container = document.getElementById('admin-gallery-list');
+  const countEl   = document.getElementById('admin-pending-count');
+  if (countEl) countEl.textContent = allMedia.length;
+  if (!container) return;
+  container.innerHTML = '<div style="padding:16px;color:var(--ts);font-size:.82rem;text-align:center">'
+    + '📁 La galerie est gérée via les fichiers<br>'
+    + '<code style="font-size:.75rem">data/Images/</code> et '
+    + '<code style="font-size:.75rem">data/Videos/Video.csv</code><br><br>'
+    + '<strong style="color:var(--tq)">' + mediaPhotos.length + ' photo(s) · ' + mediaVideos.length + ' vidéo(s)</strong>'
+    + '</div>';
+}
+
+/* ── Stubs compatibilité ─────────────────────────────── */
+function resetGalleryForm() {}
+function updateAdminBadge() {}
+
+
+/* ══ SHA-256 ══════════════════════════════════════════════ */
+async function sha256(message) {
+  const msgBuffer = new TextEncoder().encode(message);
+  const hashBuffer = await crypto.subtle.digest('SHA-256', msgBuffer);
+  const hashArray = Array.from(new Uint8Array(hashBuffer));
+  return hashArray.map(b => b.toString(16).padStart(2,'0')).join('');
+}
+
+/* Badge admin — FAB supprimé, fonction conservée pour compatibilité */
+
+/* ══ MÉTÉO DYNAMIQUE — Open-Meteo (gratuit, sans clé) ═══ */
+/* ── Compteur de tentatives météo (retry automatique) ─── */
+let _weatherRetryCount = 0;
+const _WEATHER_RETRY_DELAYS = [2*60*1000, 5*60*1000, 10*60*1000]; // 2min, 5min, 10min
+
+async function fetchWeather() {
+  // Coordonnées El Haouaria, Cap Bon
+  const LAT = 37.05, LON = 11.0;
+  const url = `https://api.open-meteo.com/v1/forecast?latitude=${LAT}&longitude=${LON}`
+    + `&current=temperature_2m,apparent_temperature,windspeed_10m,winddirection_10m,`
+    + `weathercode,relativehumidity_2m,uv_index,visibility`
+    + `&windspeed_unit=kmh&timezone=Africa%2FTunis`;
+  try {
+    // Timeout 8s — évite qu'un fetch reste bloqué indéfiniment sur mobile
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 8000);
+    const res = await fetch(url, { signal: controller.signal });
+    clearTimeout(timeoutId);
+    if (!res.ok) {
+      scheduleWeatherRetry();
+      return;
+    }
+    _weatherRetryCount = 0; // succès → réinitialiser le compteur
+    const data = await res.json();
+    const cur = data.current;
+
+    const temp     = Math.round(cur.temperature_2m);
+    const ressenti = Math.round(cur.apparent_temperature);
+    const wind     = Math.round(cur.windspeed_10m);
+    const winddir  = cur.winddirection_10m;
+    const wcode    = cur.weathercode;
+    const hum      = Math.round(cur.relativehumidity_2m);
+    const uv       = Math.round(cur.uv_index ?? 0);
+    const vis      = Math.round((cur.visibility ?? 0) / 1000); // m → km
+
+    // Description météo selon WMO code
+    function wmoDesc(c) {
+      if (c === 0)  return 'Ensoleillé';
+      if (c <= 2)   return 'Peu nuageux';
+      if (c <= 3)   return 'Nuageux';
+      if (c <= 48)  return 'Brouillard';
+      if (c <= 57)  return 'Bruine';
+      if (c <= 67)  return 'Pluie';
+      if (c <= 77)  return 'Neige';
+      if (c <= 82)  return 'Averses';
+      if (c <= 99)  return 'Orageux';
+      return 'Variable';
+    }
+    // WMO icon emoji
+    function wmoIcon(c) {
+      if (c === 0)  return '☀️';
+      if (c <= 2)   return '🌤️';
+      if (c <= 3)   return '☁️';
+      if (c <= 48)  return '🌫️';
+      if (c <= 67)  return '🌧️';
+      if (c <= 77)  return '❄️';
+      if (c <= 82)  return '🌦️';
+      return '⛈️';
+    }
+    // État de la mer selon vitesse du vent (km/h)
+    function merEtat(kmh) {
+      if (kmh < 7)  return 'calme';
+      if (kmh < 20) return 'belle';
+      if (kmh < 31) return 'peu agitée';
+      if (kmh < 41) return 'agitée';
+      if (kmh < 52) return 'forte';
+      return 'très forte';
+    }
+    // Direction du vent en rose des vents
+    function windRose(deg) {
+      const dirs = ['N','NE','E','SE','S','SO','O','NO'];
+      return dirs[Math.round(deg / 45) % 8];
+    }
+    // Niveau UV : classe CSS + label
+    function uvLevel(uv) {
+      if (uv <= 2)  return { cls: 'uv-low',   label: `${uv} faible` };
+      if (uv <= 5)  return { cls: 'uv-mod',   label: `${uv} modéré` };
+      if (uv <= 7)  return { cls: 'uv-high',  label: `${uv} élevé` };
+      if (uv <= 10) return { cls: 'uv-vhigh', label: `${uv} très élevé` };
+      return         { cls: 'uv-ext',   label: `${uv} extrême` };
+    }
+
+    // Température + ressenti
+    const tEl = document.getElementById('w-temp');
+    const rEl = document.getElementById('w-ressenti');
+    if (tEl) tEl.textContent = `${temp}°C`;
+    if (rEl) rEl.textContent = `${ressenti}°C`;
+
+    // Vent + direction
+    const vEl  = document.getElementById('w-vent');
+    const dDir = document.getElementById('w-dir');
+    if (vEl)  vEl.textContent  = `${wind} km/h`;
+    if (dDir) dDir.textContent = windRose(winddir);
+
+    // Mer
+    const mEl = document.getElementById('w-mer');
+    if (mEl) mEl.textContent = merEtat(wind);
+
+    // Humidité
+    const hEl = document.getElementById('w-hum');
+    if (hEl) hEl.textContent = `${hum}%`;
+
+    // UV avec couleur
+    const uvChip = document.getElementById('w-uv-chip');
+    const uvEl   = document.getElementById('w-uv');
+    if (uvEl && uvChip) {
+      const { cls, label } = uvLevel(uv);
+      uvEl.textContent = label;
+      uvChip.className = `weather-chip ${cls}`;
+    }
+
+    // Visibilité
+    const visEl = document.getElementById('w-vis');
+    if (visEl) visEl.textContent = vis >= 10 ? `${vis} km` : vis > 0 ? `${vis} km` : '—';
+
+    // Description + icône (chip en premier)
+    const dEl   = document.getElementById('w-desc');
+    const dChip = dEl?.closest('.weather-chip');
+    if (dChip) dChip.innerHTML = `${wmoIcon(wcode)} <b id="w-desc">${wmoDesc(wcode)}</b>`;
+
+  } catch(e) {
+    // Hors-ligne ou timeout — les valeurs précédentes restent affichées
+    console.warn('[Météo] Échec :', e.message);
+    scheduleWeatherRetry();
+  }
+}
+
+function scheduleWeatherRetry() {
+  if (_weatherRetryCount >= _WEATHER_RETRY_DELAYS.length) return; // max 3 retries
+  const delay = _WEATHER_RETRY_DELAYS[_weatherRetryCount];
+  _weatherRetryCount++;
+  console.log(`[Météo] Retry dans ${delay/60000} min (tentative ${_weatherRetryCount})`);
+  setTimeout(fetchWeather, delay);
+}
+
+/* ══ INIT ══════════════════════════════════════════════════ */
+
+/* ══════════════════════════════════════════════════════════
+   MESSAGES ADMINISTRATEUR
+   ─────────────────────────────────────────────────────────
+   Principe : lecture de /jerbi-guide/data/message.txt
+   • Chargement au démarrage + toutes les 60 secondes
+   • Messages séparés par une ligne vide dans le fichier
+   • Bouton 📢 visible uniquement si au moins 1 message
+   • Popup avec navigation Préc./Suiv. si plusieurs messages
+   • Fichier vide → bouton masqué automatiquement
+   ══════════════════════════════════════════════════════════ */
+
+let _adminMessages   = [];   // tableau des messages parsés
+let _adminMsgIdx     = 0;    // index du message affiché
+const MSG_FILE       = CFG.GITHUB_REPO_PATH + '/data/message.txt';
+const MSG_INTERVAL   = 60000; // rechargement toutes les 60 s
+
+/* ── Chargement + parsing ─────────────────────────────── */
+async function loadAdminMessages() {
+  try {
+    const controller = new AbortController();
+    const tid = setTimeout(() => controller.abort(), 6000);
+    const res = await fetch(MSG_FILE + '?_=' + Date.now(), { signal: controller.signal });
+    clearTimeout(tid);
+    if (!res.ok) { _setAdminMsgVisible([]); return; }
+    const text = await res.text();
+    // Séparer par lignes vides (paragraphes)
+    const msgs = text
+      .split(/\n\s*\n/)
+      .map(m => m.trim())
+      .filter(m => m.length > 0);
+    _setAdminMsgVisible(msgs);
+  } catch(e) {
+    // Hors-ligne ou fichier absent : on masque silencieusement
+    if (e.name !== 'AbortError') console.warn('[MSG] Erreur chargement :', e.message);
+  }
+}
+
+/* ── Mise à jour UI selon les messages chargés ─────────── */
+function _setAdminMsgVisible(msgs) {
+  _adminMessages = msgs;
+  _adminMsgIdx   = 0;
+  const hasMsg   = msgs.length > 0;
+  const count    = msgs.length;
+
+  // FAB flottant
+  const fab = document.getElementById('fab-msg');
+  if (fab) fab.classList.toggle('visible', hasMsg);
+  const fabBadge = document.getElementById('fab-msg-badge');
+  if (fabBadge) fabBadge.textContent = count;
+
+  // Bouton topbar
+  const topBtn = document.getElementById('topbar-msg-btn');
+  if (topBtn) topBtn.style.display = hasMsg ? 'flex' : 'none';
+  const topBadge = document.getElementById('topbar-msg-badge');
+  if (topBadge) {
+    topBadge.textContent = count;
+    topBadge.style.display = count > 0 ? 'flex' : 'none';
+  }
+}
+
+/* ── Ouvrir la popup ──────────────────────────────────── */
+function openMsgPopup() {
+  if (_adminMessages.length === 0) return;
+  _adminMsgIdx = 0;
+  _renderMsgPopup();
+  const ov = document.getElementById('msg-overlay');
+  if (ov) ov.classList.add('visible');
+}
+
+/* ── Fermer la popup ──────────────────────────────────── */
+function closeMsgPopup() {
+  const ov = document.getElementById('msg-overlay');
+  if (ov) ov.classList.remove('visible');
+}
+
+/* ── Navigation Préc./Suiv. ───────────────────────────── */
+function msgNav(dir) {
+  const n = _adminMessages.length;
+  if (n === 0) return;
+  _adminMsgIdx = (_adminMsgIdx + dir + n) % n;
+  _renderMsgPopup();
+}
+
+/* ── Rendu du message courant dans la popup ───────────── */
+function _renderMsgPopup() {
+  const msgs = _adminMessages;
+  const idx  = _adminMsgIdx;
+  const n    = msgs.length;
+
+  const body    = document.getElementById('msg-body');
+  const counter = document.getElementById('msg-counter');
+  const nav     = document.getElementById('msg-nav');
+  const prev    = document.getElementById('msg-prev');
+  const next    = document.getElementById('msg-next');
+  const date    = document.getElementById('msg-date');
+
+  if (body)    body.textContent    = msgs[idx] || '';
+  if (counter) counter.textContent = n > 1 ? `${idx + 1} / ${n}` : '';
+  if (nav)     nav.style.display   = n > 1 ? 'flex' : 'none';
+  if (prev)    prev.disabled       = false; // navigation circulaire
+  if (next)    next.disabled       = false;
+  if (date)    date.textContent    = n > 1
+    ? `Message ${idx + 1} sur ${n} · Annonces Jerbi Explore`
+    : 'Annonce · Jerbi Explore';
+}
+
+/* ═══════════════════════════════════════════════════════════
+   FILET DE SÉCURITÉ ABSOLU — ferme le splash quoi qu'il arrive
+   Indépendant de tout script, image ou réseau.
+   ═══════════════════════════════════════════════════════════ */
+(function() {
+  function forceHideSplash() {
+    var splash = document.getElementById('splash');
+    if (splash) { splash.style.transition = 'none'; splash.classList.add('hide'); }
+    var home = document.getElementById('screen-home');
+    if (home) {
+      document.querySelectorAll('.screen').forEach(function(s){ s.classList.remove('active'); });
+      home.classList.add('active');
+    }
+    document.querySelectorAll('.nav-item').forEach(function(n){
+      n.classList.toggle('active', n.dataset.screen === 'home');
+    });
+  }
+  setTimeout(forceHideSplash, 3000);
+})();
+
+/* Init principale sur DOMContentLoaded — ne dépend pas des images/fonts/réseau */
+document.addEventListener('DOMContentLoaded', function() {
+  // ── 1. Rendu synchrone immédiat (données fallback déjà en mémoire) ──
+  loadFavoris();
+  renderPlaces();
+  refreshCoeur();
+  initSlider();
+
+  // ── 2. Chargement des données réseau (async, non-bloquant) ──
+  loadFromGoogleDrive();
+  setInterval(loadFromGoogleDrive, CFG.REFRESH_INTERVAL_MS);
+
+  // ── 3. Galerie différée : évite 50 requêtes HEAD séquentielles
+  //       qui bloquaient l'affichage au démarrage ──
+  setTimeout(() => {
+    loadGallery(); // async — appelle renderGallery() en interne quand prêt
+  }, 2500);
+
+  // Relancer la galerie si on revient en ligne
+  window.addEventListener('online',  () => renderGallery());
+  window.addEventListener('offline', () => renderGallery());
+
+  // Météo dynamique — chargement initial + refresh toutes les 30 min
+  fetchWeather();
+  setInterval(fetchWeather, 30 * 60 * 1000);
+
+  // Initialiser l'UI d'installation (iOS + Android)
+  initInstallUI();
+  initSponsor();
+
+  // Messages administrateur — chargement initial + refresh 60s
+  loadAdminMessages();
+  setInterval(loadAdminMessages, MSG_INTERVAL);
+
+  // ── Accès admin : triple-clic sur le logo topbar ────────
+  (function initAdminTripleClic() {
+    const btn = document.getElementById('topbar-logo-btn');
+    if (!btn) return;
+    let clicks = 0, timer = null;
+    btn.addEventListener('click', e => {
+      clicks++;
+      if (clicks === 1) {
+        timer = setTimeout(() => { clicks = 0; navigate('home'); }, 500);
+      } else if (clicks === 3) {
+        clearTimeout(timer);
+        clicks = 0;
+        e.stopPropagation();
+        openAdminPanel();
+      }
+    });
+  })();
+
+  // Stocker la date de première visite si absente
+  if (!localStorage.getItem('jerbi_last_visit')) {
+    localStorage.setItem('jerbi_last_visit', new Date(0).toISOString());
+  }
+
+  // Splash — masquer à 800ms après DOMContentLoaded
+  setTimeout(() => {
+    const splash = document.getElementById('splash');
+    if (splash) splash.classList.add('hide');
+    const homeScreen = document.getElementById('screen-home');
+    if (homeScreen && !homeScreen.classList.contains('active')) {
+      document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+      homeScreen.classList.add('active');
+      document.querySelectorAll('.nav-item').forEach(n =>
+        n.classList.toggle('active', n.dataset.screen === 'home'));
+    }
+  }, 800);
+
+  // Service Worker
+  registerServiceWorker();
+
+  // Offline/Online monitoring
+  window.addEventListener('online', () => updateOfflineStatus());
+  window.addEventListener('offline', () => updateOfflineStatus());
+  updateOfflineStatus();
+
+  // Resize
+  window.addEventListener('resize', () => {
+    if (currentScreen === 'exp') updateSlider();
+    if (mapReady && leafletMap) leafletMap.invalidateSize();
+  });
+
+  // Keyboard : fermer la recherche avec Escape
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Escape') {
+      closeSearch();
+      closePartnerModal();
+    }
+  });
+});
+
+/* ══ TOAST ════════════════════════════════════════════════ */
+function showToast(msg, duration) {
+  duration = duration || 2800;
+  let t = document.getElementById('_toast');
+  if (!t) {
+    t = document.createElement('div');
+    t.id = '_toast';
+    t.style.cssText = 'position:fixed;bottom:100px;left:50%;transform:translateX(-50%);'
+      + 'background:var(--bg2);border:1px solid var(--border);color:var(--th);'
+      + 'padding:10px 20px;border-radius:20px;font-size:.82rem;z-index:9999;'
+      + 'box-shadow:0 4px 20px rgba(0,0,0,.4);pointer-events:none;'
+      + 'transition:opacity .3s;white-space:nowrap;max-width:90vw;text-align:center;';
+    document.body.appendChild(t);
+  }
+  t.textContent = msg;
+  t.style.opacity = '1';
+  clearTimeout(t._timer);
+  t._timer = setTimeout(function() { t.style.opacity = '0'; }, duration);
+}
+
+/* ══ ADMIN PANEL ══════════════════════════════════════════ */
+function openAdminPanel() {
+  const overlay  = document.getElementById('admin-overlay');
+  const login    = document.getElementById('admin-login');
+  const content  = document.getElementById('admin-content');
+  const errEl    = document.getElementById('admin-error');
+  const pwdInput = document.getElementById('admin-pwd-input');
+  if (!overlay) return;
+  overlay.classList.add('visible');
+  if (adminUnlocked) {
+    if (login)   login.style.display   = 'none';
+    if (content) content.style.display = 'block';
+    renderAdminGallery();
+  } else {
+    if (login)   login.style.display   = 'block';
+    if (content) content.style.display = 'none';
+    if (errEl)   errEl.textContent     = '';
+    if (pwdInput) pwdInput.value       = '';
+  }
+}
+
+function closeAdminPanel() {
+  const overlay = document.getElementById('admin-overlay');
+  if (overlay) overlay.classList.remove('visible');
+}
+
+async function adminLogin() {
+  const input = document.getElementById('admin-pwd-input');
+  const errEl = document.getElementById('admin-error');
+  if (!input || !errEl) return;
+
+  // Vérification tentatives / lockout
+  const lockoutKey = 'jerbi_admin_lockout';
+  const lockoutData = JSON.parse(localStorage.getItem(lockoutKey) || '{}');
+  const now = Date.now();
+  if (lockoutData.until && now < lockoutData.until) {
+    const remaining = Math.ceil((lockoutData.until - now) / 60000);
+    errEl.textContent = '🔒 Trop de tentatives. Réessayez dans ' + remaining + ' min.';
+    return;
+  }
+
+  const hash = await sha256(input.value.trim());
+  if (hash === CFG.ADMIN_HASH) {
+    adminUnlocked = true;
+    adminLoginAttempts = 0;
+    localStorage.removeItem(lockoutKey);
+    const login   = document.getElementById('admin-login');
+    const content = document.getElementById('admin-content');
+    if (login)   login.style.display   = 'none';
+    if (content) content.style.display = 'block';
+    renderAdminGallery();
+    // Auto-déconnexion après session
+    clearTimeout(adminSessionTimer);
+    adminSessionTimer = setTimeout(function() {
+      adminUnlocked = false;
+      closeAdminPanel();
+    }, CFG.ADMIN_SESSION_MINUTES * 60 * 1000);
+  } else {
+    adminLoginAttempts++;
+    if (adminLoginAttempts >= CFG.ADMIN_MAX_ATTEMPTS) {
+      localStorage.setItem(lockoutKey, JSON.stringify({
+        until: now + CFG.ADMIN_LOCKOUT_MINUTES * 60000
+      }));
+      errEl.textContent = '🔒 Compte verrouillé ' + CFG.ADMIN_LOCKOUT_MINUTES + ' min.';
+    } else {
+      errEl.textContent = '❌ Mot de passe incorrect ('
+        + adminLoginAttempts + '/' + CFG.ADMIN_MAX_ATTEMPTS + ')';
+    }
+    input.value = '';
+  }
+}
+</script>
+
+
+<!-- ADMIN PANEL OVERLAY -->
+<div id="admin-overlay" onclick="if(event.target===this)closeAdminPanel()">
+  <div id="admin-panel">
+    <div id="admin-header">
+      <div id="admin-header-title">🔐 Admin Modération</div>
+      <div class="admin-close" onclick="closeAdminPanel()">✕</div>
+    </div>
+
+    <!-- LOGIN -->
+    <div id="admin-login">
+      <p>Accès réservé à l'équipe Jerbi Explore.<br>Entrez le mot de passe pour modérer les photos.</p>
+      <input type="password" id="admin-pwd-input" placeholder="••••••••"
+        onkeydown="if(event.key==='Enter')adminLogin()">
+      <div id="admin-error"></div>
+      <button id="admin-login-btn" onclick="adminLogin()">🔓 Accéder</button>
+    </div>
+
+    <!-- CONTENT -->
+    <div id="admin-content" style="display:none">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
+        <div style="font-size:.78rem;color:var(--ts)">
+          Médias en galerie : <strong id="admin-pending-count" style="color:var(--tq)">0</strong>
+        </div>
+        <div style="font-size:.7rem;color:var(--tm);cursor:pointer;" onclick="adminUnlocked=false;closeAdminPanel()">
+          🔒 Se déconnecter
+        </div>
+      </div>
+      <div id="admin-gallery-list"></div>
+    </div>
+  </div>
+</div>
+
+<!-- badge admin intégré dans le script principal -->
+
+<!-- ══ JERBI CHAT — Guide IA hybride (local + Groq) ══ -->
+<script src="/jerbi-guide/jerbi-chat.js" defer></script>
+
+</body>
+</html>
