@@ -84,6 +84,110 @@ body{
 }
 
 
+/* ══ E-SHOP EXTENSIONS ══════════════════════════════════ */
+.shop-toolbar{display:flex;gap:8px;padding:8px 12px;border-bottom:1px solid var(--border);align-items:center;}
+.shop-search{
+  flex:1;background:var(--cardh);border:1px solid var(--border);
+  border-radius:10px;padding:7px 12px;font-size:.82rem;color:var(--tb);
+  outline:none;
+}
+.shop-search:focus{border-color:var(--tq);}
+.shop-sort-btn{
+  background:var(--cardh);border:1px solid var(--border);
+  border-radius:10px;padding:7px 10px;font-size:.78rem;color:var(--tb);
+  cursor:pointer;white-space:nowrap;
+}
+.shop-sort-btn:active{opacity:.7;}
+.shop-badge-tag{
+  position:absolute;top:8px;left:8px;
+  font-size:.58rem;font-weight:700;padding:3px 8px;border-radius:20px;
+  backdrop-filter:blur(4px);
+}
+.shop-badge-tag.nouveau{background:rgba(74,222,128,.9);color:#000;}
+.shop-badge-tag.promo{background:rgba(251,146,60,.9);color:#000;}
+.shop-fav-btn{
+  position:absolute;bottom:8px;right:8px;
+  background:rgba(0,0,0,.5);border:none;border-radius:50%;
+  width:30px;height:30px;cursor:pointer;font-size:.9rem;
+  display:flex;align-items:center;justify-content:center;
+  backdrop-filter:blur(4px);transition:transform .15s;
+}
+.shop-fav-btn:active{transform:scale(.85);}
+/* Panier FAB */
+#shop-cart-fab{
+  position:fixed;bottom:80px;left:16px;z-index:8000;
+  width:52px;height:52px;border-radius:50%;
+  background:var(--tq);border:none;cursor:pointer;
+  display:none;align-items:center;justify-content:center;
+  font-size:1.3rem;box-shadow:0 4px 16px rgba(212,168,67,.5);
+  transition:transform .15s;
+}
+#shop-cart-fab:active{transform:scale(.92);}
+#shop-cart-fab-badge{
+  position:absolute;top:-4px;right:-4px;
+  background:#e74c3c;color:#fff;font-size:.6rem;font-weight:700;
+  border-radius:50%;width:18px;height:18px;
+  display:flex;align-items:center;justify-content:center;
+  border:2px solid var(--bg);
+}
+@media(min-width:800px){#shop-cart-fab{bottom:24px;left:calc(260px + 16px);}}
+/* Modal panier */
+#shop-cart-overlay{
+  display:none;position:fixed;inset:0;z-index:9100;
+  background:rgba(0,0,0,.72);backdrop-filter:blur(6px);
+  align-items:flex-end;justify-content:center;
+}
+#shop-cart-overlay.open{display:flex;}
+#shop-cart-modal{
+  background:var(--card);border-radius:20px 20px 0 0;
+  width:100%;max-width:560px;max-height:80vh;overflow-y:auto;
+  padding:20px 20px 32px;
+}
+#shop-cart-modal::-webkit-scrollbar{width:4px;}
+#shop-cart-modal::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px;}
+.cart-title{font-family:'Playfair Display',serif;font-size:1.1rem;color:var(--th);margin-bottom:16px;}
+.cart-item{display:flex;gap:12px;align-items:center;padding:10px 0;border-bottom:1px solid var(--border);}
+.cart-item-emoji{font-size:1.8rem;width:40px;text-align:center;flex-shrink:0;}
+.cart-item-name{flex:1;font-size:.82rem;font-weight:600;color:var(--th);}
+.cart-item-prix{font-size:.82rem;color:var(--tq);font-weight:700;white-space:nowrap;}
+.cart-item-qty{display:flex;align-items:center;gap:8px;margin-top:4px;}
+.cart-qty-btn{
+  width:24px;height:24px;border-radius:50%;
+  background:var(--cardh);border:1px solid var(--border);
+  color:var(--th);font-size:.9rem;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;
+}
+.cart-qty-val{font-size:.82rem;font-weight:600;color:var(--th);min-width:16px;text-align:center;}
+.cart-total{
+  display:flex;justify-content:space-between;align-items:center;
+  padding:14px 0 0;font-size:.9rem;font-weight:700;color:var(--th);
+}
+.cart-total-val{color:var(--tq);font-size:1.1rem;}
+.cart-wa-btn{
+  width:100%;margin-top:16px;padding:14px;border-radius:12px;
+  background:linear-gradient(135deg,#25d366,#128c7e);
+  color:#fff;font-weight:700;font-size:.9rem;border:none;cursor:pointer;
+}
+.cart-clear-btn{
+  width:100%;margin-top:8px;padding:10px;border-radius:12px;
+  background:transparent;border:1px solid var(--border);
+  color:var(--tm);font-size:.8rem;cursor:pointer;
+}
+/* Modal photos multi */
+.shop-modal-gallery{display:flex;gap:6px;overflow-x:auto;padding:0 20px 12px;}
+.shop-modal-gallery::-webkit-scrollbar{display:none;}
+.shop-modal-gallery-thumb{
+  width:64px;height:64px;flex-shrink:0;border-radius:8px;
+  object-fit:cover;cursor:pointer;opacity:.6;
+  border:2px solid transparent;transition:opacity .15s,border-color .15s;
+}
+.shop-modal-gallery-thumb.active{opacity:1;border-color:var(--tq);}
+/* Video produit */
+.shop-modal-video{
+  width:100%;margin:0 0 12px;border-radius:0;
+  aspect-ratio:16/9;background:#000;
+}
+
 /* ══ E-SHOP ═════════════════════════════════════════════ */
 #screen-shop{padding:0;}
 .shop-header{padding:20px 16px 12px;border-bottom:1px solid var(--border);}
@@ -402,6 +506,16 @@ body.light .home-hero{background:linear-gradient(135deg,#5a3e00,#a07020);}
 .quick-btn-icon{font-size:1.4rem;}
 .quick-btn-label{font-size:.78rem; font-weight:600; color:var(--th); line-height:1.2;}
 .quick-btn-sub{font-size:.65rem; color:var(--tm);}
+
+
+/* Exp slider — multi-cartes configurables */
+.exp-card-img{
+  width:100%;height:160px;object-fit:cover;display:block;
+}
+.exp-card-img-placeholder{
+  height:160px;display:flex;align-items:center;justify-content:center;
+  font-size:4rem;background:linear-gradient(135deg,rgba(212,168,67,.12),rgba(244,132,95,.08));
+}
 
 /* ══ EXPÉRIENCES — SLIDER ══ */
 .exp-hero{
@@ -1560,54 +1674,13 @@ body.light .event-card.past .event-month{color:var(--tm);}
             <div class="exp-hero-sub">Des moments inoubliables</div>
           </div>
 
-          <!-- SLIDER -->
+          <!-- SLIDER DYNAMIQUE -->
           <div class="exp-slider-wrap">
             <div class="exp-slider-nav prev" id="exp-prev" onclick="sliderNav(-1)">‹</div>
             <div class="exp-slider-nav next" id="exp-next" onclick="sliderNav(1)">›</div>
             <div class="exp-slider-overflow" id="exp-slider-overflow">
               <div class="exp-slider-track" id="exp-slider-track">
-                <!-- EXP 1 -->
-                <div class="exp-card" onclick="showFiche({id:'e1',emoji:'🏝️',nom:'Journée Crique · Haouaria',categorie:'activite',ville:'El Haouaria',description:'Une journée inoubliable dans les criques sauvages du Cap Bon. Accès exclusif à des sites inaccessibles par la route, déjeuner local inclus, eau turquoise garantie.',citation_haykel:'Le spot le plus secret du Cap Bon — eau cristalline et criques vierges réservées à nos clients.',horaires:'Départ 9h · Retour 17h',prix:'65 TND/pers.',tel:'+21624055055',lien:'https://jerbievents.com/activite/3'})">
-                  <div class="exp-card-media" style="background:linear-gradient(135deg,rgba(80,50,0,.25),rgba(212,168,67,.15))">
-                    🏝️<div class="exp-card-rating">⭐ <span>4.9</span> (128)</div>
-                  </div>
-                  <div class="exp-card-body">
-                    <div class="exp-card-name">Journée Crique · Haouaria</div>
-                    <div class="exp-card-desc">Criques sauvages, accès exclusif, déjeuner local inclus.</div>
-                    <div class="exp-card-footer">
-                      <div class="exp-price">Dès <b>65 TND</b>/pers.</div>
-                      <button class="btn-reserve" onclick="event.stopPropagation();window.open('https://jerbievents.com/activite/3','_blank')">Réserver →</button>
-                    </div>
-                  </div>
-                </div>
-                <!-- EXP 2 -->
-                <div class="exp-card" onclick="showFiche({id:'e2',emoji:'⛵',nom:'Balade en Mer',categorie:'activite',ville:'Cap Bon',description:'Votre bateau, votre itinéraire. Haykel vous guide vers les spots secrets inaccessibles par la route. Privatisation possible.',citation_haykel:'Les criques que nous visitons ne sont accessibles que depuis la mer — un privilège exclusif.',horaires:'Demi-journée ou journée complète',prix:'120 TND/pers.',tel:'+21624055055',lien:'https://jerbievents.com/activite/5'})">
-                  <div class="exp-card-media" style="background:linear-gradient(135deg,rgba(26,82,118,.25),rgba(41,128,185,.15))">
-                    ⛵<div class="exp-card-rating">⭐ <span>4.8</span> (89)</div>
-                  </div>
-                  <div class="exp-card-body">
-                    <div class="exp-card-name">Balade en Mer · Privatisation</div>
-                    <div class="exp-card-desc">Spots secrets, privatisation possible pour groupes et incentives.</div>
-                    <div class="exp-card-footer">
-                      <div class="exp-price">Dès <b>120 TND</b>/pers.</div>
-                      <button class="btn-reserve" onclick="event.stopPropagation();window.open('https://jerbievents.com/activite/5','_blank')">Réserver →</button>
-                    </div>
-                  </div>
-                </div>
-                <!-- EXP 3 -->
-                <div class="exp-card" onclick="showFiche({id:'e3',emoji:'🏕️',nom:'Camping Expérience',categorie:'activite',ville:'Cap Bon',description:'Bivouac dans un cadre naturel exceptionnel. Repas du soir, feu de camp, lever de soleil sur mer inclus. Matériel fourni.',citation_haykel:'Dormir sous les étoiles avec la mer à vos pieds — une expérience qui change la vie.',horaires:'Départ 16h · Retour lendemain 10h',prix:'85 TND/pers.',tel:'+21624055055',lien:'https://jerbievents.com/activite/11'})">
-                  <div class="exp-card-media" style="background:linear-gradient(135deg,rgba(30,77,43,.25),rgba(39,174,96,.15))">
-                    🏕️<div class="exp-card-rating">⭐ <span>4.7</span> (42)</div>
-                  </div>
-                  <div class="exp-card-body">
-                    <div class="exp-card-name">Camping Expérience</div>
-                    <div class="exp-card-desc">Nuit sous les étoiles, feu de camp, lever de soleil sur mer.</div>
-                    <div class="exp-card-footer">
-                      <div class="exp-price">Dès <b>85 TND</b>/pers.</div>
-                      <button class="btn-reserve" onclick="event.stopPropagation();window.open('https://jerbievents.com/activite/11','_blank')">Réserver →</button>
-                    </div>
-                  </div>
-                </div>
+                <!-- Cartes chargées dynamiquement via loadExperiences() -->
               </div>
             </div>
             <div class="exp-dots" id="exp-dots"></div>
@@ -1769,12 +1842,20 @@ body.light .event-card.past .event-month{color:var(--tm);}
         <div class="screen" id="screen-shop">
           <div class="shop-header">
             <h2>🛒 Boutique Cap Bon</h2>
-            <p>Produits locaux &amp; artisanaux — livraison disponible</p>
+            <p id="shop-count-label">Produits locaux &amp; artisanaux</p>
           </div>
+          <!-- Filtres catégories -->
           <div class="shop-filters" id="shop-filters">
-            <div class="filter-pill active" onclick="filterShop('tous',this)">Tous</div>
-            <div class="filter-pill" onclick="filterShop('disponible',this)">✅ Disponible</div>
-            <div class="filter-pill" onclick="filterShop('indisponible',this)">⏳ Épuisé</div>
+            <div class="filter-pill active" onclick="filterShopCat('tous',this)">Tous</div>
+            <div class="filter-pill" onclick="filterShopCat('alimentaire',this)">🍯 Alimentaire</div>
+            <div class="filter-pill" onclick="filterShopCat('cosmétique',this)">🌿 Cosmétique</div>
+            <div class="filter-pill" onclick="filterShopCat('artisanat',this)">🏺 Artisanat</div>
+            <div class="filter-pill" onclick="filterShopCat('coffret',this)">🎁 Coffrets</div>
+          </div>
+          <!-- Toolbar : recherche + tri + dispo -->
+          <div class="shop-toolbar">
+            <input class="shop-search" id="shop-search" type="search" placeholder="🔍 Rechercher un produit…" oninput="renderShop()" />
+            <div class="shop-sort-btn" id="shop-sort-btn" onclick="toggleShopSort(this)">Prix ↑</div>
           </div>
           <div class="shop-grid" id="shop-grid">
             <div style="grid-column:1/-1;text-align:center;padding:40px;color:var(--tm)">
@@ -1789,6 +1870,30 @@ body.light .event-card.past .event-month{color:var(--tm);}
           <div id="shop-modal">
             <button class="shop-modal-close" onclick="closeShopModal()">✕</button>
             <div id="shop-modal-inner"></div>
+          </div>
+        </div>
+
+        <!-- FAB Panier -->
+        <button id="shop-cart-fab" onclick="openCart()">
+          🛒<div id="shop-cart-fab-badge">0</div>
+        </button>
+
+        <!-- Modal Panier -->
+        <div id="shop-cart-overlay" onclick="if(event.target===this)closeCart()">
+          <div id="shop-cart-modal">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+              <div class="cart-title">🛒 Mon panier</div>
+              <button onclick="closeCart()" style="background:none;border:none;color:var(--tm);font-size:1.2rem;cursor:pointer">✕</button>
+            </div>
+            <div id="cart-items-list"></div>
+            <div class="cart-total">
+              <span>Total</span>
+              <span class="cart-total-val" id="cart-total-val">0 DT</span>
+            </div>
+            <button class="cart-wa-btn" onclick="sendCartWhatsApp()">
+              📲 Commander sur WhatsApp
+            </button>
+            <button class="cart-clear-btn" onclick="clearCart()">🗑️ Vider le panier</button>
           </div>
         </div>
 
@@ -1818,7 +1923,7 @@ body.light .event-card.past .event-month{color:var(--tm);}
       </div>
 
     </div><!-- /app -->
-    <div id="version-footer">v3.1.0 · Jerbi Explore</div>
+    <div id="version-footer">v3.2.0 · Jerbi Explore</div>
   </div><!-- /main-content -->
 </div><!-- /root -->
 
@@ -2044,7 +2149,12 @@ function navigate(id) {
   if (id === 'adresses') renderPartenaires();
   if (id === 'agenda') renderEvenements();
   if (id === 'gallery') { if (!galleryLoaded) loadGallery(); else renderGallery(); }
-  if (id === 'shop') { if (!shopLoaded) loadShop(); else renderShop(); }
+  if (id === 'shop') {
+    if (!shopLoaded) loadShop(); else renderShop();
+    setTimeout(updateCartFab, 50);
+  }
+  if (id === 'exp' && !expLoaded) loadExperiences();
+  if (id !== 'shop') { const fab = document.getElementById('shop-cart-fab'); if (fab) fab.style.display = 'none'; }
   // Analytics: compter les visites par écran
   trackScreenVisit(id);
 }
@@ -2293,17 +2403,29 @@ function showFiche(p) {
   navigate('fiche');
 }
 
-/* ══ EXP SLIDER ══════════════════════════════════════════ */
+/* ══ EXP SLIDER — multi-cartes configurable ══════════════ */
+function getExpCardsCount() {
+  const isMobile = window.innerWidth < 640;
+  if (isMobile) return 1;
+  const cfg = (typeof APP_CONFIG !== 'undefined' && APP_CONFIG.EXP_CARDS_COUNT)
+    ? APP_CONFIG.EXP_CARDS_COUNT : (CFG.EXP_CARDS_COUNT || 3);
+  return Math.max(1, Math.min(5, parseInt(cfg) || 3));
+}
+
 function initSlider() {
   const cards = document.querySelectorAll('#exp-slider-track .exp-card');
   const n = cards.length;
   expIdx = 0;
   const overflow = document.getElementById('exp-slider-overflow');
-  if (!overflow) return;
-  cards.forEach(c => c.style.width = overflow.offsetWidth + 'px');
+  if (!overflow || !n) return;
+  const count = getExpCardsCount();
+  const gap = 14;
+  const cardW = Math.floor((overflow.offsetWidth - gap * (count - 1)) / count);
+  cards.forEach(c => { c.style.width = cardW + 'px'; c.style.flexShrink = '0'; });
   const dots = document.getElementById('exp-dots');
-  if (dots) dots.innerHTML = Array.from({length:n}, (_,i) =>
-    `<div class="exp-dot${i===0?' active':''}" onclick="goSlide(${i})"></div>`).join('');
+  const maxIdx = Math.max(0, n - count);
+  if (dots) dots.innerHTML = Array.from({length: maxIdx + 1}, (_, i) =>
+    '<div class="exp-dot' + (i === 0 ? ' active' : '') + '" onclick="goSlide(' + i + ')"></div>').join('');
   updateSlider();
   let startX = 0;
   const track = document.getElementById('exp-slider-track');
@@ -2316,22 +2438,34 @@ function initSlider() {
 }
 function sliderNav(dir) {
   const n = document.querySelectorAll('#exp-slider-track .exp-card').length;
-  expIdx = Math.max(0, Math.min(n - 1, expIdx + dir));
+  const count = getExpCardsCount();
+  const maxIdx = Math.max(0, n - count);
+  expIdx = Math.max(0, Math.min(maxIdx, expIdx + dir));
   updateSlider();
 }
-function goSlide(i) { expIdx = i; updateSlider(); }
-function updateSlider() {
+function goSlide(i) {
   const n = document.querySelectorAll('#exp-slider-track .exp-card').length;
+  const count = getExpCardsCount();
+  expIdx = Math.max(0, Math.min(Math.max(0, n - count), i));
+  updateSlider();
+}
+function updateSlider() {
+  const cards = document.querySelectorAll('#exp-slider-track .exp-card');
+  const n = cards.length;
   const overflow = document.getElementById('exp-slider-overflow');
-  if (!overflow) return;
-  const w = overflow.offsetWidth + 14;
+  if (!overflow || !n) return;
+  const count = getExpCardsCount();
+  const gap = 14;
+  const cardW = Math.floor((overflow.offsetWidth - gap * (count - 1)) / count);
+  const w = cardW + gap;
   const track = document.getElementById('exp-slider-track');
-  if (track) track.style.transform = `translateX(-${expIdx * w}px)`;
-  document.querySelectorAll('.exp-dot').forEach((d,i) => d.classList.toggle('active', i === expIdx));
+  if (track) track.style.transform = 'translateX(-' + (expIdx * w) + 'px)';
+  const maxIdx = Math.max(0, n - count);
+  document.querySelectorAll('.exp-dot').forEach((d, i) => d.classList.toggle('active', i === expIdx));
   const prev = document.getElementById('exp-prev');
   const next = document.getElementById('exp-next');
   if (prev) prev.classList.toggle('disabled', expIdx === 0);
-  if (next) next.classList.toggle('disabled', expIdx === n - 1);
+  if (next) next.classList.toggle('disabled', expIdx >= maxIdx);
 }
 
 /* ══ COUP DE CŒUR ════════════════════════════════════════ */
@@ -3933,13 +4067,122 @@ function showToast(msg, duration) {
 
 /* ══ ADMIN PANEL ══════════════════════════════════════════ */
 /* ══════════════════════════════════════════════════════
-   E-SHOP — Boutique Cap Bon
-   Lecture depuis data/e_shop/produits.csv
-   Photos depuis data/e_shop/<filename>
+   E-SHOP — Boutique Cap Bon v2
+   data/e_shop/produits.csv (sep ;)
+   Colonnes: id;nom;categorie;disponibilite;prix;origines;
+             composition;description;badge;affichage;
+             photo;photos;video;tags
 ══════════════════════════════════════════════════════ */
 let shopLoaded = false;
 let allProduits = [];
-let currentShopFilter = 'tous';
+let currentShopCat = 'tous';
+let shopSortAsc = true;
+let shopCart = JSON.parse(localStorage.getItem('jerbi_cart') || '[]');
+
+function saveCart() {
+  localStorage.setItem('jerbi_cart', JSON.stringify(shopCart));
+  updateCartFab();
+}
+
+function updateCartFab() {
+  const fab = document.getElementById('shop-cart-fab');
+  const badge = document.getElementById('shop-cart-fab-badge');
+  const total = shopCart.reduce((s, i) => s + i.qty, 0);
+  if (fab) fab.style.display = total > 0 && currentScreen === 'shop' ? 'flex' : 'none';
+  if (badge) badge.textContent = total;
+}
+
+function addToCart(p) {
+  const existing = shopCart.find(i => i.id === p.id);
+  if (existing) {
+    existing.qty++;
+  } else {
+    shopCart.push({ id: p.id, nom: p.nom, prix: p.prix, emoji: p.emoji || '🛍️', qty: 1 });
+  }
+  saveCart();
+  showToast('✅ Ajouté au panier — ' + (p.nom||'').substring(0,25));
+}
+
+function removeFromCart(id) {
+  shopCart = shopCart.filter(i => i.id !== id);
+  saveCart();
+  renderCartModal();
+}
+
+function changeQty(id, delta) {
+  const item = shopCart.find(i => i.id === id);
+  if (!item) return;
+  item.qty = Math.max(0, item.qty + delta);
+  if (item.qty === 0) shopCart = shopCart.filter(i => i.id !== id);
+  saveCart();
+  renderCartModal();
+}
+
+function clearCart() {
+  if (!confirm('Vider le panier ?')) return;
+  shopCart = [];
+  saveCart();
+  closeCart();
+}
+
+function openCart() {
+  renderCartModal();
+  document.getElementById('shop-cart-overlay').classList.add('open');
+}
+
+function closeCart() {
+  document.getElementById('shop-cart-overlay').classList.remove('open');
+}
+
+function renderCartModal() {
+  const el = document.getElementById('cart-items-list');
+  const totalEl = document.getElementById('cart-total-val');
+  if (!el) return;
+  if (!shopCart.length) {
+    el.innerHTML = '<div style="text-align:center;padding:24px;color:var(--tm);font-size:.85rem">Votre panier est vide 🛒</div>';
+    if (totalEl) totalEl.textContent = '0 DT';
+    return;
+  }
+  let total = 0;
+  el.innerHTML = shopCart.map(item => {
+    const priceNum = parseFloat((item.prix || '0').replace(/[^\d.,]/g, '').replace(',', '.')) || 0;
+    const lineTotal = priceNum * item.qty;
+    total += lineTotal;
+    return `<div class="cart-item">
+      <div class="cart-item-emoji">${escHtml(item.emoji)}</div>
+      <div style="flex:1">
+        <div class="cart-item-name">${escHtml(item.nom)}</div>
+        <div class="cart-item-qty">
+          <div class="cart-qty-btn" onclick="changeQty('${item.id}',-1)">−</div>
+          <div class="cart-qty-val">${item.qty}</div>
+          <div class="cart-qty-btn" onclick="changeQty('${item.id}',1)">+</div>
+          <div style="margin-left:4px;font-size:.7rem;color:var(--tm)">${escHtml(item.prix)}</div>
+        </div>
+      </div>
+      <div class="cart-item-prix">${lineTotal.toFixed(2)} DT</div>
+    </div>`;
+  }).join('');
+  if (totalEl) totalEl.textContent = total.toFixed(2) + ' DT';
+}
+
+function sendCartWhatsApp() {
+  if (!shopCart.length) return;
+  const wa = (typeof APP_CONFIG !== 'undefined' && APP_CONFIG.SHOP_WHATSAPP) ? APP_CONFIG.SHOP_WHATSAPP : (CFG.SHOP_WHATSAPP || '');
+  let msg = `🛒 *Commande Jerbi Explore \u2014 Boutique Cap Bon*\n\n`;
+  let total = 0;
+  shopCart.forEach(item => {
+    const priceNum = parseFloat((item.prix || '0').replace(/[^\d.,]/g, '').replace(',', '.')) || 0;
+    msg += `• ${item.emoji} *${item.nom}* × ${item.qty} → ${(priceNum * item.qty).toFixed(2)} DT
+`;
+    total += priceNum * item.qty;
+  });
+    msg += `\n\u{1F4B0} *Total estimé : ${total.toFixed(2)} DT*\n\nMerci de confirmer la disponibilité et les modalités de livraison.`;
+  if (!wa) {
+    showToast('⚠️ Numéro WhatsApp non configuré dans config.js');
+    return;
+  }
+  window.open('https://wa.me/' + wa + '?text=' + encodeURIComponent(msg), '_blank');
+}
 
 async function loadShop() {
   const grid = document.getElementById('shop-grid');
@@ -3949,54 +4192,69 @@ async function loadShop() {
     if (!resp.ok) throw new Error('HTTP ' + resp.status);
     const text = await resp.text();
     const result = Papa.parse(text, {
-      header: true,
-      skipEmptyLines: true,
-      delimiter: ';',
+      header: true, skipEmptyLines: true, delimiter: ';',
       transformHeader: h => h.trim()
     });
     allProduits = (result.data || []).filter(p => (p.affichage || '').trim().toUpperCase() === 'OUI');
     shopLoaded = true;
     renderShop();
   } catch(e) {
-    console.warn('[Shop] Erreur chargement CSV:', e);
-    if (grid) grid.innerHTML = `<div style="grid-column:1/-1;text-align:center;padding:40px;color:var(--tm)">
-      <div style="font-size:2rem;margin-bottom:8px">⚠️</div>
-      <div style="font-size:.85rem">Produits non disponibles hors ligne</div>
-    </div>`;
+    console.warn('[Shop] Erreur CSV:', e);
+    if (grid) grid.innerHTML = `<div style="grid-column:1/-1;text-align:center;padding:40px;color:var(--tm)"><div style="font-size:2rem;margin-bottom:8px">⚠️</div><div style="font-size:.85rem">Boutique non disponible hors ligne</div></div>`;
   }
 }
 
-function filterShop(filter, el) {
-  currentShopFilter = filter;
+function filterShopCat(cat, el) {
+  currentShopCat = cat;
   document.querySelectorAll('#shop-filters .filter-pill').forEach(p => p.classList.remove('active'));
   if (el) el.classList.add('active');
   renderShop();
 }
 
+function toggleShopSort(el) {
+  shopSortAsc = !shopSortAsc;
+  if (el) el.textContent = 'Prix ' + (shopSortAsc ? '↑' : '↓');
+  renderShop();
+}
+
 function renderShop() {
   const grid = document.getElementById('shop-grid');
+  const countLabel = document.getElementById('shop-count-label');
   if (!grid) return;
   const BASE = (CFG.GITHUB_REPO_PATH || '') + '/data/e_shop/';
-  let produits = allProduits.filter(p => {
-    if (currentShopFilter === 'disponible') return (p.disponibilite || '').toUpperCase() === 'OUI';
-    if (currentShopFilter === 'indisponible') return (p.disponibilite || '').toUpperCase() !== 'OUI';
+  const search = (document.getElementById('shop-search') || {}).value || '';
+  const sq = search.trim().toLowerCase();
+  let list = allProduits.filter(p => {
+    if (currentShopCat !== 'tous' && (p.categorie || '').trim().toLowerCase() !== currentShopCat) return false;
+    if (sq && !(p.nom || '').toLowerCase().includes(sq) && !(p.tags || '').toLowerCase().includes(sq)) return false;
     return true;
   });
-  if (!produits.length) {
+  list = list.slice().sort((a, b) => {
+    const pa = parseFloat((a.prix || '0').replace(/[^\d.,]/g, '').replace(',', '.')) || 0;
+    const pb = parseFloat((b.prix || '0').replace(/[^\d.,]/g, '').replace(',', '.')) || 0;
+    return shopSortAsc ? pa - pb : pb - pa;
+  });
+  if (countLabel) countLabel.textContent = list.length + ' produit' + (list.length > 1 ? 's' : '') + ' · Cap Bon';
+  if (!list.length) {
     grid.innerHTML = `<div style="grid-column:1/-1;text-align:center;padding:40px;color:var(--tm);font-size:.85rem">Aucun produit trouvé</div>`;
     return;
   }
-  grid.innerHTML = produits.map(p => {
+  const shopFavs = JSON.parse(localStorage.getItem('jerbi_shop_favs') || '{}');
+  grid.innerHTML = list.map(p => {
     const dispo = (p.disponibilite || '').toUpperCase() === 'OUI';
     const photo = (p.photo || '').trim();
-    const imgHtml = photo
-      ? `<img src="${escHtml(BASE + photo)}" alt="${escHtml(p.nom)}" loading="lazy" onerror="this.parentElement.innerHTML='🛍️'">`
-      : '🛍️';
+    const badge = (p.badge || '').trim();
+    const isFav = !!shopFavs[p.id];
     const sk = storeItem(p);
+    const imgHtml = photo
+      ? `<img src="${escHtml(BASE + photo)}" alt="${escHtml(p.nom)}" loading="lazy" style="width:100%;height:100%;object-fit:cover" onerror="this.parentElement.innerHTML='🛍️'">`
+      : '🛍️';
     return `<div class="shop-card" onclick="openShopModal(getItem('${sk}'))">
       <div class="shop-card-img">
         ${imgHtml}
         <div class="shop-badge-dispo ${dispo ? 'dispo' : 'indispo'}">${dispo ? '● Dispo' : '● Épuisé'}</div>
+        ${badge ? `<div class="shop-badge-tag ${badge.toLowerCase()}">${escHtml(badge)}</div>` : ''}
+        <button class="shop-fav-btn" onclick="event.stopPropagation();toggleShopFav('${escHtml(p.id)}',this)">${isFav ? '❤️' : '🤍'}</button>
       </div>
       <div class="shop-card-body">
         <div class="shop-card-name">${escHtml(p.nom || '')}</div>
@@ -4005,6 +4263,15 @@ function renderShop() {
       </div>
     </div>`;
   }).join('');
+  updateCartFab();
+}
+
+function toggleShopFav(id, btn) {
+  const favs = JSON.parse(localStorage.getItem('jerbi_shop_favs') || '{}');
+  favs[id] = !favs[id];
+  if (!favs[id]) delete favs[id];
+  localStorage.setItem('jerbi_shop_favs', JSON.stringify(favs));
+  if (btn) btn.textContent = favs[id] ? '❤️' : '🤍';
 }
 
 function openShopModal(p) {
@@ -4014,46 +4281,147 @@ function openShopModal(p) {
   const BASE = (CFG.GITHUB_REPO_PATH || '') + '/data/e_shop/';
   const dispo = (p.disponibilite || '').toUpperCase() === 'OUI';
   const photo = (p.photo || '').trim();
+  const photosExtra = (p.photos || '').split('|').map(s => s.trim()).filter(Boolean);
+  const allPhotos = photo ? [photo, ...photosExtra] : photosExtra;
+  const video = (p.video || '').trim();
   const wa = (CFG.SHOP_WHATSAPP || '');
+  const sk = storeItem(p);
+
+  // Galerie photos
+  let galleryHtml = '';
+  if (allPhotos.length > 1) {
+    galleryHtml = `<div class="shop-modal-gallery" id="smg-${escHtml(p.id)}">` +
+      allPhotos.map((ph, i) =>
+        `<img class="shop-modal-gallery-thumb${i===0?' active':''}" src="${escHtml(BASE+ph)}" loading="lazy"
+          onclick="switchShopModalPhoto('${escHtml(BASE+ph)}','smg-${escHtml(p.id)}',this)">`
+      ).join('') + '</div>';
+  }
+
+  // Vidéo
+  let videoHtml = '';
+  if (video) {
+    const isYT = video.includes('youtube.com') || video.includes('youtu.be');
+    if (isYT) {
+      const ytId = video.match(/(?:v=|youtu\.be\/|shorts\/)([a-zA-Z0-9_-]{11})/)?.[1] || '';
+      videoHtml = ytId ? `<iframe class="shop-modal-video" src="https://www.youtube.com/embed/${ytId}" frameborder="0" allowfullscreen loading="lazy"></iframe>` : '';
+    } else {
+      videoHtml = `<video class="shop-modal-video" controls controlslist="nodownload" preload="none"><source src="${escHtml(BASE+video)}"></video>`;
+    }
+  }
+
+  const mainImgSrc = allPhotos.length ? BASE + allPhotos[0] : '';
+
   inner.innerHTML = `
-    ${photo
-      ? `<img class="shop-modal-img" src="${escHtml(BASE + photo)}" alt="${escHtml(p.nom)}" onerror="this.outerHTML='<div class=shop-modal-img-placeholder>🛍️</div>'">`
+    ${mainImgSrc
+      ? `<img class="shop-modal-img" id="shop-modal-main-img" src="${escHtml(mainImgSrc)}" alt="${escHtml(p.nom)}" onerror="this.outerHTML='<div class=shop-modal-img-placeholder>🛍️</div>'">`
       : `<div class="shop-modal-img-placeholder">🛍️</div>`}
+    ${galleryHtml}
+    ${videoHtml}
     <div class="shop-modal-body">
       <div class="shop-modal-title">${escHtml(p.nom || '')}</div>
       <div class="shop-modal-prix">${escHtml(p.prix || '')}
-        <span style="font-size:.75rem;font-weight:400;color:${dispo ? '#4ade80' : '#f87171'};margin-left:10px">${dispo ? '✅ Disponible' : '⏳ Épuisé'}</span>
+        <span style="font-size:.75rem;font-weight:400;color:${dispo?'#4ade80':'#f87171'};margin-left:10px">${dispo?'✅ Disponible':'⏳ Épuisé'}</span>
       </div>
       <div class="shop-modal-row">
-        ${(p.tags || '').split(',').filter(t=>t.trim()).slice(0,4).map(t=>`<div class="shop-modal-chip">${escHtml(t.trim())}</div>`).join('')}
+        ${(p.tags||'').split(',').filter(t=>t.trim()).slice(0,4).map(t=>`<div class="shop-modal-chip">${escHtml(t.trim())}</div>`).join('')}
       </div>
-      ${p.description ? `<div class="shop-modal-section">
-        <div class="shop-modal-section-title">📝 Description</div>
-        <div class="shop-modal-section-text">${escHtml(p.description)}</div>
-      </div>` : ''}
-      ${p.composition ? `<div class="shop-modal-section">
-        <div class="shop-modal-section-title">🧪 Composition</div>
-        <div class="shop-modal-section-text">${escHtml(p.composition)}</div>
-      </div>` : ''}
-      ${p.origines ? `<div class="shop-modal-section">
-        <div class="shop-modal-section-title">📍 Origines</div>
-        <div class="shop-modal-section-text">${escHtml(p.origines)}</div>
-      </div>` : ''}
+      ${p.description?`<div class="shop-modal-section"><div class="shop-modal-section-title">📝 Description</div><div class="shop-modal-section-text">${escHtml(p.description)}</div></div>`:''}
+      ${p.composition?`<div class="shop-modal-section"><div class="shop-modal-section-title">🧪 Composition</div><div class="shop-modal-section-text">${escHtml(p.composition)}</div></div>`:''}
+      ${p.origines?`<div class="shop-modal-section"><div class="shop-modal-section-title">📍 Origines</div><div class="shop-modal-section-text">${escHtml(p.origines)}</div></div>`:''}
     </div>
-    ${wa ? `<button class="shop-modal-cta" onclick="window.open('https://wa.me/${wa}?text=Bonjour%2C+je+suis+intéressé(e)+par+le+produit+%22${encodeURIComponent(p.nom||'')}%22+sur+Jerbi+Explore','_blank')">
-      📲 Commander sur WhatsApp
-    </button>` : `<div style="margin:0 20px;padding:12px;text-align:center;font-size:.8rem;color:var(--tm)">
-      Contactez-nous via l'application pour commander.
-    </div>`}
+    <div style="padding:0 20px;display:flex;gap:8px;flex-wrap:wrap">
+      ${dispo ? `<button class="shop-modal-cta" style="flex:1;min-width:140px" onclick="addToCart(getItem('${sk}'));closeShopModal()">🛒 Ajouter au panier</button>` : ''}
+      ${wa ? `<button class="shop-modal-cta" style="flex:1;min-width:140px;background:linear-gradient(135deg,#25d366,#128c7e);color:#fff" onclick="window.open('https://wa.me/${wa}?text='+encodeURIComponent('Bonjour, je suis intéressé(e) par : *'+${JSON.stringify(p.nom||'')}+'*'),'_blank')">📲 WhatsApp</button>` : ''}
+    </div>
+    <div style="height:20px"></div>
   `;
   overlay.classList.add('open');
   document.body.style.overflow = 'hidden';
+}
+
+function switchShopModalPhoto(src, galleryId, thumb) {
+  const mainImg = document.getElementById('shop-modal-main-img');
+  if (mainImg) mainImg.src = src;
+  document.querySelectorAll('#' + galleryId + ' .shop-modal-gallery-thumb').forEach(t => t.classList.remove('active'));
+  if (thumb) thumb.classList.add('active');
 }
 
 function closeShopModal() {
   const overlay = document.getElementById('shop-modal-overlay');
   if (overlay) overlay.classList.remove('open');
   document.body.style.overflow = '';
+}
+
+/* ══════════════════════════════════════════════════════
+   EXPÉRIENCES — Chargement dynamique depuis CSV
+   data/Experiences/experiences.csv (sep ;)
+   Photos depuis data/Experiences/<filename>
+   Nombre de cartes configuré via CFG.EXP_CARDS_COUNT
+══════════════════════════════════════════════════════ */
+let expLoaded = false;
+let expData = [];
+
+async function loadExperiences() {
+  const track = document.getElementById('exp-slider-track');
+  if (!track) return;
+  try {
+    const csvPath = (CFG.GITHUB_REPO_PATH || '') + '/data/Experiences/experiences.csv';
+    const resp = await fetch(csvPath);
+    if (!resp.ok) throw new Error('HTTP ' + resp.status);
+    const text = await resp.text();
+    const result = Papa.parse(text, {
+      header: true, skipEmptyLines: true, delimiter: ';',
+      transformHeader: h => h.trim()
+    });
+    expData = (result.data || []).filter(e => (e.actif || '').toUpperCase() === 'OUI');
+    expLoaded = true;
+    renderExperiences();
+  } catch(err) {
+    console.warn('[Exp] CSV non chargé — affichage fallback:', err);
+    renderExpFallback();
+  }
+}
+
+function renderExperiences() {
+  const track = document.getElementById('exp-slider-track');
+  if (!track || !expData.length) { renderExpFallback(); return; }
+  const BASE = (CFG.GITHUB_REPO_PATH || '') + '/data/Experiences/';
+  track.innerHTML = expData.map(e => {
+    const photo = (e.photo || '').trim();
+    const emoji = e.emoji || '🌊';
+    const mediaHtml = photo
+      ? `<img class="exp-card-img" src="${escHtml(BASE+photo)}" alt="${escHtml(e.nom)}" loading="lazy" onerror="this.outerHTML='<div class=exp-card-img-placeholder>${escHtml(emoji)}</div>'">`
+      : `<div class="exp-card-img-placeholder">${escHtml(emoji)}</div>`;
+    const p = {
+      id: e.id, emoji: e.emoji, nom: e.nom, categorie: e.categorie,
+      ville: e.ville || 'Cap Bon', description: e.description,
+      citation_haykel: e.citation_haykel || '',
+      horaires: e.horaires, prix: e.prix, tel: e.tel, lien: e.lien
+    };
+    const sk = storeItem(p);
+    return `<div class="exp-card" onclick="showFiche(getItem('${sk}'))">
+      <div class="exp-card-media" style="padding:0;overflow:hidden">
+        ${mediaHtml}
+        <div class="exp-card-rating">⭐ <span>${escHtml(e.rating||'4.8')}</span> (${escHtml(e.nb_avis||'0')})</div>
+      </div>
+      <div class="exp-card-body">
+        <div class="exp-card-name">${escHtml(e.nom||'')}</div>
+        <div class="exp-card-desc">${escHtml((e.description||'').substring(0,90))}…</div>
+        <div class="exp-card-footer">
+          <div class="exp-price">Dès <b>${escHtml(e.prix||'')}</b></div>
+          ${e.lien ? `<button class="btn-reserve" onclick="event.stopPropagation();window.open('${escHtml(e.lien)}','_blank')">Réserver →</button>` : ''}
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+  initSlider();
+}
+
+function renderExpFallback() {
+  // Garder les données inline si CSV échoue — rien à afficher sauf message
+  const track = document.getElementById('exp-slider-track');
+  if (!track || track.children.length > 0) { initSlider(); return; }
+  track.innerHTML = `<div style="width:100%;text-align:center;padding:40px;color:var(--tm);font-size:.85rem">Expériences non disponibles hors ligne</div>`;
 }
 
 /* ══════════════════════════════════════════════════════

@@ -34,6 +34,7 @@ const STATIC_ASSETS = [
   `${BASE_PATH}/data/Videos/Video.csv`,
   `${BASE_PATH}/data/faq.csv`,
   `${BASE_PATH}/data/e_shop/produits.csv`,
+  `${BASE_PATH}/data/Experiences/experiences.csv`,
   `${BASE_PATH}/data/Background/bg-dark.jpg`,
   `${BASE_PATH}/data/Background/bg-light.jpg`,
   /* Chat IA hybride */
