@@ -32,13 +32,13 @@ const APP_CONFIG = {
   // ── E-Shop ────────────────────────────────────────────
   // Numéro WhatsApp pour les commandes (format international sans +)
   // Exemple : '21698765432' → +216 98 765 432
-  SHOP_WHATSAPP: '',
+  SHOP_WHATSAPP: '+21622055055',
 
   // ── Analytics ─────────────────────────────────────────
   // GoatCounter : créez un compte gratuit sur https://www.goatcounter.com
   // Renseignez votre code de site (ex : 'jerbi-explore')
   // Laisser '' pour désactiver le tracking GoatCounter
-  GOATCOUNTER_CODE: 'amero',
+  GOATCOUNTER_CODE: '',
 
   // ── Fond d'écran ──────────────────────────────────────
   // Images dans data/Background/
@@ -47,6 +47,14 @@ const APP_CONFIG = {
   // Remplacer ces fichiers pour changer le fond sans toucher au code
   BG_DARK:  'bg-dark.jpg',
   BG_LIGHT: 'bg-light.jpg',
+
+  // ── Expériences — Slider ──────────────────────────────
+  // Nombre de cartes visibles simultanément dans le slider
+  // Valeurs possibles : 1 (mobile auto), 2, 3, 4, 5
+  // Sur mobile, toujours 1 carte (override automatique)
+  EXP_CARDS_COUNT: 2,
+  // Chemin du CSV des expériences
+  get CSV_EXPERIENCES() { return `${this.GITHUB_REPO_PATH}/data/Experiences/experiences.csv`; },
 
   // Rafraîchissement automatique des données (en ms)
   // CSV local = rechargement toutes les 5 min suffit
