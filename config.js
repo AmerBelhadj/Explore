@@ -32,7 +32,7 @@ const APP_CONFIG = {
   // ── E-Shop ────────────────────────────────────────────
   // Numéro WhatsApp pour les commandes (format international sans +)
   // Exemple : '21698765432' → +216 98 765 432
-  SHOP_WHATSAPP: '+21624055055',
+  SHOP_WHATSAPP: '21624055055',
 
   // ── Analytics ─────────────────────────────────────────
   // GoatCounter : créez un compte gratuit sur https://www.goatcounter.com
