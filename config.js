@@ -38,7 +38,7 @@ const APP_CONFIG = {
   // GoatCounter : créez un compte gratuit sur https://www.goatcounter.com
   // Renseignez votre code de site (ex : 'jerbi-explore')
   // Laisser '' pour désactiver le tracking GoatCounter
-  GOATCOUNTER_CODE: '',
+  GOATCOUNTER_CODE: 'amero',
 
   // ── Fond d'écran ──────────────────────────────────────
   // Images dans data/Background/
