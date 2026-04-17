@@ -43,7 +43,7 @@ const APP_CONFIG = {
   // ── Backend Worker (Cloudflare) ──────────────────────
   // URL du Worker déployé après création sur cloudflare.com
   // Ex: 'https://jerbi-worker.VOTRE-COMPTE.workers.dev'
-  WORKER_URL: 'https://jerbi-worker.amer-belhadj.workers.dev/',
+  WORKER_URL: 'https://jerbi-worker.amer-belhadj.workers.dev',
 
   // ── Fond d'écran ──────────────────────────────────────
   // Images dans data/Background/
