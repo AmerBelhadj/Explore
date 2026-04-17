@@ -2194,6 +2194,7 @@ function navigate(id) {
     setTimeout(updateCartFab, 50);
   }
   if (id === 'exp' && !expLoaded) loadExperiences();
+  if (id === 'exp' && expLoaded) setTimeout(initSlider, 50);
   if (id !== 'shop') { const fab = document.getElementById('shop-cart-fab'); if (fab) fab.style.display = 'none'; }
   // Analytics: compter les visites par écran
   trackScreenVisit(id);
@@ -4990,6 +4991,8 @@ async function loadCSVEditor(key) {
     const parsed = Papa.parse(decoded, { header: true, skipEmptyLines: true });
     window._csvHeaders = parsed.meta.fields || [];
     window._csvAllRows = parsed.data.map(function(r){ return Object.assign({}, r); });
+    // Mémoriser le délimiteur détecté (crucial pour la resérialisation)
+    _csvMeta.delimiter = parsed.meta.delimiter || ';';
     renderCSVTable(edEl);
   } catch(e) {
     edEl.innerHTML = '<div class="worker-cfg-box"><b>❌ Erreur</b>' + escHtml(e.message) + '</div>';
@@ -5040,7 +5043,9 @@ function csvAdd() {
 async function saveCSVToGitHub() {
   if (!_csvCurrent || !_csvMeta) { showToast('Aucun fichier chargé'); return; }
   const activeRows = window._csvAllRows.filter(function(r){ return r !== null; });
-  const csvStr = Papa.unparse(activeRows, { columns: window._csvHeaders });
+  // Utiliser le délimiteur original détecté au chargement (évite de casser les parsers qui attendent ';')
+  const delim = _csvMeta.delimiter || ';';
+  const csvStr = Papa.unparse(activeRows, { columns: window._csvHeaders, delimiter: delim });
   const encoded = btoa(unescape(encodeURIComponent(csvStr)));
   showToast('⏳ Envoi vers GitHub...');
   try {
