@@ -517,6 +517,33 @@ body.light .home-hero{background:linear-gradient(135deg,#5a3e00,#a07020);}
   font-size:4rem;background:linear-gradient(135deg,rgba(212,168,67,.12),rgba(244,132,95,.08));
 }
 
+
+/* ══ HOME — mini-cards expériences ════════════════════════ */
+.home-exp-card{
+  flex-shrink:0;width:130px;height:160px;border-radius:18px;
+  overflow:hidden;position:relative;cursor:pointer;
+  border:1px solid var(--border);background:var(--card);
+}
+.home-exp-card img{
+  position:absolute;inset:0;width:100%;height:100%;object-fit:cover;
+}
+.home-exp-card-overlay{
+  position:absolute;inset:0;
+  background:linear-gradient(180deg,transparent 40%,rgba(0,0,0,.78) 100%);
+  display:flex;flex-direction:column;justify-content:flex-end;padding:10px;
+}
+.home-exp-card-emoji{
+  position:absolute;inset:0;display:flex;align-items:center;
+  justify-content:center;font-size:3rem;
+}
+.home-exp-card-name{font-size:.75rem;font-weight:600;color:#fff;line-height:1.2;}
+.home-exp-card-sub{font-size:.58rem;color:rgba(255,255,255,.6);text-transform:uppercase;letter-spacing:1px;margin-top:2px;}
+.home-exp-card-badge{
+  position:absolute;top:8px;right:8px;
+  background:var(--coral);border-radius:7px;
+  font-size:.52rem;padding:2px 6px;font-weight:600;color:#fff;
+}
+
 /* ══ EXPÉRIENCES — SLIDER ══ */
 .exp-hero{
   background:linear-gradient(135deg,#1f1300,#d4a843);
@@ -959,6 +986,42 @@ body.light .home-hero{background:linear-gradient(135deg,#5a3e00,#a07020);}
 }
 @keyframes pbar{0%,100%{transform:scaleX(1)}50%{transform:scaleX(.5);opacity:.5}}
 /* ══ ADMIN PANEL ══ */
+/* ── Admin : onglets Commandes / Config / CSV ─────── */
+.order-row{display:flex;flex-direction:column;gap:4px;padding:10px 0;border-bottom:1px solid var(--border);}
+.order-row:last-child{border-bottom:none;}
+.order-meta{display:flex;gap:6px;align-items:center;flex-wrap:wrap;}
+.order-id{font-size:.72rem;font-weight:700;color:var(--tq);font-family:monospace;}
+.order-date{font-size:.7rem;color:var(--tm);}
+.order-total{font-size:.82rem;font-weight:600;color:var(--th);}
+.order-items{font-size:.72rem;color:var(--ts);line-height:1.5;}
+.order-status{font-size:.68rem;font-weight:700;padding:2px 9px;border-radius:12px;border:none;pointer-events:none;}
+.order-status.pending{background:rgba(251,191,36,.18);color:#f59e0b;}
+.order-status.confirmed{background:rgba(74,222,128,.18);color:#22c55e;}
+.order-status.cancelled{background:rgba(248,113,113,.18);color:#ef4444;}
+.order-actions{display:flex;gap:6px;margin-top:4px;}
+.order-btn{font-size:.68rem;padding:3px 9px;border-radius:6px;border:1px solid var(--border);background:var(--cardh);color:var(--tb);cursor:pointer;}
+.order-btn:active{opacity:.7;}
+.cfg-field{margin-bottom:11px;}
+.cfg-label{font-size:.73rem;color:var(--ts);margin-bottom:3px;display:block;}
+.cfg-input{width:100%;background:var(--cardh);border:1px solid var(--border);border-radius:8px;padding:7px 10px;font-size:.78rem;color:var(--tb);box-sizing:border-box;}
+.cfg-input:focus{border-color:var(--tq);outline:none;}
+.cfg-save-btn{width:100%;padding:10px;background:var(--tq);color:#000;border:none;border-radius:8px;font-size:.82rem;font-weight:700;cursor:pointer;margin-top:6px;}
+.cfg-save-btn:active{opacity:.8;}
+.cfg-section-title{font-size:.8rem;font-weight:600;color:var(--th);margin:14px 0 8px;border-bottom:1px solid var(--border);padding-bottom:4px;}
+.csv-select{width:100%;background:var(--cardh);border:1px solid var(--border);border-radius:8px;padding:8px 10px;font-size:.8rem;color:var(--tb);margin-bottom:10px;box-sizing:border-box;}
+.csv-table-wrap{overflow-x:auto;margin-bottom:8px;max-height:340px;overflow-y:auto;}
+.csv-table{width:100%;border-collapse:collapse;font-size:.7rem;}
+.csv-table th{background:var(--cardh);padding:5px 7px;text-align:left;border:1px solid var(--border);font-weight:600;color:var(--th);white-space:nowrap;position:sticky;top:0;}
+.csv-table td{padding:3px 5px;border:1px solid var(--border);color:var(--tb);}
+.csv-table td input{background:transparent;border:none;width:100%;color:var(--tb);font-size:.7rem;min-width:60px;}
+.csv-table td input:focus{outline:1px solid var(--tq);border-radius:2px;}
+.csv-add-row-btn{font-size:.73rem;padding:5px 12px;background:var(--cardh);border:1px solid var(--tq);color:var(--tq);border-radius:8px;cursor:pointer;}
+.worker-cfg-box{background:var(--cardh);border:1px solid var(--border);border-radius:8px;padding:10px 12px;margin-bottom:12px;font-size:.75rem;color:var(--ts);line-height:1.6;}
+.worker-cfg-box b{color:var(--th);display:block;margin-bottom:3px;font-size:.78rem;}
+.installs-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:10px;}
+.install-card{background:var(--cardh);border-radius:8px;padding:10px;text-align:center;}
+.install-card-val{font-size:1.4rem;font-weight:700;color:var(--tq);}
+.install-card-lbl{font-size:.68rem;color:var(--ts);margin-top:2px;}
 #admin-overlay {
   position:fixed; inset:0; z-index:500;
   background:rgba(0,0,0,.7); backdrop-filter:blur(6px);
@@ -1608,31 +1671,8 @@ body.light .event-card.past .event-month{color:var(--tm);}
               <div class="section-title">Nos expériences</div>
               <div class="see-all" onclick="navigate('exp')">Voir tout →</div>
             </div>
-            <!-- mini cards home -->
-            <div class="acts-scroll" style="display:flex;gap:12px;overflow-x:auto;scrollbar-width:none;margin:0 -16px;padding:0 16px 8px;">
-              <div onclick="navigate('exp')" style="flex-shrink:0;width:130px;height:160px;border-radius:18px;overflow:hidden;position:relative;cursor:pointer;border:1px solid var(--border);">
-                <div style="position:absolute;inset:0;background:linear-gradient(135deg,#1f1300,#d4a843);display:flex;align-items:center;justify-content:center;font-size:3rem;">🏝️</div>
-                <div style="position:absolute;inset:0;background:linear-gradient(180deg,transparent 40%,rgba(0,0,0,.75) 100%);display:flex;flex-direction:column;justify-content:flex-end;padding:10px;">
-                  <div style="font-size:.75rem;font-weight:600;color:#fff;">Journée Crique</div>
-                  <div style="font-size:.58rem;color:rgba(255,255,255,.6);text-transform:uppercase;letter-spacing:1px;margin-top:2px;">Haouaria</div>
-                </div>
-                <div style="position:absolute;top:8px;right:8px;background:var(--coral);border-radius:7px;font-size:.52rem;padding:2px 6px;font-weight:600;color:#fff;">Populaire</div>
-              </div>
-              <div onclick="navigate('exp')" style="flex-shrink:0;width:130px;height:160px;border-radius:18px;overflow:hidden;position:relative;cursor:pointer;border:1px solid var(--border);">
-                <div style="position:absolute;inset:0;background:linear-gradient(135deg,#1a5276,#2980b9);display:flex;align-items:center;justify-content:center;font-size:3rem;">⛵</div>
-                <div style="position:absolute;inset:0;background:linear-gradient(180deg,transparent 40%,rgba(0,0,0,.75) 100%);display:flex;flex-direction:column;justify-content:flex-end;padding:10px;">
-                  <div style="font-size:.75rem;font-weight:600;color:#fff;">Balade en Mer</div>
-                  <div style="font-size:.58rem;color:rgba(255,255,255,.6);text-transform:uppercase;letter-spacing:1px;margin-top:2px;">Bateau</div>
-                </div>
-              </div>
-              <div onclick="navigate('exp')" style="flex-shrink:0;width:130px;height:160px;border-radius:18px;overflow:hidden;position:relative;cursor:pointer;border:1px solid var(--border);">
-                <div style="position:absolute;inset:0;background:linear-gradient(135deg,#1e4d2b,#27ae60);display:flex;align-items:center;justify-content:center;font-size:3rem;">🏕️</div>
-                <div style="position:absolute;inset:0;background:linear-gradient(180deg,transparent 40%,rgba(0,0,0,.75) 100%);display:flex;flex-direction:column;justify-content:flex-end;padding:10px;">
-                  <div style="font-size:.75rem;font-weight:600;color:#fff;">Camping</div>
-                  <div style="font-size:.58rem;color:rgba(255,255,255,.6);text-transform:uppercase;letter-spacing:1px;margin-top:2px;">Nature</div>
-                </div>
-              </div>
-            </div>
+            <!-- mini cards home - dynamiques via renderHomeExpCards() -->
+            <div id="home-exp-scroll" class="acts-scroll" style="display:flex;gap:12px;overflow-x:auto;scrollbar-width:none;margin:0 -16px;padding:0 16px 8px;"></div>
           </div>
           <div class="home-section">
             <div class="section-title">Explorer</div>
@@ -3200,10 +3240,15 @@ const _isIOS      = /iphone|ipad|ipod/i.test(navigator.userAgent);
 const _isSafari   = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
 const _isStandalone = window.matchMedia('(display-mode: standalone)').matches
                     || window.navigator.standalone === true;
+// PC bureau : pas de touch + grand ecran -> masquer le prompt install
+const _isDesktop  = !('ontouchstart' in window)
+                    && navigator.maxTouchPoints === 0
+                    && window.innerWidth >= 1024;
 
 /* Android/Chrome — événement natif */
 window.addEventListener('beforeinstallprompt', e => {
   e.preventDefault();
+  if (_isDesktop) return; // Pas de prompt install sur PC de bureau
   deferredInstallPrompt = e;
   const homeBtn = document.getElementById('install-home-btn');
   if (homeBtn) { homeBtn.style.display = 'flex'; homeBtn.onclick = doInstall; }
@@ -3223,7 +3268,8 @@ window.addEventListener('appinstalled', () => {
 
 /* Initialiser l'UI d'installation (appelé au load) */
 function initInstallUI() {
-  if (_isStandalone) return; // déjà installée
+  if (_isStandalone) return; // deja installee
+  if (_isDesktop) return;   // pas de prompt sur PC bureau
   const snoozed = localStorage.getItem('jerbi_install_snoozed');
   const snoozedOk = snoozed && (Date.now() - parseInt(snoozed)) < CFG.INSTALL_SNOOZE_DAYS * 86400000;
   if (snoozedOk) return;
@@ -4003,6 +4049,7 @@ document.addEventListener('DOMContentLoaded', function() {
   // Initialiser le système d'analytiques
   initAnalytics();
   trackScreenVisit('home'); // page initiale
+  loadExperiences(); // precharge pour les mini-cards accueil
 
   // Stocker la date de première visite si absente
   if (!localStorage.getItem('jerbi_last_visit')) {
@@ -4168,18 +4215,30 @@ function renderCartModal() {
 function sendCartWhatsApp() {
   if (!shopCart.length) return;
   const wa = (typeof APP_CONFIG !== 'undefined' && APP_CONFIG.SHOP_WHATSAPP) ? APP_CONFIG.SHOP_WHATSAPP : (CFG.SHOP_WHATSAPP || '');
-  let msg = `🛒 *Commande Jerbi Explore \u2014 Boutique Cap Bon*\n\n`;
+  let msg = '🛒 *Commande Jerbi Explore \u2014 Boutique Cap Bon*\n\n';
   let total = 0;
+  const orderItems = [];
   shopCart.forEach(item => {
     const priceNum = parseFloat((item.prix || '0').replace(/[^\d.,]/g, '').replace(',', '.')) || 0;
-    msg += `• ${item.emoji} *${item.nom}* × ${item.qty} → ${(priceNum * item.qty).toFixed(2)} DT
-`;
+    msg += '\u2022 ' + item.emoji + ' *' + item.nom + '* \u00d7 ' + item.qty + ' \u2192 ' + (priceNum * item.qty).toFixed(2) + ' DT\n';
     total += priceNum * item.qty;
+    orderItems.push({ nom: item.nom, qty: item.qty, prix: item.prix, emoji: item.emoji || '🛍️' });
   });
-    msg += `\n\u{1F4B0} *Total estimé : ${total.toFixed(2)} DT*\n\nMerci de confirmer la disponibilité et les modalités de livraison.`;
+  msg += '\n💰 *Total estimé : ' + total.toFixed(2) + ' DT*\n\nMerci de confirmer la disponibilité et les modalités de livraison.';
   if (!wa) {
     showToast('⚠️ Numéro WhatsApp non configuré dans config.js');
     return;
+  }
+  // Enregistrement de la commande dans le Worker Cloudflare (si configuré)
+  const workerUrl = (typeof APP_CONFIG !== 'undefined' && APP_CONFIG.WORKER_URL) ? APP_CONFIG.WORKER_URL.replace(/\/$/, '') : '';
+  if (workerUrl) {
+    fetch(workerUrl + '/order', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ items: orderItems, total: parseFloat(total.toFixed(2)), waMessage: msg })
+    }).then(r => r.json()).then(d => {
+      if (d.orderId) showToast('📋 Commande ' + d.orderId.split('-').slice(-2).join('-') + ' enregistrée');
+    }).catch(() => {});
   }
   window.open('https://wa.me/' + wa + '?text=' + encodeURIComponent(msg), '_blank');
 }
@@ -4376,10 +4435,60 @@ async function loadExperiences() {
     expData = (result.data || []).filter(e => (e.actif || '').toUpperCase() === 'OUI');
     expLoaded = true;
     renderExperiences();
+    renderHomeExpCards();
   } catch(err) {
     console.warn('[Exp] CSV non chargé — affichage fallback:', err);
     renderExpFallback();
   }
+}
+
+/* ===== HOME - mini-cards experiences dynamiques =====
+   Respecte EXP_CARDS_COUNT. Photos reelles ou emoji fallback.
+   ===================================================== */
+function renderHomeExpCards() {
+  var scroll = document.getElementById('home-exp-scroll');
+  if (!scroll) return;
+  var BASE = (CFG.GITHUB_REPO_PATH || '') + '/data/Experiences/';
+  var count = (typeof APP_CONFIG !== 'undefined' && APP_CONFIG.EXP_CARDS_COUNT)
+    ? parseInt(APP_CONFIG.EXP_CARDS_COUNT) : (CFG.EXP_CARDS_COUNT || 3);
+
+  if (!expData || !expData.length) {
+    var sk = '';
+    for (var s = 0; s < count; s++) {
+      sk += '<div class="home-exp-card" onclick="navigate(\'exp\')">'
+          + '<div class="home-exp-card-emoji" style="opacity:.3">&#127754;</div>'
+          + '<div class="home-exp-card-overlay">'
+          + '<div class="home-exp-card-name" style="background:var(--border);border-radius:4px;height:10px;width:70%"></div>'
+          + '</div></div>';
+    }
+    scroll.innerHTML = sk;
+    return;
+  }
+
+  var source = expData.slice(0, count);
+  var out = '';
+  for (var i = 0; i < source.length; i++) {
+    var e = source[i];
+    var photo = (e.photo || '').trim();
+    var emoji = escHtml(e.emoji || '&#127754;');
+    var nom = escHtml(e.nom || '');
+    var ville = escHtml(e.ville || e.categorie || '');
+    var imgSrc = photo ? escHtml(BASE + photo) : '';
+    out += '<div class="home-exp-card" onclick="navigate(\'exp\')">';
+    if (imgSrc) {
+      out += '<img src="' + imgSrc + '" alt="' + nom + '" loading="lazy"'
+           + ' style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover"'
+           + ' onerror="this.remove()">';
+    }
+    out += '<div class="home-exp-card-emoji"' + (imgSrc ? ' style="display:none"' : '') + '>' + emoji + '</div>';
+    out += '<div class="home-exp-card-overlay">'
+         + '<div class="home-exp-card-name">' + nom + '</div>'
+         + '<div class="home-exp-card-sub">' + ville + '</div>'
+         + '</div>';
+    if (i === 0) out += '<div class="home-exp-card-badge">Populaire</div>';
+    out += '</div>';
+  }
+  scroll.innerHTML = out;
 }
 
 function renderExperiences() {
@@ -4477,6 +4586,17 @@ window.addEventListener('appinstalled', () => {
   saveAnalyticsData(data);
   if (typeof window.goatcounter !== 'undefined' && window.goatcounter.count) {
     window.goatcounter.count({ path: '/pwa-install', title: 'PWA Install' });
+  }
+  // Tracking cross-appareils via Worker Cloudflare
+  const _wUrl = (typeof APP_CONFIG !== 'undefined' && APP_CONFIG.WORKER_URL) ? APP_CONFIG.WORKER_URL.replace(/\/$/, '') : '';
+  if (_wUrl) {
+    const ua = navigator.userAgent || '';
+    const platform = /iPhone|iPad|iPod/.test(ua) ? 'iOS' : /Android/.test(ua) ? 'Android' : 'Desktop';
+    fetch(_wUrl + '/install', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ platform, userAgent: ua, version: (typeof APP_CONFIG !== 'undefined' ? APP_CONFIG.VERSION : '') })
+    }).catch(() => {});
   }
 });
 
@@ -4580,12 +4700,17 @@ function openAdminPanel() {
 }
 
 function showAdminTab(tab) {
-  document.getElementById('admin-section-gallery').style.display = tab === 'gallery' ? 'block' : 'none';
-  document.getElementById('admin-section-analytics').style.display = tab === 'analytics' ? 'block' : 'none';
+  ['gallery','analytics','orders','config','csv'].forEach(t => {
+    const s = document.getElementById('admin-section-' + t);
+    if (s) s.style.display = t === tab ? 'block' : 'none';
+  });
   document.querySelectorAll('.admin-tab').forEach(t => t.classList.remove('active'));
   const btn = document.getElementById('admin-tab-' + tab);
   if (btn) btn.classList.add('active');
   if (tab === 'analytics') renderAdminAnalytics();
+  if (tab === 'orders')    renderAdminOrders();
+  if (tab === 'config')    renderAdminConfig();
+  if (tab === 'csv')       renderAdminCSV();
 }
 
 function closeAdminPanel() {
@@ -4636,8 +4761,324 @@ async function adminLogin() {
         + adminLoginAttempts + '/' + CFG.ADMIN_MAX_ATTEMPTS + ')';
     }
     input.value = '';
+  
+}
+}
+
+/* ══════════════════════════════════════════════════════
+   WORKER ADMIN — Commandes / Config / CSV
+══════════════════════════════════════════════════════ */
+
+function getWorkerUrl() {
+  return (typeof APP_CONFIG !== 'undefined' && APP_CONFIG.WORKER_URL)
+    ? APP_CONFIG.WORKER_URL.replace(/\/$/, '') : '';
+}
+function getAdminSecret() { return sessionStorage.getItem('jerbi_worker_secret') || ''; }
+function setAdminSecret(s) { sessionStorage.setItem('jerbi_worker_secret', s); }
+
+async function workerFetch(path, opts) {
+  opts = opts || {};
+  const url = getWorkerUrl();
+  if (!url) throw new Error('WORKER_URL non configuré dans config.js');
+  const secret = getAdminSecret();
+  if (!secret) throw new Error('Clé secrète non définie');
+  const headers = Object.assign({}, { 'Content-Type': 'application/json', 'X-Admin-Secret': secret }, opts.headers || {});
+  return fetch(url + path, Object.assign({}, opts, { headers: headers }));
+}
+
+function adminSecretForm(onSuccess) {
+  return '<div class="worker-cfg-box"><b>🔑 Clé secrète requise</b>Entrez la valeur de ADMIN_SECRET définie dans votre Worker Cloudflare.</div>'
+    + '<div class="cfg-field"><label class="cfg-label">ADMIN_SECRET</label>'
+    + '<input type="password" class="cfg-input" id="a-secret-inp" placeholder="Votre clé secrète..."></div>'
+    + '<button class="cfg-save-btn" onclick="setAdminSecret(document.getElementById(\'a-secret-inp\').value);(' + onSuccess + ')()">✓ Valider</button>';
+}
+
+/* ── Commandes ─────────────────────────────────────────── */
+
+async function renderAdminOrders() {
+  const el = document.getElementById('admin-orders-content');
+  if (!el) return;
+  const wUrl = getWorkerUrl();
+  if (!wUrl) {
+    el.innerHTML = '<div class="worker-cfg-box"><b>⚙️ WORKER_URL non configuré</b>Ajoutez l\'URL du Worker dans config.js → WORKER_URL</div>';
+    return;
+  }
+  if (!getAdminSecret()) {
+    el.innerHTML = adminSecretForm('renderAdminOrders');
+    return;
+  }
+  el.innerHTML = '<div style="text-align:center;padding:20px;color:var(--ts)">⏳ Chargement...</div>';
+  try {
+    const r = await workerFetch('/orders');
+    if (r.status === 401) {
+      sessionStorage.removeItem('jerbi_worker_secret');
+      el.innerHTML = '<div class="worker-cfg-box"><b>❌ Clé invalide</b></div>' + adminSecretForm('renderAdminOrders');
+      return;
+    }
+    const data = await r.json();
+    const orders = data.orders || [];
+    window._adminOrders = orders;
+    const statusLabel = { pending: 'En attente', confirmed: 'Confirmée', cancelled: 'Annulée' };
+    const statusCls   = { pending: 'pending',     confirmed: 'confirmed',  cancelled: 'cancelled' };
+    const pending   = orders.filter(o => o.status === 'pending').length;
+    const confirmed = orders.filter(o => o.status === 'confirmed').length;
+    let html = '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">'
+      + '<div style="font-size:.75rem;color:var(--ts)">'
+      + orders.length + ' commande(s) · ⏳' + pending + ' · ✓' + confirmed
+      + '</div><button class="order-btn" onclick="exportOrdersCSV()">⬇️ Excel</button></div>';
+    if (!orders.length) {
+      html += '<div style="text-align:center;padding:20px;color:var(--ts)">Aucune commande pour l\'instant.</div>';
+    } else {
+      orders.forEach(function(o) {
+        const date = new Date(o.date).toLocaleDateString('fr-FR',{day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'});
+        const items = (o.items || []).map(function(i){ return (i.emoji||'') + i.nom + ' ×' + i.qty; }).join(', ');
+        html += '<div class="order-row" id="orow-' + o.id + '">'
+          + '<div class="order-meta">'
+          + '<span class="order-id">' + o.id.split('-').slice(-2).join('-') + '</span>'
+          + '<span class="order-date">' + date + '</span>'
+          + '<span class="order-total">' + o.total.toFixed(2) + ' DT</span>'
+          + '<span class="order-status ' + (statusCls[o.status]||'pending') + '">' + (statusLabel[o.status]||'En attente') + '</span>'
+          + '</div>'
+          + '<div class="order-items">' + escHtml(items) + '</div>'
+          + '<div class="order-actions">'
+          + '<button class="order-btn" onclick="updateOrderStatus(\'' + o.id + '\',\'confirmed\')">✓ Confirmer</button>'
+          + '<button class="order-btn" onclick="updateOrderStatus(\'' + o.id + '\',\'pending\')">⏳ Attente</button>'
+          + '<button class="order-btn" onclick="updateOrderStatus(\'' + o.id + '\',\'cancelled\')">✗ Annuler</button>'
+          + '</div></div>';
+      });
+    }
+    el.innerHTML = html;
+  } catch(e) {
+    el.innerHTML = '<div class="worker-cfg-box"><b>❌ Erreur</b>' + escHtml(e.message) + '</div>';
   }
 }
+
+async function updateOrderStatus(id, status) {
+  try {
+    const r = await workerFetch('/order/' + id, { method: 'PATCH', body: JSON.stringify({ status: status }) });
+    if (r.ok) { showToast('✅ Statut mis à jour'); renderAdminOrders(); }
+    else showToast('❌ Erreur Worker');
+  } catch(e) { showToast('❌ ' + e.message); }
+}
+
+function exportOrdersCSV() {
+  const orders = window._adminOrders || [];
+  if (!orders.length) { showToast('Aucune commande à exporter'); return; }
+  const rows = [['ID','Date','Articles','Total (DT)','Statut']];
+  orders.forEach(function(o) {
+    const items = (o.items || []).map(function(i){ return i.nom + ' x' + i.qty; }).join(' | ');
+    const d = new Date(o.date).toLocaleDateString('fr-FR');
+    rows.push([o.id, d, items, o.total.toFixed(2), o.status]);
+  });
+  const csv = rows.map(function(r){ return r.map(function(c){ return '"' + String(c).replace(/"/g,'""') + '"'; }).join(';'); }).join('\n');
+  const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8;' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'commandes-jerbi-' + new Date().toISOString().slice(0,10) + '.csv';
+  a.click();
+}
+
+/* ── Config.js editor ──────────────────────────────────── */
+
+const CFG_FIELDS = [
+  { k:'VERSION',              l:'Version de l\'app',          t:'text' },
+  { k:'CHAT_PROXY_URL',       l:'URL Proxy Chatbot IA',        t:'text' },
+  { k:'SHOP_WHATSAPP',        l:'WhatsApp Boutique',           t:'text' },
+  { k:'GOATCOUNTER_CODE',     l:'Code GoatCounter',            t:'text' },
+  { k:'WORKER_URL',           l:'URL Worker Cloudflare',       t:'text' },
+  { k:'EXP_CARDS_COUNT',      l:'Nb cartes expériences',       t:'number' },
+  { k:'SPONSOR_ACTIF',        l:'Sponsor actif',               t:'bool' },
+  { k:'SPONSOR_LIEN',         l:'Lien sponsor',                t:'text' },
+  { k:'SPONSOR_ALT',          l:'Nom sponsor',                 t:'text' },
+  { k:'CONTACT_WHATSAPP',     l:'WhatsApp contact',            t:'text' },
+  { k:'CONTACT_EMAIL',        l:'Email contact',               t:'text' },
+  { k:'SOCIAL_INSTAGRAM',     l:'Instagram URL',               t:'text' },
+  { k:'MAP_ZOOM_DEFAULT',     l:'Zoom carte défaut',           t:'number' },
+  { k:'ADMIN_SESSION_MINUTES',l:'Durée session admin (min)',   t:'number' },
+  { k:'REFRESH_INTERVAL_MS',  l:'Refresh données (ms)',        t:'number' },
+];
+
+function renderAdminConfig() {
+  const el = document.getElementById('admin-config-content');
+  if (!el) return;
+  const wUrl = getWorkerUrl();
+  if (!wUrl) {
+    el.innerHTML = '<div class="worker-cfg-box"><b>⚙️ WORKER_URL non configuré</b>Renseignez d\'abord WORKER_URL dans config.js, rechargez la page, puis revenez ici.</div>';
+    return;
+  }
+  if (!getAdminSecret()) { el.innerHTML = adminSecretForm('renderAdminConfig'); return; }
+  let html = '<div class="worker-cfg-box"><b>ℹ️ Éditeur config.js</b>Les modifications sont poussées directement sur GitHub via le Worker. La PWA se met à jour au prochain rechargement.</div>';
+  html += '<div class="cfg-section-title">Paramètres généraux</div>';
+  CFG_FIELDS.forEach(function(f) {
+    const val = typeof CFG[f.k] !== 'undefined' ? CFG[f.k] : '';
+    if (f.t === 'bool') {
+      html += '<div class="cfg-field"><label class="cfg-label">' + f.l + '</label>'
+        + '<select class="cfg-input" id="cfg-' + f.k + '">'
+        + '<option value="true"' + (val ? ' selected' : '') + '>Activé</option>'
+        + '<option value="false"' + (!val ? ' selected' : '') + '>Désactivé</option>'
+        + '</select></div>';
+    } else {
+      const dv = f.k === 'MAP_CENTER' ? JSON.stringify(val) : String(val);
+      html += '<div class="cfg-field"><label class="cfg-label">' + f.l + '</label>'
+        + '<input type="' + (f.t === 'number' ? 'number' : 'text') + '" class="cfg-input" id="cfg-' + f.k + '" value="' + escHtml(dv) + '"></div>';
+    }
+  });
+  html += '<button class="cfg-save-btn" onclick="saveConfigToGitHub()">💾 Sauvegarder sur GitHub</button>';
+  el.innerHTML = html;
+}
+
+async function saveConfigToGitHub() {
+  const newVals = {};
+  CFG_FIELDS.forEach(function(f) {
+    const el = document.getElementById('cfg-' + f.k);
+    if (!el) return;
+    if (f.t === 'number') newVals[f.k] = parseFloat(el.value) || 0;
+    else if (f.t === 'bool') newVals[f.k] = el.value === 'true';
+    else newVals[f.k] = el.value;
+  });
+  showToast('⏳ Envoi vers GitHub...');
+  try {
+    const r = await workerFetch('/github/config', { method: 'PUT', body: JSON.stringify({ values: newVals }) });
+    const d = await r.json();
+    if (d.success) showToast('✅ config.js mis à jour !');
+    else showToast('❌ ' + (d.error || 'Erreur GitHub'));
+  } catch(e) { showToast('❌ ' + e.message); }
+}
+
+/* ── CSV Editor ────────────────────────────────────────── */
+
+const CSV_FILES_LIST = [
+  { k:'lieux',       l:'Lieux',         p:'data/lieux.csv' },
+  { k:'partenaires', l:'Partenaires',   p:'data/partenaires.csv' },
+  { k:'evenements',  l:'Événements',    p:'data/evenements.csv' },
+  { k:'faq',         l:'FAQ',           p:'data/faq.csv' },
+  { k:'produits',    l:'Produits',      p:'data/e_shop/produits.csv' },
+];
+let _csvCurrent = null, _csvMeta = null;
+window._csvAllRows = []; window._csvHeaders = [];
+
+function renderAdminCSV() {
+  const el = document.getElementById('admin-csv-content');
+  if (!el) return;
+  const wUrl = getWorkerUrl();
+  if (!wUrl) { el.innerHTML = '<div class="worker-cfg-box"><b>⚙️ WORKER_URL non configuré</b></div>'; return; }
+  if (!getAdminSecret()) { el.innerHTML = adminSecretForm('renderAdminCSV'); return; }
+  const opts = CSV_FILES_LIST.map(function(f){ return '<option value="' + f.k + '">' + f.l + '</option>'; }).join('');
+  el.innerHTML = '<select class="csv-select" id="csv-sel" onchange="loadCSVEditor(this.value)">'
+    + '<option value="">-- Choisir un fichier CSV --</option>' + opts + '</select>'
+    + '<div id="csv-ed"></div>';
+}
+
+async function loadCSVEditor(key) {
+  if (!key) return;
+  const edEl = document.getElementById('csv-ed');
+  if (!edEl) return;
+  edEl.innerHTML = '<div style="text-align:center;padding:15px;color:var(--ts)">⏳ Chargement...</div>';
+  const csvFile = CSV_FILES_LIST.find(function(f){ return f.k === key; });
+  if (!csvFile) return;
+  _csvCurrent = csvFile;
+  try {
+    const r = await workerFetch('/github/file?path=' + encodeURIComponent(csvFile.p));
+    if (!r.ok) throw new Error('HTTP ' + r.status);
+    const data = await r.json();
+    if (!data.content) throw new Error('Contenu vide ou fichier introuvable');
+    const decoded = decodeURIComponent(escape(atob(data.content.replace(/\n/g, ''))));
+    _csvMeta = { sha: data.sha };
+    const parsed = Papa.parse(decoded, { header: true, skipEmptyLines: true });
+    window._csvHeaders = parsed.meta.fields || [];
+    window._csvAllRows = parsed.data.map(function(r){ return Object.assign({}, r); });
+    renderCSVTable(edEl);
+  } catch(e) {
+    edEl.innerHTML = '<div class="worker-cfg-box"><b>❌ Erreur</b>' + escHtml(e.message) + '</div>';
+  }
+}
+
+function renderCSVTable(container) {
+  const headers = window._csvHeaders;
+  const rows = window._csvAllRows;
+  let tbl = '<div class="csv-table-wrap"><table class="csv-table"><thead><tr>'
+    + headers.map(function(h){ return '<th>' + escHtml(h) + '</th>'; }).join('') + '<th>Del</th></tr></thead><tbody id="csv-tbody">';
+  rows.forEach(function(row, ri) {
+    tbl += '<tr id="csvr-' + ri + '">'
+      + headers.map(function(h){ return '<td><input type="text" value="' + escHtml(row[h]||'') + '" oninput="csvCell(' + ri + ',\'' + h.replace(/'/g,"\\'") + '\',this.value)"></td>'; }).join('')
+      + '<td><button class="order-btn" onclick="csvDel(' + ri + ')">✕</button></td></tr>';
+  });
+  tbl += '</tbody></table></div>'
+    + '<div style="display:flex;gap:8px;margin-top:6px;">'
+    + '<button class="csv-add-row-btn" onclick="csvAdd()">+ Ligne</button>'
+    + '<button class="cfg-save-btn" style="flex:1" onclick="saveCSVToGitHub()">💾 Sauvegarder sur GitHub</button>'
+    + '</div>';
+  container.innerHTML = tbl;
+}
+
+function csvCell(ri, col, val) {
+  if (window._csvAllRows[ri]) window._csvAllRows[ri][col] = val;
+}
+function csvDel(ri) {
+  const tr = document.getElementById('csvr-' + ri);
+  if (tr) tr.remove();
+  window._csvAllRows[ri] = null;
+}
+function csvAdd() {
+  const headers = window._csvHeaders;
+  const tbody = document.getElementById('csv-tbody');
+  if (!tbody) return;
+  const ri = window._csvAllRows.length;
+  const newRow = {};
+  headers.forEach(function(h){ newRow[h] = ''; });
+  window._csvAllRows.push(newRow);
+  const tr = document.createElement('tr');
+  tr.id = 'csvr-' + ri;
+  tr.innerHTML = headers.map(function(h){ return '<td><input type="text" value="" oninput="csvCell(' + ri + ',\'' + h.replace(/'/g,"\\'") + '\',this.value)"></td>'; }).join('')
+    + '<td><button class="order-btn" onclick="csvDel(' + ri + ')">✕</button></td>';
+  tbody.appendChild(tr);
+}
+
+async function saveCSVToGitHub() {
+  if (!_csvCurrent || !_csvMeta) { showToast('Aucun fichier chargé'); return; }
+  const activeRows = window._csvAllRows.filter(function(r){ return r !== null; });
+  const csvStr = Papa.unparse(activeRows, { columns: window._csvHeaders });
+  const encoded = btoa(unescape(encodeURIComponent(csvStr)));
+  showToast('⏳ Envoi vers GitHub...');
+  try {
+    const r = await workerFetch('/github/file?path=' + encodeURIComponent(_csvCurrent.p), {
+      method: 'PUT',
+      body: JSON.stringify({ content: encoded, sha: _csvMeta.sha, message: 'Update ' + _csvCurrent.l + ' via Jerbi Admin' })
+    });
+    const d = await r.json();
+    if (d.content && d.content.sha) { _csvMeta.sha = d.content.sha; showToast('✅ ' + _csvCurrent.l + ' sauvegardé !'); }
+    else if (d.commit) showToast('✅ ' + _csvCurrent.l + ' sauvegardé !');
+    else showToast('❌ ' + JSON.stringify(d).slice(0,80));
+  } catch(e) { showToast('❌ ' + e.message); }
+}
+
+/* ── Statistiques installations (Worker) ───────────────── */
+
+const _origRenderAdminAnalytics = renderAdminAnalytics;
+renderAdminAnalytics = function() {
+  _origRenderAdminAnalytics();
+  // Ajouter les stats cross-device si Worker configuré
+  const wUrl = getWorkerUrl();
+  if (!wUrl) return;
+  const secret = getAdminSecret();
+  if (!secret) return;
+  workerFetch('/installs').then(function(r){ return r.json(); }).then(function(data) {
+    const el = document.getElementById('admin-analytics-content');
+    if (!el) return;
+    const existing = el.innerHTML;
+    const bp = data.byPlatform || {};
+    const total = data.total || 0;
+    const cards = Object.entries(bp).map(function(e){
+      return '<div class="install-card"><div class="install-card-val">' + e[1] + '</div><div class="install-card-lbl">' + e[0] + '</div></div>';
+    }).join('');
+    const block = '<div class="analytics-card" style="margin-top:10px">'
+      + '<div class="analytics-card-title">📲 Installations tous appareils (Worker)</div>'
+      + '<div class="installs-grid">'
+      + '<div class="install-card"><div class="install-card-val">' + total + '</div><div class="install-card-lbl">Total</div></div>'
+      + cards + '</div></div>';
+    el.innerHTML = existing + block;
+  }).catch(function(){});
+};
 </script>
 
 
@@ -4669,9 +5110,12 @@ async function adminLogin() {
         </div>
       </div>
       <!-- Onglets admin -->
-      <div class="admin-tab-bar">
+      <div class="admin-tab-bar" style="flex-wrap:wrap;">
         <button class="admin-tab active" id="admin-tab-gallery" onclick="showAdminTab('gallery')">📸 Galerie</button>
-        <button class="admin-tab" id="admin-tab-analytics" onclick="showAdminTab('analytics')">📊 Statistiques</button>
+        <button class="admin-tab" id="admin-tab-analytics" onclick="showAdminTab('analytics')">📊 Stats</button>
+        <button class="admin-tab" id="admin-tab-orders" onclick="showAdminTab('orders')">🛒 Commandes</button>
+        <button class="admin-tab" id="admin-tab-config" onclick="showAdminTab('config')">⚙️ Config</button>
+        <button class="admin-tab" id="admin-tab-csv" onclick="showAdminTab('csv')">📋 CSV</button>
       </div>
       <!-- Section Galerie -->
       <div id="admin-section-gallery">
@@ -4680,6 +5124,18 @@ async function adminLogin() {
       <!-- Section Analytiques -->
       <div id="admin-section-analytics" style="display:none">
         <div id="admin-analytics-content"></div>
+      </div>
+      <!-- Section Commandes -->
+      <div id="admin-section-orders" style="display:none">
+        <div id="admin-orders-content"></div>
+      </div>
+      <!-- Section Config -->
+      <div id="admin-section-config" style="display:none">
+        <div id="admin-config-content"></div>
+      </div>
+      <!-- Section CSV -->
+      <div id="admin-section-csv" style="display:none">
+        <div id="admin-csv-content"></div>
       </div>
     </div>
   </div>
