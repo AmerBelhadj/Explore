@@ -4940,7 +4940,10 @@ async function saveConfigToGitHub() {
   try {
     const r = await workerFetch('/github/config', { method: 'PUT', body: JSON.stringify({ values: newVals }) });
     const d = await r.json();
-    if (d.success) showToast('✅ config.js mis à jour !');
+    if (d.success) {
+      showToast('✅ config.js mis à jour !');
+      swInvalidateCache(location.origin + CFG.GITHUB_REPO_PATH + '/config.js');
+    }
     else showToast('❌ ' + (d.error || 'Erreur GitHub'));
   } catch(e) { showToast('❌ ' + e.message); }
 }
@@ -5046,10 +5049,32 @@ async function saveCSVToGitHub() {
       body: JSON.stringify({ content: encoded, sha: _csvMeta.sha, message: 'Update ' + _csvCurrent.l + ' via Jerbi Admin' })
     });
     const d = await r.json();
-    if (d.content && d.content.sha) { _csvMeta.sha = d.content.sha; showToast('✅ ' + _csvCurrent.l + ' sauvegardé !'); }
-    else if (d.commit) showToast('✅ ' + _csvCurrent.l + ' sauvegardé !');
+    if (d.content && d.content.sha) {
+      _csvMeta.sha = d.content.sha;
+      showToast('✅ ' + _csvCurrent.l + ' sauvegardé !');
+      swInvalidateCache(location.origin + CFG.GITHUB_REPO_PATH + '/' + _csvCurrent.p);
+    } else if (d.commit) {
+      showToast('✅ ' + _csvCurrent.l + ' sauvegardé !');
+      swInvalidateCache(location.origin + CFG.GITHUB_REPO_PATH + '/' + _csvCurrent.p);
+    }
     else showToast('❌ ' + JSON.stringify(d).slice(0,80));
   } catch(e) { showToast('❌ ' + e.message); }
+}
+
+/* ── Invalidation cache SW après sauvegarde admin ──────── */
+function swInvalidateCache(url) {
+  if (!navigator.serviceWorker || !navigator.serviceWorker.controller) return;
+  navigator.serviceWorker.controller.postMessage({ type: 'CLEAR_CACHE', url: url });
+  console.log('[Admin] SW cache invalidé pour :', url);
+}
+
+function swClearAllCSV() {
+  if (!navigator.serviceWorker || !navigator.serviceWorker.controller) {
+    showToast('⚠️ Service Worker non actif'); return;
+  }
+  navigator.serviceWorker.controller.postMessage({ type: 'CLEAR_ALL_CSV' });
+  showToast('🔄 Cache CSV vidé — rechargement dans 2s...');
+  setTimeout(function() { location.reload(); }, 2000);
 }
 
 /* ── Statistiques installations (Worker) ───────────────── */
@@ -5123,6 +5148,11 @@ renderAdminAnalytics = function() {
       </div>
       <!-- Section Analytiques -->
       <div id="admin-section-analytics" style="display:none">
+        <div style="margin-bottom:10px;">
+          <button onclick="swClearAllCSV()" style="width:100%;padding:9px;background:var(--cardh);border:1px solid var(--tq);color:var(--tq);border-radius:8px;font-size:.78rem;font-weight:600;cursor:pointer;">
+            🔄 Forcer le rechargement des données (CSV + Config)
+          </button>
+        </div>
         <div id="admin-analytics-content"></div>
       </div>
       <!-- Section Commandes -->

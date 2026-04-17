@@ -10,7 +10,7 @@
    - Tuiles carte : cache-first dynamique
 ══════════════════════════════════════════════════════ */
 
-const CACHE_VERSION = 'jerbi-v3.8.0';
+const CACHE_VERSION = 'jerbi-v3.9.0';
 const CACHE_STATIC  = `${CACHE_VERSION}-static`;
 const CACHE_DYNAMIC = `${CACHE_VERSION}-dynamic`;
 
@@ -176,5 +176,29 @@ self.addEventListener('message', event => {
 
   if (event.data.type === 'PING') {
     event.ports[0]?.postMessage({ type: 'PONG', version: CACHE_VERSION });
+  }
+
+  /* Appelé après sauvegarde admin d'un fichier CSV ou config.js
+     Invalide l'entrée de cache correspondante pour forcer un refetch réseau */
+  if (event.data.type === 'CLEAR_CACHE' && event.data.url) {
+    caches.open(CACHE_STATIC).then(cache => {
+      cache.delete(event.data.url).then(deleted => {
+        console.log('[SW] Cache invalidé :', event.data.url, deleted);
+      });
+    });
+  }
+
+  /* Vide toutes les entrées CSV + config.js du cache statique */
+  if (event.data.type === 'CLEAR_ALL_CSV') {
+    caches.open(CACHE_STATIC).then(cache => {
+      cache.keys().then(keys => {
+        keys.forEach(req => {
+          if (req.url.includes('.csv') || req.url.includes('config.js')) {
+            cache.delete(req);
+            console.log('[SW] CSV/config supprimé du cache :', req.url);
+          }
+        });
+      });
+    });
   }
 });
