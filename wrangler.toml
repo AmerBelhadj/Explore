@@ -1,0 +1,11 @@
+name = "jerbi-worker"
+main = "jerbi-worker.js"
+compatibility_date = "2024-01-01"
+
+[[kv_namespaces]]
+binding = "JERBI_KV"
+id = "REMPLACER_PAR_VOTRE_KV_ID"
+
+# Variables sensibles : NE PAS mettre ici, utiliser le Dashboard
+# Définir dans : Workers > jerbi-worker > Settings > Variables
+# ADMIN_SECRET, GITHUB_PAT, GITHUB_OWNER, GITHUB_REPO
