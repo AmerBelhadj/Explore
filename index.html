@@ -1009,12 +1009,35 @@ body.light .home-hero{background:linear-gradient(135deg,#5a3e00,#a07020);}
 .cfg-save-btn:active{opacity:.8;}
 .cfg-section-title{font-size:.8rem;font-weight:600;color:var(--th);margin:14px 0 8px;border-bottom:1px solid var(--border);padding-bottom:4px;}
 .csv-select{width:100%;background:var(--cardh);border:1px solid var(--border);border-radius:8px;padding:8px 10px;font-size:.8rem;color:var(--tb);margin-bottom:10px;box-sizing:border-box;}
-.csv-table-wrap{overflow-x:auto;margin-bottom:8px;max-height:340px;overflow-y:auto;}
-.csv-table{width:100%;border-collapse:collapse;font-size:.7rem;}
-.csv-table th{background:var(--cardh);padding:5px 7px;text-align:left;border:1px solid var(--border);font-weight:600;color:var(--th);white-space:nowrap;position:sticky;top:0;}
+.csv-table-wrap{
+  overflow-x:auto;overflow-y:auto;
+  margin-bottom:8px;
+  max-height:360px;
+  /* Scrollbars visibles sur tous les navigateurs */
+  scrollbar-width:thin;
+  scrollbar-color:var(--tq) var(--cardh);
+}
+.csv-table-wrap::-webkit-scrollbar{width:7px;height:7px;}
+.csv-table-wrap::-webkit-scrollbar-track{background:var(--cardh);border-radius:4px;}
+.csv-table-wrap::-webkit-scrollbar-thumb{background:var(--tq);border-radius:4px;}
+.csv-table-wrap::-webkit-scrollbar-corner{background:var(--cardh);}
+.csv-table{border-collapse:collapse;font-size:.7rem;width:max-content;min-width:100%;}
+.csv-table th{background:var(--cardh);padding:5px 7px;text-align:left;border:1px solid var(--border);font-weight:600;color:var(--th);white-space:nowrap;position:sticky;top:0;z-index:2;}
+.csv-table th:first-child{position:sticky;left:0;top:0;z-index:3;background:var(--cardh);}
 .csv-table td{padding:3px 5px;border:1px solid var(--border);color:var(--tb);}
-.csv-table td input{background:transparent;border:none;width:100%;color:var(--tb);font-size:.7rem;min-width:60px;}
+.csv-table td:first-child{position:sticky;left:0;background:var(--card);z-index:1;}
+.csv-table td input{background:transparent;border:none;width:100%;color:var(--tb);font-size:.7rem;min-width:80px;}
 .csv-table td input:focus{outline:1px solid var(--tq);border-radius:2px;}
+/* Éditeur texte .txt */
+.txt-editor{
+  width:100%;min-height:220px;box-sizing:border-box;
+  background:var(--cardh);border:1px solid var(--border);border-radius:8px;
+  padding:10px 12px;font-size:.78rem;color:var(--tb);line-height:1.7;
+  resize:vertical;font-family:monospace;
+  scrollbar-width:thin;scrollbar-color:var(--tq) var(--cardh);
+}
+.txt-editor:focus{border-color:var(--tq);outline:none;}
+.txt-meta{font-size:.68rem;color:var(--ts);margin-bottom:6px;line-height:1.6;}
 .csv-add-row-btn{font-size:.73rem;padding:5px 12px;background:var(--cardh);border:1px solid var(--tq);color:var(--tq);border-radius:8px;cursor:pointer;}
 .worker-cfg-box{background:var(--cardh);border:1px solid var(--border);border-radius:8px;padding:10px 12px;margin-bottom:12px;font-size:.75rem;color:var(--ts);line-height:1.6;}
 .worker-cfg-box b{color:var(--th);display:block;margin-bottom:3px;font-size:.78rem;}
@@ -2194,7 +2217,7 @@ function navigate(id) {
     setTimeout(updateCartFab, 50);
   }
   if (id === 'exp' && !expLoaded) loadExperiences();
-  if (id === 'exp' && expLoaded) setTimeout(initSlider, 50);
+  if (id === 'exp' && expLoaded) setTimeout(initSlider, 100);
   if (id !== 'shop') { const fab = document.getElementById('shop-cart-fab'); if (fab) fab.style.display = 'none'; }
   // Analytics: compter les visites par écran
   trackScreenVisit(id);
@@ -2453,12 +2476,15 @@ function getExpCardsCount() {
   return Math.max(1, Math.min(5, parseInt(cfg) || 3));
 }
 
+let _sliderTouchInit = false;
 function initSlider() {
   const cards = document.querySelectorAll('#exp-slider-track .exp-card');
   const n = cards.length;
   expIdx = 0;
   const overflow = document.getElementById('exp-slider-overflow');
   if (!overflow || !n) return;
+  // Si l'écran est caché (offsetWidth=0), reporter l'init au prochain navigate
+  if (overflow.offsetWidth <= 0) return;
   const count = getExpCardsCount();
   const gap = 14;
   const cardW = Math.floor((overflow.offsetWidth - gap * (count - 1)) / count);
@@ -2468,14 +2494,19 @@ function initSlider() {
   if (dots) dots.innerHTML = Array.from({length: maxIdx + 1}, (_, i) =>
     '<div class="exp-dot' + (i === 0 ? ' active' : '') + '" onclick="goSlide(' + i + ')"></div>').join('');
   updateSlider();
-  let startX = 0;
-  const track = document.getElementById('exp-slider-track');
-  if (!track) return;
-  track.addEventListener('touchstart', e => { startX = e.touches[0].clientX; }, {passive:true});
-  track.addEventListener('touchend', e => {
-    const dx = e.changedTouches[0].clientX - startX;
-    if (Math.abs(dx) > 40) sliderNav(dx < 0 ? 1 : -1);
-  });
+  // Écouteurs touch — 1 seule fois pour éviter les doublons
+  if (!_sliderTouchInit) {
+    _sliderTouchInit = true;
+    let startX = 0;
+    const track = document.getElementById('exp-slider-track');
+    if (track) {
+      track.addEventListener('touchstart', e => { startX = e.touches[0].clientX; }, {passive:true});
+      track.addEventListener('touchend', e => {
+        const dx = e.changedTouches[0].clientX - startX;
+        if (Math.abs(dx) > 40) sliderNav(dx < 0 ? 1 : -1);
+      });
+    }
+  }
 }
 function sliderNav(dir) {
   const n = document.querySelectorAll('#exp-slider-track .exp-card').length;
@@ -4952,14 +4983,22 @@ async function saveConfigToGitHub() {
 /* ── CSV Editor ────────────────────────────────────────── */
 
 const CSV_FILES_LIST = [
-  { k:'lieux',       l:'Lieux',         p:'data/lieux.csv' },
-  { k:'partenaires', l:'Partenaires',   p:'data/partenaires.csv' },
-  { k:'evenements',  l:'Événements',    p:'data/evenements.csv' },
-  { k:'faq',         l:'FAQ',           p:'data/faq.csv' },
-  { k:'produits',    l:'Produits',      p:'data/e_shop/produits.csv' },
+  { k:'lieux',       l:'Lieux',        p:'data/lieux.csv',                   d:',' },
+  { k:'partenaires', l:'Partenaires',  p:'data/partenaires.csv',             d:';' },
+  { k:'evenements',  l:'Evenements',   p:'data/evenements.csv',              d:';' },
+  { k:'faq',         l:'FAQ',          p:'data/faq.csv',                     d:';' },
+  { k:'produits',    l:'Produits',     p:'data/e_shop/produits.csv',         d:';' },
+  { k:'experiences', l:'Experiences',  p:'data/Experiences/experiences.csv', d:';' },
 ];
 let _csvCurrent = null, _csvMeta = null;
 window._csvAllRows = []; window._csvHeaders = [];
+
+/* Fichiers texte éditables */
+const TXT_FILES_LIST = [
+  { k:'message', l:'Messages broadcast', p:'data/message.txt',
+    hint:'Un message par bloc séparé par une ligne vide. Affiché en bannière dans la PWA.' },
+];
+let _txtCurrent = null;
 
 function renderAdminCSV() {
   const el = document.getElementById('admin-csv-content');
@@ -4967,10 +5006,21 @@ function renderAdminCSV() {
   const wUrl = getWorkerUrl();
   if (!wUrl) { el.innerHTML = '<div class="worker-cfg-box"><b>⚙️ WORKER_URL non configuré</b></div>'; return; }
   if (!getAdminSecret()) { el.innerHTML = adminSecretForm('renderAdminCSV'); return; }
-  const opts = CSV_FILES_LIST.map(function(f){ return '<option value="' + f.k + '">' + f.l + '</option>'; }).join('');
-  el.innerHTML = '<select class="csv-select" id="csv-sel" onchange="loadCSVEditor(this.value)">'
-    + '<option value="">-- Choisir un fichier CSV --</option>' + opts + '</select>'
+  const csvOpts = CSV_FILES_LIST.map(function(f){ return '<option value="csv:' + f.k + '">' + f.l + ' (.csv)</option>'; }).join('');
+  const txtOpts = TXT_FILES_LIST.map(function(f){ return '<option value="txt:' + f.k + '">' + f.l + ' (.txt)</option>'; }).join('');
+  el.innerHTML = '<select class="csv-select" id="csv-sel" onchange="dispatchFileEditor(this.value)">'
+    + '<option value="">-- Choisir un fichier --</option>'
+    + '<optgroup label="Fichiers CSV">' + csvOpts + '</optgroup>'
+    + '<optgroup label="Fichiers Texte">' + txtOpts + '</optgroup>'
+    + '</select>'
     + '<div id="csv-ed"></div>';
+}
+
+function dispatchFileEditor(val) {
+  if (!val) return;
+  const [type, key] = val.split(':');
+  if (type === 'csv') loadCSVEditor(key);
+  else if (type === 'txt') loadTXTEditor(key);
 }
 
 async function loadCSVEditor(key) {
@@ -4988,11 +5038,13 @@ async function loadCSVEditor(key) {
     if (!data.content) throw new Error('Contenu vide ou fichier introuvable');
     const decoded = decodeURIComponent(escape(atob(data.content.replace(/\n/g, ''))));
     _csvMeta = { sha: data.sha };
-    const parsed = Papa.parse(decoded, { header: true, skipEmptyLines: true });
+    // Utiliser le délimiteur connu du fichier (évite la mauvaise détection auto
+    // quand les données contiennent des virgules ex: tags "huile, local, bio")
+    const fileDelim = csvFile.d || ';';
+    const parsed = Papa.parse(decoded, { header: true, skipEmptyLines: true, delimiter: fileDelim });
     window._csvHeaders = parsed.meta.fields || [];
     window._csvAllRows = parsed.data.map(function(r){ return Object.assign({}, r); });
-    // Mémoriser le délimiteur détecté (crucial pour la resérialisation)
-    _csvMeta.delimiter = parsed.meta.delimiter || ';';
+    _csvMeta.delimiter = fileDelim;
     renderCSVTable(edEl);
   } catch(e) {
     edEl.innerHTML = '<div class="worker-cfg-box"><b>❌ Erreur</b>' + escHtml(e.message) + '</div>';
@@ -5063,6 +5115,73 @@ async function saveCSVToGitHub() {
       swInvalidateCache(location.origin + CFG.GITHUB_REPO_PATH + '/' + _csvCurrent.p);
     }
     else showToast('❌ ' + JSON.stringify(d).slice(0,80));
+  } catch(e) { showToast('❌ ' + e.message); }
+}
+
+/* ── Éditeur fichiers .txt ─────────────────────────────── */
+
+async function loadTXTEditor(key) {
+  const edEl = document.getElementById('csv-ed');
+  if (!edEl) return;
+  edEl.innerHTML = '<div style="text-align:center;padding:15px;color:var(--ts)">⏳ Chargement...</div>';
+  const txtFile = TXT_FILES_LIST.find(function(f){ return f.k === key; });
+  if (!txtFile) return;
+  _txtCurrent = txtFile;
+  try {
+    const r = await workerFetch('/github/file?path=' + encodeURIComponent(txtFile.p));
+    if (!r.ok) throw new Error('HTTP ' + r.status);
+    const data = await r.json();
+    if (typeof data.content === 'undefined') throw new Error('Fichier introuvable');
+    const decoded = decodeURIComponent(escape(atob(data.content.replace(/\n/g, ''))));
+    _csvMeta = { sha: data.sha, delimiter: null };
+    const hint = txtFile.hint ? '<div class="txt-meta">ℹ️ ' + txtFile.hint + '</div>' : '';
+    edEl.innerHTML = hint
+      + '<textarea class="txt-editor" id="txt-ed-area">' + escHtml(decoded) + '</textarea>'
+      + '<div style="display:flex;gap:8px;margin-top:8px;">'
+      + '<span id="txt-char-count" style="flex:1;font-size:.68rem;color:var(--ts);align-self:center;">0 caractères</span>'
+      + '<button class="cfg-save-btn" style="flex:2" onclick="saveTXTToGitHub()">💾 Sauvegarder sur GitHub</button>'
+      + '</div>';
+    const ta = document.getElementById('txt-ed-area');
+    if (ta) {
+      const updateCount = function() {
+        const el = document.getElementById('txt-char-count');
+        if (el) el.textContent = ta.value.length + ' caractères, ' + ta.value.split('\n').length + ' lignes';
+      };
+      ta.addEventListener('input', updateCount);
+      updateCount();
+    }
+  } catch(e) {
+    edEl.innerHTML = '<div class="worker-cfg-box"><b>❌ Erreur</b>' + escHtml(e.message) + '</div>';
+  }
+}
+
+async function saveTXTToGitHub() {
+  if (!_txtCurrent || !_csvMeta || !_csvMeta.sha) { showToast('Aucun fichier chargé'); return; }
+  const ta = document.getElementById('txt-ed-area');
+  if (!ta) return;
+  const content = ta.value;
+  const encoded = btoa(unescape(encodeURIComponent(content)));
+  showToast('⏳ Envoi vers GitHub...');
+  try {
+    const r = await workerFetch('/github/file?path=' + encodeURIComponent(_txtCurrent.p), {
+      method: 'PUT',
+      body: JSON.stringify({
+        content: encoded,
+        sha: _csvMeta.sha,
+        message: 'Update ' + _txtCurrent.l + ' via Jerbi Admin'
+      })
+    });
+    const d = await r.json();
+    if (d.content && d.content.sha) {
+      _csvMeta.sha = d.content.sha;
+      showToast('✅ ' + _txtCurrent.l + ' sauvegardé !');
+      swInvalidateCache(location.origin + CFG.GITHUB_REPO_PATH + '/' + _txtCurrent.p);
+    } else if (d.commit) {
+      showToast('✅ ' + _txtCurrent.l + ' sauvegardé !');
+      swInvalidateCache(location.origin + CFG.GITHUB_REPO_PATH + '/' + _txtCurrent.p);
+    } else {
+      showToast('❌ ' + JSON.stringify(d).slice(0, 80));
+    }
   } catch(e) { showToast('❌ ' + e.message); }
 }
 
