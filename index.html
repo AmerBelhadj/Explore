@@ -2315,6 +2315,20 @@ function initSponsor() {
 }
 
 let _sponsorPopupTimer = null;
+let _sponsorDone = false; // flag : popup sponsor terminé
+
+function _onSponsorDone() {
+  if (_sponsorDone) return;
+  _sponsorDone = true;
+  // Déclencher le banner install seulement maintenant
+  // (1s de délai pour laisser le popup disparaître visuellement)
+  if (typeof deferredInstallPrompt !== 'undefined' && deferredInstallPrompt) {
+    setTimeout(showInstallBanner, 1000);
+  } else if (typeof _isIOS !== 'undefined' && _isIOS && typeof _isSafari !== 'undefined' && _isSafari) {
+    setTimeout(showInstallBanner, 1000);
+  }
+}
+
 function showSponsorPopup() {
   const popup = document.getElementById('sponsor-popup');
   const pImg  = document.getElementById('sponsor-popup-img');
@@ -2329,6 +2343,8 @@ function showSponsorPopup() {
         popup.style.transition = 'opacity 5s ease';
         popup.classList.remove('show');
         popup.classList.add('fadeout');
+        // Après le fade-out complet (5s), déclencher install banner
+        setTimeout(_onSponsorDone, 5200);
       }, 3000);
     }, 900);
   }
@@ -2357,6 +2373,8 @@ function closeSponsorPopup() {
   popup.style.transition = 'opacity 0.4s ease';
   popup.classList.remove('show');
   popup.classList.add('fadeout');
+  // Fermeture manuelle → déclencher install banner après 0.5s
+  setTimeout(_onSponsorDone, 500);
 }
 function openSponsor() {
   if (CFG.SPONSOR_LIEN) window.open(CFG.SPONSOR_LIEN, '_blank', 'noopener noreferrer');
@@ -3398,6 +3416,9 @@ window.addEventListener('beforeinstallprompt', e => {
   if (homeBtn) { homeBtn.style.display = 'flex'; homeBtn.onclick = doInstall; }
   const snoozed = localStorage.getItem('jerbi_install_snoozed');
   if (snoozed && (Date.now() - parseInt(snoozed)) < CFG.INSTALL_SNOOZE_DAYS * 86400000) return;
+  // Si le popup sponsor est actif, _onSponsorDone déclenchera le banner
+  // Sinon on l'affiche après le délai normal
+  if (typeof _sponsorDone !== 'undefined' && !_sponsorDone && CFG.SPONSOR_ACTIF) return;
   setTimeout(showInstallBanner, CFG.INSTALL_PROMPT_DELAY_MS);
 });
 
@@ -3420,6 +3441,8 @@ function initInstallUI() {
   if (_isIOS && _isSafari) {
     const homeBtn = document.getElementById('install-home-btn');
     if (homeBtn) { homeBtn.style.display = 'flex'; homeBtn.onclick = showIosTooltip; }
+    // Laisser _onSponsorDone gérer le timing si sponsor actif
+    if (typeof _sponsorDone !== 'undefined' && !_sponsorDone && CFG.SPONSOR_ACTIF) return;
     setTimeout(showInstallBanner, CFG.INSTALL_PROMPT_DELAY_MS);
   }
 }
