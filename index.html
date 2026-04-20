@@ -1680,10 +1680,10 @@ body.light .event-card.past .event-month{color:var(--tm);}
       <span class="sidebar-nav-icon">🏠</span> Accueil
     </div>
     <div class="sidebar-nav-item" data-screen="exp" onclick="navigate('exp')">
-      <span class="sidebar-nav-icon">🎬</span> Expériences
+      <span class="sidebar-nav-icon">🎬</span> Expériences et activités
     </div>
     <div class="sidebar-nav-item" data-screen="adresses" onclick="navigate('adresses')">
-      <span class="sidebar-nav-icon">🛍️</span> Adresses
+      <span class="sidebar-nav-icon">🛍️</span> Nos recommandations
     </div>
     <div class="sidebar-nav-item" data-screen="agenda" onclick="navigate('agenda')">
       <span class="sidebar-nav-icon">📅</span> Agenda
@@ -1795,7 +1795,7 @@ body.light .event-card.past .event-month{color:var(--tm);}
           <div class="exp-hero">
             <div class="exp-hero-emoji">🌊</div>
             <div class="exp-hero-tag">Jerbi Explore · Cap Bon</div>
-            <div class="exp-hero-title">Nos Expériences</div>
+            <div class="exp-hero-title">Nos Expériences et activités</div>
             <div class="exp-hero-sub">Des moments inoubliables</div>
           </div>
 
@@ -1915,7 +1915,7 @@ body.light .event-card.past .event-month{color:var(--tm);}
         <!-- ══ BONNES ADRESSES & PARTENAIRES ══ -->
         <div class="screen" id="screen-adresses">
           <div class="section-header" style="padding:20px 16px 12px;">
-            <div class="adresses-title">🛍️ Bonnes Adresses</div>
+            <div class="adresses-title">🛍️ Nos recommandations</div>
             <div class="adresses-sub" id="adresses-sub">Chargement… <span id="adresses-status"></span></div>
           </div>
           <!-- Filtres catégories dynamiques -->
@@ -2030,7 +2030,7 @@ body.light .event-card.past .event-month{color:var(--tm);}
           <div class="nav-icon">🏠</div><div class="nav-label">Accueil</div>
         </div>
         <div class="nav-item" data-screen="adresses" onclick="navigate('adresses')">
-          <div class="nav-icon">🛍️</div><div class="nav-label">Adresses</div>
+          <div class="nav-icon">🛍️</div><div class="nav-label">Nos recommandations</div>
         </div>
         <div class="nav-item" data-screen="agenda" onclick="navigate('agenda')">
           <div class="nav-icon">📅</div><div class="nav-label">Agenda</div>
@@ -2305,11 +2305,13 @@ function initSponsor() {
   }
   img.src = CFG.SPONSOR_LOGO;
   img.alt = CFG.SPONSOR_ALT || 'Sponsor';
-  img.onload  = () => {
-    wrap.classList.add('visible');
-    showSponsorPopup();
-  };
+  img.onload  = () => wrap.classList.add('visible');
   img.onerror = () => wrap.classList.remove('visible');
+  // iOS : onload non fiable si image en cache → vérifier complete après src
+  if (img.complete && img.naturalWidth > 0) wrap.classList.add('visible');
+  // Lancer le popup indépendamment du chargement de l'image topbar
+  // (le popup charge sa propre copie de l'image)
+  showSponsorPopup();
 }
 
 let _sponsorPopupTimer = null;
@@ -2318,19 +2320,34 @@ function showSponsorPopup() {
   const pImg  = document.getElementById('sponsor-popup-img');
   const pName = document.getElementById('sponsor-popup-name');
   if (!popup || !CFG.SPONSOR_ACTIF || !CFG.SPONSOR_LOGO) return;
-  if (pImg) { pImg.src = CFG.SPONSOR_LOGO; pImg.alt = CFG.SPONSOR_ALT || ''; }
   if (pName) pName.textContent = CFG.SPONSOR_ALT || '';
-  // Afficher après le splash (splash disparaît à 800ms)
-  setTimeout(function() {
-    popup.classList.add('show');
-    // Après 3 secondes visibles → démarrer le fade-out sur 5s (transition CSS = 2s,
-    // puis on attend encore 3s pour que ce soit doux — total visible ~6s)
-    _sponsorPopupTimer = setTimeout(function() {
-      popup.style.transition = 'opacity 5s ease';
-      popup.classList.remove('show');
-      popup.classList.add('fadeout');
-    }, 3000);
-  }, 900);
+
+  function _doShow() {
+    setTimeout(function() {
+      popup.classList.add('show');
+      _sponsorPopupTimer = setTimeout(function() {
+        popup.style.transition = 'opacity 5s ease';
+        popup.classList.remove('show');
+        popup.classList.add('fadeout');
+      }, 3000);
+    }, 900);
+  }
+
+  if (!pImg) { _doShow(); return; }
+
+  // Précharger l'image avant d'afficher le popup
+  // Garantit le rendu sur iOS (cache ou réseau)
+  const preload = new Image();
+  preload.onload = function() {
+    pImg.src = preload.src;
+    pImg.alt = CFG.SPONSOR_ALT || '';
+    _doShow();
+  };
+  preload.onerror = function() {
+    // Afficher quand même sans image si erreur réseau
+    _doShow();
+  };
+  preload.src = CFG.SPONSOR_LOGO + '?_=' + Date.now(); // cache-bust pour iOS
 }
 
 function closeSponsorPopup() {
@@ -3234,7 +3251,7 @@ function _runSearch(q) {
     return nom.includes(q) || cat.includes(q) || ville.includes(q);
   }).slice(0,4);
   if (pts.length) {
-    html += `<div class="search-group-label">🛍️ Bonnes Adresses</div>`;
+    html += `<div class="search-group-label">🛍️ Nos recommandations</div>`;
     html += pts.map(p => { const spk=storeItem(p); return `<div class="search-result-item" onclick="closeSearch();openPartnerModal(getItem('${spk}'))">
       <div class="search-result-icon">${getCatEmoji(p.Categorie||p.categorie||'')}</div>
       <div><div class="search-result-name">${escHtml(p.Nom||p.nom||'')}</div><div class="search-result-meta">${escHtml(p.Ville||p.ville||'')}</div></div>
@@ -4849,19 +4866,35 @@ function closeAdminPanel() {
 (function initAdminResize() {
   let dragging = false, startX, startY, startW, startH;
 
-  function getHandle() { return document.getElementById('admin-resize-handle'); }
-  function getPanel()  { return document.getElementById('admin-panel'); }
+  function getHandle()  { return document.getElementById('admin-resize-handle'); }
+  function getPanel()   { return document.getElementById('admin-panel'); }
+  function getOverlay() { return document.getElementById('admin-overlay'); }
 
   function onStart(cx, cy) {
-    const panel = getPanel();
-    if (!panel) return;
+    const panel   = getPanel();
+    const overlay = getOverlay();
+    if (!panel || !overlay) return;
     dragging = true;
     startX = cx; startY = cy;
     startW = panel.offsetWidth;
     startH = panel.offsetHeight;
-    // Passer de max-height à height fixe pour que le resize fonctionne
-    panel.style.height = startH + 'px';
-    panel.style.maxHeight = 'none';
+
+    // ─── Clé du fix droite ───────────────────────────────────────
+    // Le panel est centré par flexbox. Dès qu'on démarre le drag,
+    // on le sort du flux flex en le positionnant absolument
+    // à sa position courante dans la fenêtre.
+    const rect = panel.getBoundingClientRect();
+    panel.style.position   = 'fixed';
+    panel.style.left       = rect.left + 'px';
+    panel.style.top        = rect.top  + 'px';
+    panel.style.margin     = '0';
+    panel.style.maxWidth   = 'none';
+    panel.style.maxHeight  = 'none';
+    panel.style.width      = startW + 'px';
+    panel.style.height     = startH + 'px';
+    // L'overlay n'a plus besoin de centrer
+    overlay.style.alignItems     = 'flex-start';
+    overlay.style.justifyContent = 'flex-start';
     document.body.style.userSelect = 'none';
   }
 
@@ -4869,8 +4902,8 @@ function closeAdminPanel() {
     if (!dragging) return;
     const panel = getPanel();
     if (!panel) return;
-    const newW = Math.max(320, Math.min(window.innerWidth - 32,  startW + (cx - startX)));
-    const newH = Math.max(300, Math.min(window.innerHeight - 32, startH + (cy - startY)));
+    const newW = Math.max(320, Math.min(window.innerWidth  - 16, startW + (cx - startX)));
+    const newH = Math.max(300, Math.min(window.innerHeight - 16, startH + (cy - startY)));
     panel.style.width  = newW + 'px';
     panel.style.height = newH + 'px';
   }
@@ -4880,16 +4913,15 @@ function closeAdminPanel() {
     document.body.style.userSelect = '';
   }
 
-  document.addEventListener('mousedown',  function(e) {
+  document.addEventListener('mousedown', function(e) {
     if (e.target === getHandle()) { e.preventDefault(); onStart(e.clientX, e.clientY); }
   });
-  document.addEventListener('mousemove',  function(e) { if (dragging) onMove(e.clientX, e.clientY); });
-  document.addEventListener('mouseup',    onEnd);
+  document.addEventListener('mousemove', function(e) { if (dragging) onMove(e.clientX, e.clientY); });
+  document.addEventListener('mouseup',   onEnd);
 
   document.addEventListener('touchstart', function(e) {
     if (e.target === getHandle()) {
-      const t = e.touches[0];
-      onStart(t.clientX, t.clientY);
+      const t = e.touches[0]; onStart(t.clientX, t.clientY);
     }
   }, { passive: true });
   document.addEventListener('touchmove', function(e) {
