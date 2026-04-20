@@ -32,7 +32,7 @@ const APP_CONFIG = {
   // ── E-Shop ────────────────────────────────────────────
   // Numéro WhatsApp pour les commandes (format international sans +)
   // Exemple : '21698765432' → +216 98 765 432
-  SHOP_WHATSAPP: '21624055055',
+  SHOP_WHATSAPP: '',
 
   // ── Analytics ─────────────────────────────────────────
   // GoatCounter : créez un compte gratuit sur https://www.goatcounter.com
@@ -43,7 +43,7 @@ const APP_CONFIG = {
   // ── Backend Worker (Cloudflare) ──────────────────────
   // URL du Worker déployé après création sur cloudflare.com
   // Ex: 'https://jerbi-worker.VOTRE-COMPTE.workers.dev'
-  WORKER_URL: 'https://jerbi-worker.amer-belhadj.workers.dev',
+  WORKER_URL: '',
 
   // ── Fond d'écran ──────────────────────────────────────
   // Images dans data/Background/
@@ -57,7 +57,7 @@ const APP_CONFIG = {
   // Nombre de cartes visibles simultanément dans le slider
   // Valeurs possibles : 1 (mobile auto), 2, 3, 4, 5
   // Sur mobile, toujours 1 carte (override automatique)
-  EXP_CARDS_COUNT: 2,
+  EXP_CARDS_COUNT: 3,
   // Chemin du CSV des expériences
   get CSV_EXPERIENCES() { return `${this.GITHUB_REPO_PATH}/data/Experiences/experiences.csv`; },
 
