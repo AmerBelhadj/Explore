@@ -34,8 +34,7 @@ function jsonResponse(data, status = 200) {
 
 function checkSecret(request, env) {
   const headerSecret = request.headers.get('X-Admin-Secret');
-  const querySecret  = new URL(request.url).searchParams.get('secret');
-  return (headerSecret || querySecret) === env.ADMIN_SECRET;
+  return headerSecret === env.ADMIN_SECRET;
 }
 
 /* ═══════════════════════════════════════════════════════
