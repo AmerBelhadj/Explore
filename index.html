@@ -1683,7 +1683,7 @@ body.light .event-card.past .event-month{color:var(--tm);}
       <span class="sidebar-nav-icon">🎬</span> Expériences et activités
     </div>
     <div class="sidebar-nav-item" data-screen="adresses" onclick="navigate('adresses')">
-      <span class="sidebar-nav-icon">🛍️</span> Nos recommandations
+      <span class="sidebar-nav-icon">🌟</span> Nos recommandations
     </div>
     <div class="sidebar-nav-item" data-screen="agenda" onclick="navigate('agenda')">
       <span class="sidebar-nav-icon">📅</span> Agenda
@@ -1915,7 +1915,7 @@ body.light .event-card.past .event-month{color:var(--tm);}
         <!-- ══ BONNES ADRESSES & PARTENAIRES ══ -->
         <div class="screen" id="screen-adresses">
           <div class="section-header" style="padding:20px 16px 12px;">
-            <div class="adresses-title">🛍️ Nos recommandations</div>
+            <div class="adresses-title">🌟 Nos recommandations</div>
             <div class="adresses-sub" id="adresses-sub">Chargement… <span id="adresses-status"></span></div>
           </div>
           <!-- Filtres catégories dynamiques -->
@@ -2030,7 +2030,7 @@ body.light .event-card.past .event-month{color:var(--tm);}
           <div class="nav-icon">🏠</div><div class="nav-label">Accueil</div>
         </div>
         <div class="nav-item" data-screen="adresses" onclick="navigate('adresses')">
-          <div class="nav-icon">🛍️</div><div class="nav-label">Nos recommandations</div>
+          <div class="nav-icon">🌟</div><div class="nav-label">Recommandations</div>
         </div>
         <div class="nav-item" data-screen="agenda" onclick="navigate('agenda')">
           <div class="nav-icon">📅</div><div class="nav-label">Agenda</div>
@@ -3251,7 +3251,7 @@ function _runSearch(q) {
     return nom.includes(q) || cat.includes(q) || ville.includes(q);
   }).slice(0,4);
   if (pts.length) {
-    html += `<div class="search-group-label">🛍️ Nos recommandations</div>`;
+    html += `<div class="search-group-label">🌟 Nos recommandations</div>`;
     html += pts.map(p => { const spk=storeItem(p); return `<div class="search-result-item" onclick="closeSearch();openPartnerModal(getItem('${spk}'))">
       <div class="search-result-icon">${getCatEmoji(p.Categorie||p.categorie||'')}</div>
       <div><div class="search-result-name">${escHtml(p.Nom||p.nom||'')}</div><div class="search-result-meta">${escHtml(p.Ville||p.ville||'')}</div></div>
@@ -4996,7 +4996,7 @@ function setAdminSecret(s) {
   localStorage.setItem('_jwk', s); // persistance iOS
 }
 function clearAdminSecret() {
-  clearAdminSecret();
+  sessionStorage.removeItem('jerbi_worker_secret');
   localStorage.removeItem('_jwk');
 }
 
@@ -5404,6 +5404,13 @@ function swInvalidateCache(url) {
   console.log('[Admin] SW cache invalidé pour :', url);
 }
 
+function resetInstallPrompt() {
+  localStorage.removeItem('jerbi_install_snoozed');
+  localStorage.removeItem('jerbi_install_dismissed');
+  showToast('✅ Proposition installation réactivée — rechargez la page');
+  setTimeout(function() { location.reload(); }, 1500);
+}
+
 function swClearAllCSV() {
   if (!navigator.serviceWorker || !navigator.serviceWorker.controller) {
     showToast('⚠️ Service Worker non actif'); return;
@@ -5485,9 +5492,12 @@ renderAdminAnalytics = function() {
       </div>
       <!-- Section Analytiques -->
       <div id="admin-section-analytics" style="display:none">
-        <div style="margin-bottom:10px;">
+        <div style="display:flex;flex-direction:column;gap:8px;margin-bottom:10px;">
           <button onclick="swClearAllCSV()" style="width:100%;padding:9px;background:var(--cardh);border:1px solid var(--tq);color:var(--tq);border-radius:8px;font-size:.78rem;font-weight:600;cursor:pointer;">
             🔄 Forcer le rechargement des données (CSV + Config)
+          </button>
+          <button onclick="resetInstallPrompt()" style="width:100%;padding:9px;background:var(--cardh);border:1px solid var(--tq);color:var(--tq);border-radius:8px;font-size:.78rem;font-weight:600;cursor:pointer;">
+            📲 Réactiver la proposition d'installation
           </button>
         </div>
         <div id="admin-analytics-content"></div>
