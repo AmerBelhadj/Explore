@@ -1073,6 +1073,13 @@ body.light .home-hero{background:linear-gradient(135deg,#5a3e00,#a07020);}
 }
 .txt-editor:focus{border-color:var(--tq);outline:none;}
 .txt-meta{font-size:.68rem;color:var(--ts);margin-bottom:6px;line-height:1.6;}
+.backup-list{margin-top:10px;border:1px solid var(--border);border-radius:8px;overflow:hidden;}
+.backup-row{display:flex;align-items:center;gap:8px;padding:7px 10px;border-bottom:1px solid var(--border);font-size:.72rem;}
+.backup-row:last-child{border-bottom:none;}
+.backup-date{flex:1;color:var(--ts);}
+.backup-name{font-weight:600;color:var(--th);}
+.backup-restore-btn{font-size:.68rem;padding:3px 9px;border-radius:6px;border:1px solid var(--tq);color:var(--tq);background:transparent;cursor:pointer;}
+.backup-restore-btn:active{opacity:.7;}
 .csv-add-row-btn{font-size:.73rem;padding:5px 12px;background:var(--cardh);border:1px solid var(--tq);color:var(--tq);border-radius:8px;cursor:pointer;}
 .worker-cfg-box{background:var(--cardh);border:1px solid var(--border);border-radius:8px;padding:10px 12px;margin-bottom:12px;font-size:.75rem;color:var(--ts);line-height:1.6;}
 .worker-cfg-box b{color:var(--th);display:block;margin-bottom:3px;font-size:.78rem;}
@@ -1680,7 +1687,7 @@ body.light .event-card.past .event-month{color:var(--tm);}
       <span class="sidebar-nav-icon">🏠</span> Accueil
     </div>
     <div class="sidebar-nav-item" data-screen="exp" onclick="navigate('exp')">
-      <span class="sidebar-nav-icon">🎬</span> Expériences et activités
+      <span class="sidebar-nav-icon">🎬</span> Les Incontournables
     </div>
     <div class="sidebar-nav-item" data-screen="adresses" onclick="navigate('adresses')">
       <span class="sidebar-nav-icon">🌟</span> Nos recommandations
@@ -1795,7 +1802,7 @@ body.light .event-card.past .event-month{color:var(--tm);}
           <div class="exp-hero">
             <div class="exp-hero-emoji">🌊</div>
             <div class="exp-hero-tag">Jerbi Explore · Cap Bon</div>
-            <div class="exp-hero-title">Nos Expériences et activités</div>
+            <div class="exp-hero-title">Expériences incontournables au Cap Bon</div>
             <div class="exp-hero-sub">Des moments inoubliables</div>
           </div>
 
@@ -2315,12 +2322,16 @@ function initSponsor() {
 }
 
 let _sponsorPopupTimer = null;
-// Délai d'affichage du banner install :
-// Si sponsor actif → attendre que le popup soit terminé (9500ms)
-// Sinon → délai normal de config (3000ms)
-function _getInstallDelay() {
-  const sponsorActive = (typeof CFG !== 'undefined') && CFG.SPONSOR_ACTIF && CFG.SPONSOR_LOGO;
-  return sponsorActive ? 9500 : ((typeof CFG !== 'undefined' && CFG.INSTALL_PROMPT_DELAY_MS) || 3000);
+// Install avant sponsor :
+// Le banner install s'affiche en premier (délai normal 3s).
+// Le popup sponsor ne se lance qu'après que l'utilisateur ait
+// répondu (installer / plus tard / rien après 8s).
+let _installAnswered = false;
+function _markInstallAnswered() {
+  if (_installAnswered) return;
+  _installAnswered = true;
+  // Lancer le sponsor maintenant
+  if (typeof initSponsor === 'function') initSponsor();
 }
 
 function showSponsorPopup() {
@@ -3406,8 +3417,7 @@ window.addEventListener('beforeinstallprompt', e => {
   if (homeBtn) { homeBtn.style.display = 'flex'; homeBtn.onclick = doInstall; }
   const snoozed = localStorage.getItem('jerbi_install_snoozed');
   if (snoozed && (Date.now() - parseInt(snoozed)) < CFG.INSTALL_SNOOZE_DAYS * 86400000) return;
-  // Délai calculé : attend la fin du popup sponsor si actif
-  setTimeout(showInstallBanner, _getInstallDelay());
+  setTimeout(showInstallBanner, (typeof CFG !== 'undefined' && CFG.INSTALL_PROMPT_DELAY_MS) || 3000);
 });
 
 window.addEventListener('appinstalled', () => {
@@ -3429,8 +3439,7 @@ function initInstallUI() {
   if (_isIOS && _isSafari) {
     const homeBtn = document.getElementById('install-home-btn');
     if (homeBtn) { homeBtn.style.display = 'flex'; homeBtn.onclick = showIosTooltip; }
-    // Délai calculé : attend la fin du popup sponsor si actif
-    setTimeout(showInstallBanner, _getInstallDelay());
+    setTimeout(showInstallBanner, (typeof CFG !== 'undefined' && CFG.INSTALL_PROMPT_DELAY_MS) || 3000);
   }
 }
 
@@ -3520,6 +3529,7 @@ async function doInstall() {
       deferredInstallPrompt = null;
       if (banner) banner.style.display = 'none';
     }
+    _markInstallAnswered(); // lancer le sponsor quelle que soit la réponse
   } else {
     showToast('📲 Ouvrez le menu du navigateur pour installer');
   }
@@ -3529,6 +3539,7 @@ function dismissInstall() {
   const banner = document.getElementById('install-banner');
   if (banner) banner.style.display = 'none';
   localStorage.setItem('jerbi_install_snoozed', Date.now().toString());
+  _markInstallAnswered(); // lancer le sponsor
 }
 
 /* ══ SERVICE WORKER & MISE À JOUR ═════════════════════════ */
@@ -3889,6 +3900,7 @@ async function sha256(message) {
 /* ── Compteur de tentatives météo (retry automatique) ─── */
 let _weatherRetryCount = 0;
 const _WEATHER_RETRY_DELAYS = [2*60*1000, 5*60*1000, 10*60*1000]; // 2min, 5min, 10min
+const _WEATHER_CACHE_KEY = 'jerbi_weather_cache';
 
 async function fetchWeather() {
   // Coordonnées El Haouaria, Cap Bon
@@ -3900,7 +3912,7 @@ async function fetchWeather() {
   try {
     // Timeout 8s — évite qu'un fetch reste bloqué indéfiniment sur mobile
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 8000);
+    const timeoutId = setTimeout(() => controller.abort(), 15000); // 15s pour connexions lentes
     const res = await fetch(url, { signal: controller.signal });
     clearTimeout(timeoutId);
     if (!res.ok) {
@@ -3908,6 +3920,13 @@ async function fetchWeather() {
       return;
     }
     _weatherRetryCount = 0; // succès → réinitialiser le compteur
+    // Persister les données météo pour affichage hors-ligne
+    try {
+      const weatherSnapshot = {
+        ts: Date.now(), temp, ressenti, wind, winddir, wcode, hum, uv, vis
+      };
+      localStorage.setItem(_WEATHER_CACHE_KEY, JSON.stringify(weatherSnapshot));
+    } catch(e) {}
     const data = await res.json();
     const cur = data.current;
 
@@ -4013,11 +4032,34 @@ async function fetchWeather() {
 }
 
 function scheduleWeatherRetry() {
-  if (_weatherRetryCount >= _WEATHER_RETRY_DELAYS.length) return; // max 3 retries
+  if (_weatherRetryCount >= _WEATHER_RETRY_DELAYS.length) {
+    // Tous les retries échoués → afficher dernière météo connue depuis cache
+    _showCachedWeather();
+    return;
+  }
   const delay = _WEATHER_RETRY_DELAYS[_weatherRetryCount];
   _weatherRetryCount++;
-  console.log(`[Météo] Retry dans ${delay/60000} min (tentative ${_weatherRetryCount})`);
+  console.log('[Météo] Retry dans ' + (delay/60000) + ' min (tentative ' + _weatherRetryCount + ')');
   setTimeout(fetchWeather, delay);
+}
+
+function _showCachedWeather() {
+  try {
+    const raw = localStorage.getItem(_WEATHER_CACHE_KEY);
+    if (!raw) return;
+    const d = JSON.parse(raw);
+    const agoMin = Math.round((Date.now() - d.ts) / 60000);
+    const agoTxt = agoMin < 60 ? agoMin + ' min' : Math.round(agoMin/60) + 'h';
+    const tEl = document.getElementById('w-temp');
+    const rEl = document.getElementById('w-ressenti');
+    if (tEl) tEl.textContent = d.temp + '°C (' + agoTxt + ')';
+    if (rEl) rEl.textContent = d.ressenti + '°C';
+    const vEl = document.getElementById('w-vent');
+    if (vEl) vEl.textContent = d.wind + ' km/h';
+    const hEl = document.getElementById('w-hum');
+    if (hEl) hEl.textContent = d.hum + '%';
+    console.log('[Météo] Données du cache affichées (il y a ' + agoTxt + ')');
+  } catch(e) {}
 }
 
 /* ══ INIT ══════════════════════════════════════════════════ */
@@ -4171,12 +4213,22 @@ document.addEventListener('DOMContentLoaded', function() {
   window.addEventListener('offline', () => renderGallery());
 
   // Météo dynamique — chargement initial + refresh toutes les 30 min
+  // Afficher le cache immédiatement si disponible (avant le premier fetch réseau)
+  _showCachedWeather();
   fetchWeather();
-  setInterval(fetchWeather, 30 * 60 * 1000);
+  setInterval(function() {
+    _weatherRetryCount = 0; // reset à chaque cycle de 30 min
+    fetchWeather();
+  }, 30 * 60 * 1000);
 
   // Initialiser l'UI d'installation (iOS + Android)
+  // Le sponsor s'affiche APRÈS la réponse de l'utilisateur au banner install
   initInstallUI();
-  initSponsor();
+  // initSponsor() sera appelé par _markInstallAnswered() après le banner install
+  // Si pas de prompt install disponible → lancer le sponsor directement après 3s
+  setTimeout(function() {
+    if (!_installAnswered) _markInstallAnswered();
+  }, (typeof CFG !== 'undefined' && CFG.INSTALL_PROMPT_DELAY_MS ? CFG.INSTALL_PROMPT_DELAY_MS : 3000) + 5000);
 
   // Messages administrateur — chargement initial + refresh 60s
   loadAdminMessages();
@@ -4996,18 +5048,14 @@ function getWorkerUrl() {
     ? APP_CONFIG.WORKER_URL.replace(/\/$/, '') : '';
 }
 function getAdminSecret() {
-  // sessionStorage peut être vide sur iOS en mode standalone après suspend
-  // Fallback sur localStorage avec une clé obfusquée
-  return sessionStorage.getItem('jerbi_worker_secret')
-      || localStorage.getItem('_jwk') || '';
+  // sessionStorage uniquement : redemandé à chaque session (sécurité)
+  return sessionStorage.getItem('jerbi_worker_secret') || '';
 }
 function setAdminSecret(s) {
-  sessionStorage.setItem('jerbi_worker_secret', s);
-  localStorage.setItem('_jwk', s); // persistance iOS
+  sessionStorage.setItem('jerbi_worker_secret', s.trim()); // .trim() anti-espaces
 }
 function clearAdminSecret() {
   sessionStorage.removeItem('jerbi_worker_secret');
-  localStorage.removeItem('_jwk');
 }
 
 async function workerFetch(path, opts) {
@@ -5259,7 +5307,7 @@ async function loadCSVEditor(key) {
     const data = await r.json();
     if (!data.content) throw new Error('Contenu vide ou fichier introuvable');
     const decoded = decodeURIComponent(escape(atob(data.content.replace(/\n/g, ''))));
-    _csvMeta = { sha: data.sha };
+    _csvMeta = { sha: data.sha, originalContent: decoded };
     // Utiliser le délimiteur connu du fichier (évite la mauvaise détection auto
     // quand les données contiennent des virgules ex: tags "huile, local, bio")
     const fileDelim = csvFile.d || ';';
@@ -5284,8 +5332,9 @@ function renderCSVTable(container) {
       + '<td><button class="order-btn" onclick="csvDel(' + ri + ')">✕</button></td></tr>';
   });
   tbl += '</tbody></table></div>'
-    + '<div style="display:flex;gap:8px;margin-top:6px;">'
+    + '<div style="display:flex;gap:6px;margin-top:6px;flex-wrap:wrap;">'
     + '<button class="csv-add-row-btn" onclick="csvAdd()">+ Ligne</button>'
+    + '<button class="csv-add-row-btn" style="border-color:var(--ts);color:var(--ts)" onclick="showCSVBackups()">📂 Backups</button>'
     + '<button class="cfg-save-btn" style="flex:1" onclick="saveCSVToGitHub()">💾 Sauvegarder sur GitHub</button>'
     + '</div>';
   container.innerHTML = tbl;
@@ -5317,12 +5366,15 @@ function csvAdd() {
 async function saveCSVToGitHub() {
   if (!_csvCurrent || !_csvMeta) { showToast('Aucun fichier chargé'); return; }
   const activeRows = window._csvAllRows.filter(function(r){ return r !== null; });
-  // Utiliser le délimiteur original détecté au chargement (évite de casser les parsers qui attendent ';')
   const delim = _csvMeta.delimiter || ';';
   const csvStr = Papa.unparse(activeRows, { columns: window._csvHeaders, delimiter: delim });
   const encoded = btoa(unescape(encodeURIComponent(csvStr)));
-  showToast('⏳ Envoi vers GitHub...');
+  showToast('⏳ Sauvegarde + envoi vers GitHub...');
   try {
+    // ── Étape 1 : backup de l'ancienne version dans KV avant d'écraser ──
+    await _backupFileToKV(_csvCurrent.k, _csvCurrent.l, _csvMeta.originalContent || '');
+
+    // ── Étape 2 : écrire la nouvelle version sur GitHub ──────────────────
     const r = await workerFetch('/github/file?path=' + encodeURIComponent(_csvCurrent.p), {
       method: 'PUT',
       body: JSON.stringify({ content: encoded, sha: _csvMeta.sha, message: 'Update ' + _csvCurrent.l + ' via Jerbi Admin' })
@@ -5330,14 +5382,95 @@ async function saveCSVToGitHub() {
     const d = await r.json();
     if (d.content && d.content.sha) {
       _csvMeta.sha = d.content.sha;
-      showToast('✅ ' + _csvCurrent.l + ' sauvegardé !');
+      showToast('✅ ' + _csvCurrent.l + ' sauvegardé + backup créé !');
       swInvalidateCache(location.origin + CFG.GITHUB_REPO_PATH + '/' + _csvCurrent.p);
     } else if (d.commit) {
-      showToast('✅ ' + _csvCurrent.l + ' sauvegardé !');
+      showToast('✅ ' + _csvCurrent.l + ' sauvegardé + backup créé !');
       swInvalidateCache(location.origin + CFG.GITHUB_REPO_PATH + '/' + _csvCurrent.p);
+    } else {
+      showToast('❌ ' + JSON.stringify(d).slice(0,80));
     }
-    else showToast('❌ ' + JSON.stringify(d).slice(0,80));
   } catch(e) { showToast('❌ ' + e.message); }
+}
+
+/* Sauvegarde d'un fichier dans Cloudflare KV avant modification */
+async function _backupFileToKV(fileKey, fileLabel, originalContent) {
+  if (!originalContent) return; // rien à sauvegarder si pas de contenu original
+  try {
+    const backupKey = 'backup:' + fileKey;
+    // Lire les backups existants (max 5 gardés)
+    let history = [];
+    try {
+      const existing = await workerFetch('/backup/' + fileKey);
+      if (existing.ok) {
+        const data = await existing.json();
+        history = data.backups || [];
+      }
+    } catch(e) {}
+    // Ajouter le nouveau backup en tête
+    history.unshift({
+      date: new Date().toISOString(),
+      label: fileLabel,
+      content: originalContent
+    });
+    // Garder seulement les 5 derniers
+    history = history.slice(0, 5);
+    await workerFetch('/backup/' + fileKey, {
+      method: 'PUT',
+      body: JSON.stringify({ backups: history })
+    });
+  } catch(e) {
+    console.warn('[Backup] Échec backup KV :', e.message);
+  }
+}
+
+/* Afficher les backups disponibles pour le fichier courant */
+async function showCSVBackups() {
+  if (!_csvCurrent) return;
+  const edEl = document.getElementById('csv-ed');
+  if (!edEl) return;
+  const infoDiv = document.getElementById('csv-backup-list');
+  if (infoDiv) { infoDiv.remove(); return; } // toggle
+  const div = document.createElement('div');
+  div.id = 'csv-backup-list';
+  div.innerHTML = '<div style="text-align:center;padding:10px;color:var(--ts);font-size:.75rem">⏳ Chargement des backups...</div>';
+  edEl.appendChild(div);
+  try {
+    const r = await workerFetch('/backup/' + _csvCurrent.k);
+    if (!r.ok) { div.innerHTML = '<div class="worker-cfg-box"><b>Aucun backup disponible</b></div>'; return; }
+    const data = await r.json();
+    const backups = data.backups || [];
+    if (!backups.length) { div.innerHTML = '<div class="worker-cfg-box" style="margin-top:8px"><b>Aucun backup disponible</b><br>Le premier backup sera créé lors de la prochaine sauvegarde.</div>'; return; }
+    let html = '<div class="backup-list">';
+    backups.forEach(function(b, i) {
+      const d = new Date(b.date);
+      const dt = d.toLocaleDateString('fr-FR',{day:'2-digit',month:'2-digit',year:'numeric'}) + ' ' + d.toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'});
+      html += '<div class="backup-row"><span class="backup-name">' + escHtml(b.label) + '</span><span class="backup-date">' + dt + '</span><button class="backup-restore-btn" onclick="restoreBackup(' + i + ')">↩ Restaurer</button></div>';
+    });
+    html += '</div>';
+    div.innerHTML = html;
+    // Stocker les backups pour restauration
+    window._currentBackups = backups;
+  } catch(e) {
+    div.innerHTML = '<div class="worker-cfg-box"><b>❌ Erreur</b>' + escHtml(e.message) + '</div>';
+  }
+}
+
+async function restoreBackup(index) {
+  const backups = window._currentBackups || [];
+  const backup = backups[index];
+  if (!backup) return;
+  if (!confirm('Restaurer la version du ' + new Date(backup.date).toLocaleString('fr-FR') + ' ? Le contenu actuel sera écrasé.')) return;
+  // Reparsing du contenu original
+  const fileDelim = _csvCurrent.d || ';';
+  const parsed = Papa.parse(backup.content, { header: true, skipEmptyLines: true, delimiter: fileDelim });
+  window._csvHeaders = parsed.meta.fields || [];
+  window._csvAllRows = parsed.data.map(function(r){ return Object.assign({}, r); });
+  _csvMeta.delimiter = fileDelim;
+  _csvMeta.originalContent = backup.content;
+  const edEl = document.getElementById('csv-ed');
+  if (edEl) renderCSVTable(edEl);
+  showToast('↩ Version restaurée — cliquez Sauvegarder pour appliquer sur GitHub');
 }
 
 /* ── Éditeur fichiers .txt ─────────────────────────────── */

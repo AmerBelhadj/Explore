@@ -180,6 +180,27 @@ async function handleGitHubPutFile(request, env) {
 }
 
 /* ═══════════════════════════════════════════════════════
+   BACKUP CSV — Sauvegarde dans KV avant modification
+═══════════════════════════════════════════════════════ */
+
+async function handleGetBackup(request, env, fileKey) {
+  if (!checkSecret(request, env)) return jsonResponse({ error: 'Non autorisé' }, 401);
+  const raw = await env.JERBI_KV.get('backup:' + fileKey);
+  if (!raw) return jsonResponse({ backups: [] });
+  return jsonResponse(JSON.parse(raw));
+}
+
+async function handlePutBackup(request, env, fileKey) {
+  if (!checkSecret(request, env)) return jsonResponse({ error: 'Non autorisé' }, 401);
+  let body;
+  try { body = await request.json(); } catch { return jsonResponse({ error: 'JSON invalide' }, 400); }
+  const backups = (body.backups || []).slice(0, 5); // max 5 backups
+  // Stocker sans TTL — les backups sont précieux
+  await env.JERBI_KV.put('backup:' + fileKey, JSON.stringify({ backups }));
+  return jsonResponse({ success: true, count: backups.length });
+}
+
+/* ═══════════════════════════════════════════════════════
    MISE À JOUR CONFIG.JS
    Reconstruit les valeurs clé par clé dans le fichier existant
 ═══════════════════════════════════════════════════════ */
@@ -274,6 +295,10 @@ export default {
     if (path === '/github/file'     && method === 'GET')    return handleGitHubGet(request, env);
     if (path === '/github/file'     && method === 'PUT')    return handleGitHubPutFile(request, env);
     if (path === '/github/config'   && method === 'PUT')    return handleConfigUpdate(request, env);
+
+    // ── Backups CSV ────────────────────────────────────
+    if (path.startsWith('/backup/') && method === 'GET')    return handleGetBackup(request, env, path.slice(8));
+    if (path.startsWith('/backup/') && method === 'PUT')    return handlePutBackup(request, env, path.slice(8));
 
     // ── Health check ───────────────────────────────────
     if (path === '/'                && method === 'GET') {
