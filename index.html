@@ -1486,6 +1486,7 @@ body.light .home-hero{background:linear-gradient(135deg,#5a3e00,#a07020);}
 }
 .modal-btn-icon{font-size:1.1rem;}
 .modal-btn:active{opacity:.75;}
+.modal-btn.phone,.modal-btn:not(.whatsapp):not(.instagram):not(.share):not(.fav){background:var(--cardh);border:1px solid var(--border);color:var(--tb);}
 .modal-btn.whatsapp{background:rgba(37,211,102,.15);border:1px solid rgba(37,211,102,.3);color:#25d366;}
 .modal-btn.instagram{background:rgba(225,48,108,.12);border:1px solid rgba(225,48,108,.25);color:#e1306c;}
 .modal-btn.share{background:var(--card);border:1px solid var(--border);color:var(--tb);}
@@ -1760,7 +1761,7 @@ body.light .event-card.past .event-month{color:var(--tm);}
               <div class="weather-chip">👁️ <b id="w-vis">…</b></div>
             </div>
             <div class="section-row">
-              <div class="section-title">Les incontournables du cap bon </div>
+              <div class="section-title">Les incontournables du cap bon</div>
               <div class="see-all" onclick="navigate('exp')">Voir tout →</div>
             </div>
             <!-- mini cards home - dynamiques via renderHomeExpCards() -->
@@ -1875,9 +1876,9 @@ body.light .event-card.past .event-month{color:var(--tm);}
             <div class="fiche-title" id="fiche-title"></div>
             <div class="fiche-loc" id="fiche-loc"></div>
             <div class="haykel-box" id="haykel-box">
-              <div class="haykel-label">⭐ Coup de cœur Haykel</div>
+              <div class="haykel-label">⭐ Coup de cœur Jerbi Explore</div>
               <div class="haykel-text" id="haykel-text"></div>
-              <div class="haykel-sig">— Haykel, Jerbi Explore</div>
+              <div class="haykel-sig">— Jerbi Explore</div>
             </div>
             <div class="info-chips">
               <div class="info-chip"><div class="chip-label">Horaires</div><div class="chip-val" id="fiche-horaires">—</div></div>
@@ -2133,7 +2134,7 @@ const CFG = (typeof APP_CONFIG !== 'undefined') ? APP_CONFIG : {
   get CSV_LIEUX()       { return `${this.GITHUB_REPO_PATH}/data/lieux.csv`; },
   get CSV_PARTENAIRES() { return `${this.GITHUB_REPO_PATH}/data/partenaires.csv`; },
   get CSV_EVENEMENTS()  { return `${this.GITHUB_REPO_PATH}/data/evenements.csv`; },
-  REFRESH_INTERVAL_MS: 300000,
+  REFRESH_INTERVAL_MS: 60000,  // 1 min (anciennement 5 min)
   MAP_CENTER: [36.9, 11.0],
   MAP_ZOOM_DEFAULT: 10,
   ADMIN_HASH: 'fbb92231f37c00f33064e2a93524d9bfcffca85f69a30f6879427f888acd0d8c',
@@ -2330,8 +2331,17 @@ let _installAnswered = false;
 function _markInstallAnswered() {
   if (_installAnswered) return;
   _installAnswered = true;
-  // Lancer le sponsor maintenant
+  // Lancer le sponsor immédiatement (réponse utilisateur déjà donnée)
   if (typeof initSponsor === 'function') initSponsor();
+}
+
+function _sponsorDelayMs() {
+  // PWA déjà installée → 500ms (juste le temps du splash)
+  if (_isStandalone) return 500;
+  // PC bureau → 1s (pas de banner install à attendre)
+  if (_isDesktop) return 1000;
+  // Mobile/tablet → délai normal (3s banner + 1s marge)
+  return 0; // géré par _markInstallAnswered via banner install
 }
 
 function showSponsorPopup() {
@@ -2349,7 +2359,7 @@ function showSponsorPopup() {
         popup.classList.remove('show');
         popup.classList.add('fadeout');
       }, 3000);
-    }, 900);
+    }, 300); // 300ms (anciennement 900ms) — splash déjà disparu
   }
 
   if (!pImg) { _doShow(); return; }
@@ -2446,7 +2456,7 @@ function addMapPins() {
     const popup = `<div style="font-family:'DM Sans',sans-serif;min-width:190px;padding:4px 0">
       <div style="font-weight:700;font-size:13px;margin-bottom:3px">${emoji} ${escHtml(p.nom)}</div>
       <div style="font-size:11px;opacity:.7;margin-bottom:4px">${escHtml(p.categorie)} · ${escHtml(p.ville)}</div>
-      ${starred ? '<div style="font-size:11px;color:#d4a843;margin-bottom:3px">⭐ Coup de cœur Haykel</div>' : ''}
+      ${starred ? '<div style="font-size:11px;color:#d4a843;margin-bottom:3px">⭐ Coup de cœur Jerbi Explore</div>' : ''}
       <div style="font-size:10px;opacity:.6;margin-bottom:8px">${escHtml(p.horaires||'')}</div>
       <div onclick="showFiche(getItem('${popsk}'))"
            style="font-size:11px;color:#d4a843;font-weight:700;cursor:pointer;padding:5px 8px;background:rgba(212,168,67,.1);border-radius:8px;text-align:center">
@@ -2533,7 +2543,7 @@ function renderPlaces() {
       html += `<div class="place-item${s?' starred':''}" onclick="showFiche(getItem('${sk}'))">
         <div class="place-emoji-wrap">${e}</div>
         <div class="place-info">
-          <div class="place-name">${escHtml(p.nom)}${s?` <span class="star-tag">⭐ Haykel</span>`:''}</div>
+          <div class="place-name">${escHtml(p.nom)}${s?` <span class="star-tag">⭐ Jerbi Explore</span>`:''}</div>
           <div class="place-meta">${escHtml(p.categorie)} · ${escHtml(p.ville)}</div>
           <div class="place-quote">"${escHtml(p.citation_haykel||'')}"</div>
         </div>
@@ -2584,9 +2594,8 @@ function showFiche(p) {
 
   let act = '';
   if (p.tel) {
-    const telClean = String(p.tel).replace(/\D/g,'');
+    // Appel direct uniquement (le tel du lieu n'est pas forcément WhatsApp)
     act += `<button class="fiche-btn primary" onclick="window.open('tel:${escHtml(p.tel)}')"><div class="fiche-btn-icon">📞</div><div class="fiche-btn-label">Appeler</div></button>`;
-    act += `<button class="fiche-btn whatsapp" onclick="window.open('https://wa.me/${telClean}','_blank','noopener noreferrer')"><div class="fiche-btn-icon">💬</div><div class="fiche-btn-label">WhatsApp</div></button>`;
   }
   if (p.gps_lat && p.gps_lng)
     act += `<button class="fiche-btn secondary" onclick="window.open('https://www.google.com/maps/dir/?api=1&destination=${parseCoord(p.gps_lat)},${parseCoord(p.gps_lng)}','_blank','noopener noreferrer')"><div class="fiche-btn-icon">🗺️</div><div class="fiche-btn-label">Itinéraire</div></button>`;
@@ -2911,6 +2920,9 @@ function openPartnerModal(p) {
 
   let actions = '';
   if (wa) {
+    // Bouton 📞 Appeler (appel direct avec le numéro)
+    actions += `<button class="modal-btn" onclick="window.open('tel:+${wa}')"><div class="modal-btn-icon">📞</div><div>Appeler</div></button>`;
+    // Bouton 💬 WhatsApp (ouvre la conversation WhatsApp)
     actions += `<button class="modal-btn whatsapp" onclick="window.open('https://wa.me/${wa}','_blank','noopener noreferrer')"><div class="modal-btn-icon">💬</div><div>WhatsApp</div></button>`;
   }
   if (ig) {
@@ -3111,7 +3123,12 @@ function openEventModal(ev) {
   const descEl = document.getElementById('modal-desc');
   if (descEl) descEl.textContent = desc;
 
+  const evTel = ev.Tel || ev.tel || ev.Telephone || ev.telephone || '';
   let actions = '';
+  if (evTel) {
+    const evTelClean = evTel.replace(/\D/g, '');
+    actions += `<button class="modal-btn" onclick="window.open('tel:${escHtml(evTel)}')"><div class="modal-btn-icon">📞</div><div>Appeler</div></button>`;
+  }
   if (lien) {
     const safeLink = safeImgUrl(lien);
     if (safeLink) actions += `<button class="modal-btn share" onclick="window.open('${escHtml(safeLink)}','_blank','noopener noreferrer')"><div class="modal-btn-icon">🎟️</div><div>Réserver / Infos</div></button>`;
@@ -4222,13 +4239,20 @@ document.addEventListener('DOMContentLoaded', function() {
   }, 30 * 60 * 1000);
 
   // Initialiser l'UI d'installation (iOS + Android)
-  // Le sponsor s'affiche APRÈS la réponse de l'utilisateur au banner install
   initInstallUI();
-  // initSponsor() sera appelé par _markInstallAnswered() après le banner install
-  // Si pas de prompt install disponible → lancer le sponsor directement après 3s
-  setTimeout(function() {
-    if (!_installAnswered) _markInstallAnswered();
-  }, (typeof CFG !== 'undefined' && CFG.INSTALL_PROMPT_DELAY_MS ? CFG.INSTALL_PROMPT_DELAY_MS : 3000) + 5000);
+  // Lancer le sponsor selon le contexte :
+  //   - Déjà installé ou Desktop → setTimeout court
+  //   - Mobile avec banner → _markInstallAnswered() s'en charge après la réponse
+  //   - Fallback si pas de prompt disponible → 2s après le délai banner
+  if (_isStandalone || _isDesktop) {
+    setTimeout(initSponsor, _sponsorDelayMs());
+    _installAnswered = true;
+  } else {
+    // Fallback si beforeinstallprompt ne se déclenche pas (Firefox, etc.)
+    setTimeout(function() {
+      if (!_installAnswered) _markInstallAnswered();
+    }, (typeof CFG !== 'undefined' && CFG.INSTALL_PROMPT_DELAY_MS ? CFG.INSTALL_PROMPT_DELAY_MS : 3000) + 2000);
+  }
 
   // Messages administrateur — chargement initial + refresh 60s
   loadAdminMessages();
@@ -5413,8 +5437,8 @@ async function _backupFileToKV(fileKey, fileLabel, originalContent) {
       label: fileLabel,
       content: originalContent
     });
-    // Garder seulement les 5 derniers
-    history = history.slice(0, 5);
+    // Garder seulement les 10 derniers
+    history = history.slice(0, 10);
     await workerFetch('/backup/' + fileKey, {
       method: 'PUT',
       body: JSON.stringify({ backups: history })

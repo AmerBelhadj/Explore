@@ -194,7 +194,7 @@ async function handlePutBackup(request, env, fileKey) {
   if (!checkSecret(request, env)) return jsonResponse({ error: 'Non autorisé' }, 401);
   let body;
   try { body = await request.json(); } catch { return jsonResponse({ error: 'JSON invalide' }, 400); }
-  const backups = (body.backups || []).slice(0, 5); // max 5 backups
+  const backups = (body.backups || []).slice(0, 10); // max 10 backups
   // Stocker sans TTL — les backups sont précieux
   await env.JERBI_KV.put('backup:' + fileKey, JSON.stringify({ backups }));
   return jsonResponse({ success: true, count: backups.length });

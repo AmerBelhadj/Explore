@@ -10,7 +10,7 @@
    - Tuiles carte : cache-first dynamique
 ══════════════════════════════════════════════════════ */
 
-const CACHE_VERSION = 'jerbi-v3.9.0';
+const CACHE_VERSION = 'jerbi-v3.10.0';
 const CACHE_STATIC  = `${CACHE_VERSION}-static`;
 const CACHE_DYNAMIC = `${CACHE_VERSION}-dynamic`;
 
@@ -104,7 +104,13 @@ self.addEventListener('fetch', event => {
     return;
   }
 
-  /* App shell + données locales → network-first */
+  /* CSV et données → stale-while-revalidate (affiche cache immédiat + revalide en fond) */
+  if (url.includes(BASE_PATH) && (url.includes('.csv') || url.includes('message.txt'))) {
+    event.respondWith(staleWhileRevalidate(request));
+    return;
+  }
+
+  /* App shell (HTML/JS/config) → network-first */
   if (url.includes(BASE_PATH)) {
     event.respondWith(networkFirstWithOfflineFallback(request));
     return;
@@ -148,6 +154,23 @@ async function networkFirstWithOfflineFallback(request) {
       { status: 200, headers: { 'Content-Type': 'text/html; charset=utf-8' } }
     );
   }
+}
+
+/* Stale-While-Revalidate : retourne le cache immédiatement
+   ET lance une mise à jour en arrière-plan.
+   Résultat : affichage instantané + données fraîches au prochain fetch. */
+async function staleWhileRevalidate(request) {
+  const cache = await caches.open(CACHE_STATIC);
+  const cached = await cache.match(request);
+  // Lancer la mise à jour réseau en arrière-plan (sans await)
+  const fetchPromise = fetch(request).then(response => {
+    if (response && response.ok) {
+      cache.put(request, response.clone());
+    }
+    return response;
+  }).catch(() => null);
+  // Retourner le cache immédiatement s'il existe, sinon attendre le réseau
+  return cached || fetchPromise;
 }
 
 async function cacheFirst(request, cacheName) {
