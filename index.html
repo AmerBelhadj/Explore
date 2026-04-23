@@ -234,9 +234,14 @@ body{
 }
 #shop-modal::-webkit-scrollbar{width:4px;}
 #shop-modal::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px;}
-.shop-modal-img{width:100%;aspect-ratio:16/9;object-fit:cover;border-radius:20px 20px 0 0;}
+.shop-modal-img{
+  width:100%;max-height:320px;min-height:180px;
+  object-fit:contain;object-position:center;
+  border-radius:20px 20px 0 0;
+  background:var(--cardh);display:block;
+}
 .shop-modal-img-placeholder{
-  width:100%;aspect-ratio:16/9;background:var(--cardh);
+  width:100%;height:200px;background:var(--cardh);
   display:flex;align-items:center;justify-content:center;font-size:5rem;
   border-radius:20px 20px 0 0;
 }
@@ -702,15 +707,15 @@ body.light .home-hero{background:linear-gradient(135deg,#5a3e00,#a07020);}
 
 /* ══ FICHE ══ */
 .fiche-media{
-  height:240px; position:relative;
+  position:relative;
   display:flex; align-items:center; justify-content:center; font-size:5rem;
   background:linear-gradient(135deg,#1f1300,#d4a843); flex-shrink:0;
-  overflow:hidden;
+  overflow:hidden; min-height:200px; max-height:300px;
 }
 .fiche-media-img{
   position:absolute; inset:0;
-  width:100%; height:100%; object-fit:cover; display:block;
-  z-index:0;
+  width:100%; height:100%; object-fit:cover; object-position:center top;
+  display:block; z-index:0;
 }
 .fiche-media-overlay{
   position:absolute; inset:0;
@@ -728,6 +733,12 @@ body.light .home-hero{background:linear-gradient(135deg,#5a3e00,#a07020);}
   cursor:pointer; color:#fff; z-index:5; transition:background .2s;
 }
 .fiche-back{left:14px; font-size:1rem;}
+.fiche-media-badge{
+  position:absolute;bottom:10px;right:12px;z-index:6;
+  background:rgba(0,0,0,.55);backdrop-filter:blur(4px);
+  color:#fff;font-size:.7rem;padding:3px 8px;border-radius:10px;
+  pointer-events:none;
+}
 .fiche-home-btn{right:14px; font-size:.9rem;}
 .fiche-back:active,.fiche-home-btn:active{background:rgba(0,0,0,.65);}
 .fiche-body{padding:18px;}
@@ -847,6 +858,60 @@ body.light .home-hero{background:linear-gradient(135deg,#5a3e00,#a07020);}
   font-size:1rem; width:36px; height:36px; border-radius:50%;
   cursor:pointer; display:flex; align-items:center; justify-content:center;
 }
+
+/* ══ LIGHTBOX UNIVERSEL MULTI-PHOTOS ════════════════════ */
+#photos-lightbox{
+  display:none;position:fixed;inset:0;z-index:9500;
+  background:rgba(0,0,0,.92);flex-direction:column;
+  align-items:center;justify-content:center;
+}
+#photos-lightbox.open{display:flex;}
+#photos-lb-track-wrap{
+  width:100%;flex:1;overflow:hidden;position:relative;
+  display:flex;align-items:center;max-height:calc(100vh - 80px);
+}
+#photos-lb-track{
+  display:flex;width:100%;height:100%;
+  transition:transform .32s cubic-bezier(.4,0,.2,1);
+  will-change:transform;
+}
+#photos-lb-track img{
+  width:100vw;height:100%;flex-shrink:0;
+  object-fit:contain;object-position:center;
+  user-select:none;-webkit-user-drag:none;
+  padding:0 8px;box-sizing:border-box;
+}
+#photos-lb-prev,#photos-lb-next{
+  position:absolute;top:50%;transform:translateY(-50%);
+  width:40px;height:40px;border-radius:50%;z-index:2;
+  background:rgba(0,0,0,.5);border:1px solid rgba(255,255,255,.2);
+  color:#fff;font-size:1.4rem;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;
+  transition:background .2s;
+}
+#photos-lb-prev:hover,#photos-lb-next:hover{background:rgba(212,168,67,.4);}
+#photos-lb-prev{left:10px;}
+#photos-lb-next{right:10px;}
+#photos-lb-close{
+  position:absolute;top:14px;right:14px;z-index:6;
+  width:36px;height:36px;border-radius:50%;
+  background:rgba(0,0,0,.55);border:1px solid rgba(255,255,255,.2);
+  color:#fff;font-size:1rem;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;
+}
+#photos-lb-counter{
+  position:absolute;top:18px;left:50%;transform:translateX(-50%);
+  font-size:.75rem;color:rgba(255,255,255,.6);z-index:6;
+  background:rgba(0,0,0,.4);padding:3px 10px;border-radius:12px;
+}
+#photos-lb-dots{
+  display:flex;gap:6px;padding:10px 0 14px;z-index:6;flex-wrap:wrap;justify-content:center;
+}
+.photos-lb-dot{
+  width:7px;height:7px;border-radius:50%;
+  background:rgba(255,255,255,.35);cursor:pointer;transition:background .2s;
+}
+.photos-lb-dot.active{background:#fff;}
 /* Offline badge sur item vidéo */
 .gallery-item-offline{
   position:absolute; top:6px; left:6px;
@@ -1921,6 +1986,19 @@ body.light .event-card.past .event-month{color:var(--tm);}
             <button id="lightbox-next" onclick="event.stopPropagation();lightboxNav(1)">›</button>
             <button id="lightbox-close" onclick="closeLightbox()">✕</button>
           </div>
+
+          <!-- Lightbox universel multi-photos (partenaires, shop, fiche, exp) -->
+          <div id="photos-lightbox" onclick="if(event.target===this||event.target.id==='photos-lightbox')closePhotosLightbox()">
+            <div id="photos-lb-track-wrap">
+              <div id="photos-lb-track"></div>
+            </div>
+            <button id="photos-lb-prev" onclick="event.stopPropagation();photosLbNav(-1)">&#8249;</button>
+            <button id="photos-lb-next" onclick="event.stopPropagation();photosLbNav(1)">&#8250;</button>
+            <button id="photos-lb-close" onclick="closePhotosLightbox()">&#x2715;</button>
+            <div id="photos-lb-counter"></div>
+            <div id="photos-lb-dots"></div>
+          </div>
+
           <div style="height:20px"></div>
         </div>
 
@@ -2572,22 +2650,35 @@ function showFiche(p) {
   const e = CAT_EMOJI[p.categorie] || '📍';
   const photoUrl = safeImgUrl(p.photo_url || p.Photo_URL || p.image || '');
 
+  // Collecter toutes les photos (principale + extras séparées par |)
+  const photosExtra = (p.photos_url || p.Photos_URL || '').split('|').map(u => safeImgUrl(u.trim())).filter(Boolean);
+  const ficheAllPhotos = photoUrl ? [photoUrl, ...photosExtra.filter(u => u !== photoUrl)] : photosExtra;
+
   // Bannière media : image si disponible, sinon gradient + emoji
   const ficheMedia = document.getElementById('fiche-media');
   if (ficheMedia) {
     // Nettoyer les anciennes images injectées
-    ficheMedia.querySelectorAll('.fiche-media-img,.fiche-media-overlay').forEach(el => el.remove());
+    ficheMedia.querySelectorAll('.fiche-media-img,.fiche-media-overlay,.fiche-media-badge').forEach(el => el.remove());
     if (photoUrl) {
       ficheMedia.classList.add('has-img');
       const img = document.createElement('img');
       img.src = photoUrl;
       img.alt = p.nom || '';
       img.className = 'fiche-media-img';
-      img.onerror = () => { ficheMedia.classList.remove('has-img'); img.remove(); overlay.remove(); };
+      img.style.cursor = ficheAllPhotos.length > 1 ? 'zoom-in' : 'default';
+      img.onclick = ficheAllPhotos.length > 0 ? function(){ openPhotosLightbox(ficheAllPhotos, 0); } : null;
+      img.onerror = function(){ ficheMedia.classList.remove('has-img'); img.remove(); if(overlay.parentNode) overlay.remove(); };
       const overlay = document.createElement('div');
       overlay.className = 'fiche-media-overlay';
       ficheMedia.insertBefore(overlay, ficheMedia.firstChild);
       ficheMedia.insertBefore(img, ficheMedia.firstChild);
+      // Badge multi-photos
+      if (ficheAllPhotos.length > 1) {
+        const badge = document.createElement('div');
+        badge.className = 'fiche-media-badge';
+        badge.textContent = '📸 ' + ficheAllPhotos.length;
+        ficheMedia.appendChild(badge);
+      }
     } else {
       ficheMedia.classList.remove('has-img');
     }
@@ -2884,29 +2975,18 @@ function openPartnerModal(p) {
 
   const imgWrap = document.getElementById('modal-img-wrap');
   if (imgWrap) {
-    if (allPhotos.length > 1) {
-      // Carrousel
-      let carouselIdx = 0;
-      const slides = allPhotos.map((url, i) =>
-        `<div class="modal-carousel-slide"><img src="${escHtml(url)}" alt="${escHtml(nom)} ${i+1}" onerror="this.style.display='none'"></div>`
-      ).join('');
-      const dots = allPhotos.map((_, i) =>
-        `<div class="modal-carousel-dot${i===0?' active':''}" onclick="modalCarouselGo(${i})"></div>`
-      ).join('');
+    if (allPhotos.length >= 1) {
+      // Afficher 1ère photo + badge si plusieurs
+      // Clic → lightbox universel scrollable
+      const badgeHtml = allPhotos.length > 1
+        ? `<div style="position:absolute;bottom:8px;right:10px;background:rgba(0,0,0,.55);color:#fff;font-size:.68rem;padding:2px 8px;border-radius:10px;pointer-events:none">📸 ${allPhotos.length}</div>`
+        : '';
       imgWrap.innerHTML = `
-        <div class="modal-carousel" id="modal-carousel">
-          ${slides}
-        </div>
-        <button class="modal-carousel-btn prev" onclick="modalCarouselNav(-1)">‹</button>
-        <button class="modal-carousel-btn next" onclick="modalCarouselNav(1)">›</button>
-        <div class="modal-carousel-dots" id="carousel-dots">${dots}</div>`;
-      // Init carrousel state
-      window._modalCarouselIdx = 0;
-      window._modalCarouselTotal = allPhotos.length;
-      // Positionner les slides au départ (sinon elles s'empilent)
-      requestAnimationFrame(() => modalCarouselGo(0));
-    } else if (allPhotos.length === 1) {
-      imgWrap.innerHTML = `<img src="${escHtml(allPhotos[0])}" alt="${escHtml(nom)}" style="width:100%;height:100%;object-fit:cover;display:block" onerror="this.parentElement.innerHTML='<div style=height:220px;display:flex;align-items:center;justify-content:center;font-size:4rem>${emoji}</div>'">`;
+        <img src="${escHtml(allPhotos[0])}" alt="${escHtml(nom)}"
+          style="width:100%;height:100%;object-fit:cover;display:block;cursor:${allPhotos.length>1?'zoom-in':'default'}"
+          onclick="${allPhotos.length>0?'openPhotosLightbox('+JSON.stringify(allPhotos)+',0)':''}"
+          onerror="this.parentElement.innerHTML='<div style=height:220px;display:flex;align-items:center;justify-content:center;font-size:4rem;background:linear-gradient(135deg,var(--bg2),var(--bg3))>${emoji}</div>'">
+        ${badgeHtml}`;
     } else {
       imgWrap.innerHTML = `<div style="height:220px;display:flex;align-items:center;justify-content:center;font-size:4rem;background:linear-gradient(135deg,var(--bg2),var(--bg3))">${emoji}</div>`;
     }
@@ -3913,6 +3993,90 @@ function renderAdminGallery() {
 function resetGalleryForm() {}
 function updateAdminBadge() {}
 
+/* ══ LIGHTBOX UNIVERSEL MULTI-PHOTOS — JS ═══════════════ */
+let _plbPhotos = [];
+let _plbIdx    = 0;
+
+function openPhotosLightbox(urls, start) {
+  if (!urls || !urls.length) return;
+  _plbPhotos = urls.filter(Boolean);
+  _plbIdx    = Math.max(0, Math.min((start || 0), _plbPhotos.length - 1));
+
+  const lb    = document.getElementById('photos-lightbox');
+  const track = document.getElementById('photos-lb-track');
+  const dots  = document.getElementById('photos-lb-dots');
+  if (!lb || !track) return;
+
+  track.innerHTML = _plbPhotos.map((url, i) =>
+    '<img src="' + url + '" alt="Photo ' + (i+1) + '" loading="' + (i===0?'eager':'lazy') + '" onerror="this.style.opacity=\'.3\'" draggable="false" oncontextmenu="return false">'
+  ).join('');
+
+  if (_plbPhotos.length > 1 && _plbPhotos.length <= 12) {
+    dots.innerHTML = _plbPhotos.map(function(_, i){
+      return '<div class="photos-lb-dot' + (i===_plbIdx?' active':'') + '" onclick="photosLbGoTo(' + i + ')"></div>';
+    }).join('');
+    dots.style.display = 'flex';
+  } else {
+    dots.innerHTML = '';
+    dots.style.display = 'none';
+  }
+
+  const prev = document.getElementById('photos-lb-prev');
+  const next = document.getElementById('photos-lb-next');
+  if (prev) prev.style.display = _plbPhotos.length > 1 ? 'flex' : 'none';
+  if (next) next.style.display = _plbPhotos.length > 1 ? 'flex' : 'none';
+
+  lb.classList.add('open');
+  document.body.style.overflow = 'hidden';
+  _plbUpdatePos();
+  document.addEventListener('keydown', _plbKeyHandler);
+  _plbInitSwipe(lb);
+}
+
+function closePhotosLightbox() {
+  const lb = document.getElementById('photos-lightbox');
+  if (lb) lb.classList.remove('open');
+  document.body.style.overflow = '';
+  document.removeEventListener('keydown', _plbKeyHandler);
+  _plbPhotos = [];
+}
+
+function photosLbNav(dir) { photosLbGoTo(_plbIdx + dir); }
+
+function photosLbGoTo(idx) {
+  if (!_plbPhotos.length) return;
+  _plbIdx = (idx + _plbPhotos.length) % _plbPhotos.length;
+  _plbUpdatePos();
+}
+
+function _plbUpdatePos() {
+  const track   = document.getElementById('photos-lb-track');
+  const counter = document.getElementById('photos-lb-counter');
+  if (track) track.style.transform = 'translateX(-' + (_plbIdx * 100) + 'vw)';
+  if (counter) counter.textContent = (_plbIdx + 1) + ' / ' + _plbPhotos.length;
+  document.querySelectorAll('.photos-lb-dot').forEach(function(d, i){
+    d.classList.toggle('active', i === _plbIdx);
+  });
+}
+
+function _plbKeyHandler(e) {
+  if (e.key === 'ArrowLeft')  photosLbNav(-1);
+  if (e.key === 'ArrowRight') photosLbNav(1);
+  if (e.key === 'Escape')     closePhotosLightbox();
+}
+
+let _plbTouchX = null;
+function _plbInitSwipe(el) {
+  el.ontouchstart = function(e){ _plbTouchX = e.touches[0].clientX; };
+  el.ontouchend   = function(e){
+    if (_plbTouchX === null) return;
+    const dx = e.changedTouches[0].clientX - _plbTouchX;
+    if (Math.abs(dx) > 40) photosLbNav(dx < 0 ? 1 : -1);
+    _plbTouchX = null;
+  };
+}
+
+
 
 /* ══ SHA-256 ══════════════════════════════════════════════ */
 async function sha256(message) {
@@ -4629,11 +4793,17 @@ function openShopModal(p) {
   }
 
   const mainImgSrc = allPhotos.length ? BASE + allPhotos[0] : '';
+  // URLs complètes pour le lightbox universel
+  const allPhotosFull = allPhotos.map(ph => BASE + ph);
 
   inner.innerHTML = `
     ${mainImgSrc
-      ? `<img class="shop-modal-img" id="shop-modal-main-img" src="${escHtml(mainImgSrc)}" alt="${escHtml(p.nom)}" onerror="this.outerHTML='<div class=shop-modal-img-placeholder>🛍️</div>'">`
+      ? `<img class="shop-modal-img" id="shop-modal-main-img" src="${escHtml(mainImgSrc)}" alt="${escHtml(p.nom)}"
+          style="cursor:${allPhotosFull.length > 0 ? 'zoom-in' : 'default'}"
+          onclick="${allPhotosFull.length > 0 ? 'openPhotosLightbox(' + JSON.stringify(allPhotosFull) + ',0)' : ''}"
+          onerror="this.outerHTML='<div class=shop-modal-img-placeholder>🛍️</div>'">`
       : `<div class="shop-modal-img-placeholder">🛍️</div>`}
+    ${allPhotosFull.length > 1 ? `<div style="text-align:right;padding:0 20px;font-size:.7rem;color:var(--tm);margin-top:-4px;margin-bottom:4px">📸 Cliquez pour voir toutes les photos (${allPhotosFull.length})</div>` : ''}
     ${galleryHtml}
     ${videoHtml}
     <div class="shop-modal-body">
@@ -4765,7 +4935,9 @@ function renderExperiences() {
       id: e.id, emoji: e.emoji, nom: e.nom, categorie: e.categorie,
       ville: e.ville || 'Cap Bon', description: e.description,
       citation_haykel: e.citation_haykel || '',
-      horaires: e.horaires, prix: e.prix, tel: e.tel, lien: e.lien
+      horaires: e.horaires, prix: e.prix, tel: e.tel, lien: e.lien,
+      // photo_url = chemin complet pour showFiche (safeImgUrl accepte /Explore/...)
+      photo_url: photo ? BASE + photo : ''
     };
     const sk = storeItem(p);
     return `<div class="exp-card" onclick="showFiche(getItem('${sk}'))">
