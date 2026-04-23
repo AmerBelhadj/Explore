@@ -1766,7 +1766,7 @@ body.light .event-card.past .event-month{color:var(--tm);}
               <div class="weather-chip">👁️ <b id="w-vis">…</b></div>
             </div>
             <div class="section-row">
-              <div class="section-title">Nos expériences</div>
+              <div class="section-title">Les incontournables du cap bon</div>
               <div class="see-all" onclick="navigate('exp')">Voir tout →</div>
             </div>
             <!-- mini cards home - dynamiques via renderHomeExpCards() -->
@@ -2187,7 +2187,13 @@ function safeImgUrl(url) {
   if (url.startsWith('http://') || url.startsWith('https://')) return url;
   // Accepter chemins relatifs locaux /Explore/... ou data/...
   if (url.startsWith('/Explore/') || url.startsWith('./') || url.startsWith('../') || url.startsWith('data/')) return url;
-  // Rejeter javascript:, data:, blob: et tout autre schéma non autorisé
+  // Accepter chemins relatifs simples sans préfixe (ex: partenaires_images/photo.jpg)
+  // → préfixé automatiquement avec /Explore/data/
+  if (/^[a-zA-Z0-9_-]/.test(url) && !url.includes(':') &&
+      (url.includes('/') || /\.(jpe?g|png|gif|webp|svg)$/i.test(url))) {
+    return (typeof CFG !== 'undefined' ? CFG.GITHUB_REPO_PATH : '/Explore') + '/data/' + url;
+  }
+  // Rejeter javascript:, data:, blob: et tout autre schéma
   return '';
 }
 
