@@ -2912,7 +2912,9 @@ function renderPartenaires() {
     const cat = p.Categorie || p.categorie || '';
     const ville = p.Ville || p.ville || '';
     const promo = p.Promo || '';
-    const photoUrl = safeImgUrl(p.Photo_URL || p.photo_url || '');
+    // Photo_URL peut contenir plusieurs URLs séparées par | → prendre la 1ère
+    const photoRawCard = (p.Photo_URL || p.photo_url || '').split('|')[0].trim();
+    const photoUrl = safeImgUrl(photoRawCard);
     const fKey = 'adresse-' + (p.id || escHtml(nom));
     const isFav = !!favoris[fKey];
     const emoji = getCatEmoji(cat);
@@ -2960,18 +2962,25 @@ function openPartnerModal(p) {
   const prixPromo = p.Prix_Promo || '';
   const wa = p.WhatsApp || (p.tel ? p.tel.replace(/\D/g,'') : '');
   const ig = p.Instagram || '';
-  const photoUrl = safeImgUrl(p.Photo_URL || p.photo_url || '');
-  const photosRaw = p.Photos_URL || p.photos_url || '';
   const emoji = getCatEmoji(cat);
 
-  // Construire la liste de photos (Photos_URL séparées par |)
-  const extraPhotos = photosRaw
-    ? photosRaw.split('|').map(u => safeImgUrl(u.trim())).filter(Boolean)
+  // Construire la liste de photos :
+  // Photo_URL peut contenir UNE photo OU plusieurs séparées par |
+  // Photos_URL (champ alternatif) peut aussi contenir des extras
+  const photoRaw     = (p.Photo_URL || p.photo_url || '').trim();
+  const photosExtra  = (p.Photos_URL || p.photos_url || '').trim();
+
+  // Splitter Photo_URL sur | pour récupérer toutes les photos
+  const fromPhotoURL = photoRaw
+    ? photoRaw.split('|').map(u => safeImgUrl(u.trim())).filter(Boolean)
     : [];
-  // Photo cover + extras (dédupliqués)
-  const allPhotos = photoUrl
-    ? [photoUrl, ...extraPhotos.filter(u => u !== photoUrl)]
-    : extraPhotos;
+  // Extras éventuels dans Photos_URL (champ dédié, non utilisé actuellement)
+  const fromPhotosURL = photosExtra
+    ? photosExtra.split('|').map(u => safeImgUrl(u.trim())).filter(Boolean)
+    : [];
+
+  // Fusionner et dédupliquer
+  const allPhotos = [...new Set([...fromPhotoURL, ...fromPhotosURL])];
 
   const imgWrap = document.getElementById('modal-img-wrap');
   if (imgWrap) {
