@@ -6,6 +6,21 @@ compatibility_date = "2024-01-01"
 binding = "JERBI_KV"
 id = "REMPLACER_PAR_VOTRE_KV_ID"
 
+# Cron : nettoyage + recherche événements chaque nuit à 1h00 UTC (= 2h Tunis)
+# Pour changer l'heure : modifier "0 1 * * *"
+#   "0 2 * * *"  = 2h UTC = 3h Tunis
+#   "0 23 * * *" = 23h UTC = 0h Tunis
+[[triggers]]
+crons = ["0 1 * * *"]
+
 # Variables sensibles : NE PAS mettre ici, utiliser le Dashboard
-# Définir dans : Workers > jerbi-worker > Settings > Variables
-# ADMIN_SECRET, GITHUB_PAT, GITHUB_OWNER, GITHUB_REPO
+# Workers > jerbi-worker > Settings > Variables
+# ┌─────────────────────────────────────────────────────────┐
+# │  ADMIN_SECRET     : clé secrète admin (Secret)          │
+# │  GITHUB_PAT       : token GitHub public_repo (Secret)   │
+# │  GITHUB_OWNER     : amerbelhadj (Text)                  │
+# │  GITHUB_REPO      : Explore (Text)                      │
+# │  WHATSAPP_NUMBER  : ex. 21698765432 (Text) — optionnel  │
+# │  WHATSAPP_TOKEN   : token WA Business API (Secret) opt. │
+# │  WHATSAPP_PHONE_ID: ID téléphone WA Business (Text) opt.│
+# └─────────────────────────────────────────────────────────┘

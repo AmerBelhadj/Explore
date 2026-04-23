@@ -10,7 +10,7 @@
    - Tuiles carte : cache-first dynamique
 ══════════════════════════════════════════════════════ */
 
-const CACHE_VERSION = 'jerbi-v3.10.0';
+const CACHE_VERSION = 'jerbi-v3.11.0';
 const CACHE_STATIC  = `${CACHE_VERSION}-static`;
 const CACHE_DYNAMIC = `${CACHE_VERSION}-dynamic`;
 
@@ -104,9 +104,15 @@ self.addEventListener('fetch', event => {
     return;
   }
 
-  /* CSV et données → stale-while-revalidate (affiche cache immédiat + revalide en fond) */
+  /* CSV et données → network-first avec timeout 5s + fallback cache
+     Si l'URL contient déjà un cache-buster (?t=...) → bypass complet du cache SW */
   if (url.includes(BASE_PATH) && (url.includes('.csv') || url.includes('message.txt'))) {
-    event.respondWith(staleWhileRevalidate(request));
+    if (url.includes('?t=') || url.includes('&t=')) {
+      // Cache-buster présent : ne pas cacher, retourner le réseau direct
+      event.respondWith(fetch(request).catch(() => caches.match(request)));
+    } else {
+      event.respondWith(networkFirstTimeout(request, 5000));
+    }
     return;
   }
 
@@ -171,6 +177,28 @@ async function staleWhileRevalidate(request) {
   }).catch(() => null);
   // Retourner le cache immédiatement s'il existe, sinon attendre le réseau
   return cached || fetchPromise;
+}
+
+/* Network-first avec timeout — si réseau répond dans le délai → utilise réseau + met en cache
+   Si timeout ou erreur → fallback cache immédiat */
+async function networkFirstTimeout(request, timeoutMs) {
+  const cache = await caches.open(CACHE_STATIC);
+  try {
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), timeoutMs);
+    const response = await fetch(request, { signal: controller.signal });
+    clearTimeout(timer);
+    if (response && response.ok) {
+      cache.put(request, response.clone());
+      return response;
+    }
+    const cached = await cache.match(request);
+    return cached || response;
+  } catch {
+    const cached = await cache.match(request);
+    if (cached) return cached;
+    return new Response('', { status: 503 });
+  }
 }
 
 async function cacheFirst(request, cacheName) {

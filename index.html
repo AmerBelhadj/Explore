@@ -1083,6 +1083,11 @@ body.light .home-hero{background:linear-gradient(135deg,#5a3e00,#a07020);}
 .csv-add-row-btn{font-size:.73rem;padding:5px 12px;background:var(--cardh);border:1px solid var(--tq);color:var(--tq);border-radius:8px;cursor:pointer;}
 .worker-cfg-box{background:var(--cardh);border:1px solid var(--border);border-radius:8px;padding:10px 12px;margin-bottom:12px;font-size:.75rem;color:var(--ts);line-height:1.6;}
 .worker-cfg-box b{color:var(--th);display:block;margin-bottom:3px;font-size:.78rem;}
+/* Onglet Agenda admin */
+
+.notif-row{padding:8px 0;border-bottom:1px solid var(--border);font-size:.73rem;color:var(--ts);}
+.notif-row:last-child{border-bottom:none;}
+.notif-date{font-size:.65rem;color:var(--tm);margin-bottom:2px;}
 .installs-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:10px;}
 .install-card{background:var(--cardh);border-radius:8px;padding:10px;text-align:center;}
 .install-card-val{font-size:1.4rem;font-weight:700;color:var(--tq);}
@@ -1761,7 +1766,7 @@ body.light .event-card.past .event-month{color:var(--tm);}
               <div class="weather-chip">👁️ <b id="w-vis">…</b></div>
             </div>
             <div class="section-row">
-              <div class="section-title">Les incontournables du cap bon</div>
+              <div class="section-title">Nos expériences</div>
               <div class="see-all" onclick="navigate('exp')">Voir tout →</div>
             </div>
             <!-- mini cards home - dynamiques via renderHomeExpCards() -->
@@ -3329,7 +3334,7 @@ async function loadFromGoogleDrive() {   /* nom conservé pour compatibilité ap
 
   /* ── lieux.csv → bonnesAdresses ───────────────────── */
   try {
-    const res = await fetch(getCsvPath('lieux'));
+    const res = await fetch(getCsvPath('lieux') + '?t=' + Date.now());
     if (!res.ok) throw new Error('HTTP ' + res.status);
     const { data, errors } = parseCsv(await res.text());
     if (errors.length) console.warn('[CSV lieux] avertissements :', errors);
@@ -3344,7 +3349,7 @@ async function loadFromGoogleDrive() {   /* nom conservé pour compatibilité ap
 
   /* ── partenaires.csv → partenaires (optionnel) ────── */
   try {
-    const res = await fetch(getCsvPath('partenaires'));
+    const res = await fetch(getCsvPath('partenaires') + '?t=' + Date.now());
     if (res.ok) {
       const { data } = parseCsv(await res.text());
       if (data.length > 0) partenaires = data;
@@ -3353,7 +3358,7 @@ async function loadFromGoogleDrive() {   /* nom conservé pour compatibilité ap
 
   /* ── evenements.csv → evenements (optionnel) ─────── */
   try {
-    const res = await fetch(getCsvPath('evenements'));
+    const res = await fetch(getCsvPath('evenements') + '?t=' + Date.now());
     if (res.ok) {
       const { data } = parseCsv(await res.text());
       if (data.length > 0) {
@@ -4095,6 +4100,7 @@ function _showCachedWeather() {
 let _adminMessages   = [];   // tableau des messages parsés
 let _adminMsgIdx     = 0;    // index du message affiché
 const MSG_FILE       = CFG.GITHUB_REPO_PATH + '/data/message.txt';
+const _msgUrl = () => MSG_FILE + '?t=' + Date.now(); // cache-bust
 const MSG_INTERVAL   = 60000; // rechargement toutes les 60 s
 
 /* ── Chargement + parsing ─────────────────────────────── */
@@ -4217,7 +4223,11 @@ document.addEventListener('DOMContentLoaded', function() {
 
   // ── 2. Chargement des données réseau (async, non-bloquant) ──
   loadFromGoogleDrive();
-  setInterval(loadFromGoogleDrive, CFG.REFRESH_INTERVAL_MS);
+  // Refresh toutes les 60s + timestamp pour forcer réseau (bypass SW cache)
+  setInterval(function() {
+    localStorage.setItem('jerbi_last_refresh', String(Date.now()));
+    loadFromGoogleDrive();
+  }, CFG.REFRESH_INTERVAL_MS || 60000);
 
   // ── 3. Galerie différée : évite 50 requêtes HEAD séquentielles
   //       qui bloquaient l'affichage au démarrage ──
@@ -4237,6 +4247,20 @@ document.addEventListener('DOMContentLoaded', function() {
     _weatherRetryCount = 0; // reset à chaque cycle de 30 min
     fetchWeather();
   }, 30 * 60 * 1000);
+
+  // Refresh données quand l'app revient au premier plan
+  // Résout le problème iOS/Android : l'app mise en arrière-plan ne rafraîchit pas
+  document.addEventListener('visibilitychange', function() {
+    if (document.visibilityState === 'visible') {
+      var lastRefresh = parseInt(localStorage.getItem('jerbi_last_refresh') || '0');
+      var now = Date.now();
+      // Rafraîchir si + de 30s depuis le dernier refresh visible
+      if (now - lastRefresh > 30000) {
+        localStorage.setItem('jerbi_last_refresh', String(now));
+        loadFromGoogleDrive();
+      }
+    }
+  });
 
   // Initialiser l'UI d'installation (iOS + Android)
   initInstallUI();
@@ -4477,7 +4501,7 @@ async function loadShop() {
   const grid = document.getElementById('shop-grid');
   try {
     const csvPath = (CFG.GITHUB_REPO_PATH || '') + '/data/e_shop/produits.csv';
-    const resp = await fetch(csvPath);
+    const resp = await fetch(csvPath + '?t=' + Date.now());
     if (!resp.ok) throw new Error('HTTP ' + resp.status);
     const text = await resp.text();
     const result = Papa.parse(text, {
@@ -4655,7 +4679,7 @@ async function loadExperiences() {
   if (!track) return;
   try {
     const csvPath = (CFG.GITHUB_REPO_PATH || '') + '/data/Experiences/experiences.csv';
-    const resp = await fetch(csvPath);
+    const resp = await fetch(csvPath + '?t=' + Date.now());
     if (!resp.ok) throw new Error('HTTP ' + resp.status);
     const text = await resp.text();
     const result = Papa.parse(text, {
@@ -4930,7 +4954,7 @@ function openAdminPanel() {
 }
 
 function showAdminTab(tab) {
-  ['gallery','analytics','orders','config','csv'].forEach(t => {
+  ['gallery','analytics','orders','config','csv','agenda'].forEach(t => {
     const s = document.getElementById('admin-section-' + t);
     if (s) s.style.display = t === tab ? 'block' : 'none';
   });
@@ -4941,6 +4965,7 @@ function showAdminTab(tab) {
   if (tab === 'orders')    renderAdminOrders();
   if (tab === 'config')    renderAdminConfig();
   if (tab === 'csv')       renderAdminCSV();
+  if (tab === 'agenda')    renderAdminAgenda();
 }
 
 function closeAdminPanel() {
@@ -5136,7 +5161,7 @@ async function renderAdminOrders() {
       + '<button class="order-btn" style="color:#ef4444;border-color:#ef4444" onclick="clearAllOrders()">🗑️ Vider</button>'
       + '</div>';
     if (!orders.length) {
-      html += '<div style="text-align:center;padding:20px;color:var(--ts)">Aucune commande pour l\'instant.</div>';
+      html += '<div style="text-align:center;padding:20px;color:var(--ts)">Aucune commande pour l&#39;instant.</div>';
     } else {
       orders.forEach(function(o) {
         const date = new Date(o.date).toLocaleDateString('fr-FR',{day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'});
@@ -5565,6 +5590,63 @@ async function saveTXTToGitHub() {
 }
 
 /* ── Invalidation cache SW après sauvegarde admin ──────── */
+/* ══ ADMIN AGENDA — Suggestions + Nettoyage + Notifications ══ */
+
+async function renderAdminAgenda() {
+  const el = document.getElementById('admin-agenda-content');
+  if (!el) return;
+  const wUrl = getWorkerUrl();
+  if (!wUrl) {
+    el.innerHTML = '<div class="worker-cfg-box"><b>⚙️ WORKER_URL non configuré</b></div>';
+    return;
+  }
+  if (!getAdminSecret()) { el.innerHTML = adminSecretForm('renderAdminAgenda'); return; }
+  el.innerHTML = '<div style="text-align:center;padding:15px;color:var(--ts)">⏳ Chargement...</div>';
+  let notifications = [];
+  try {
+    const rNotif = await workerFetch('/agenda/notifications');
+    if (rNotif.ok) { const d = await rNotif.json(); notifications = d.notifications || []; }
+  } catch(e) {
+    el.innerHTML = '<div class="worker-cfg-box"><b>❌ Erreur</b>' + escHtml(e.message) + '</div>';
+    return;
+  }
+  let html = '<div class="worker-cfg-box"><b>ℹ️ Nettoyage automatique</b>'
+    + 'Chaque nuit a 1h UTC, les evenements passes sont supprimes automatiquement.'
+    + ' Vous pouvez aussi lancer le nettoyage manuellement.</div>';
+  html += '<div style="margin-bottom:12px;">'
+    + '<button class="cfg-save-btn" onclick="adminRunCleanup()">🗑️ Nettoyer les événements passés maintenant</button>'
+    + '</div>';
+  if (notifications.length) {
+    html += '<div class="cfg-section-title">🔔 Rapports nocturnes</div>';
+    html += '<div style="max-height:220px;overflow-y:auto;border:1px solid var(--border);border-radius:8px;padding:6px 10px;">';
+    notifications.forEach(function(n) {
+      const d = new Date(n.date).toLocaleString('fr-FR',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'});
+      html += '<div class="notif-row"><div class="notif-date">' + d + '</div>' + escHtml(n.message).split('\n').join('<br>') + '</div>';
+    });
+    html += '</div>';
+  } else {
+    html += '<div class="worker-cfg-box">Aucun rapport. Le premier apparaitra apres la prochaine execution nocturne.</div>';
+  }
+  el.innerHTML = html;
+}
+
+async function adminRunCleanup() {
+  showToast('⏳ Nettoyage en cours...');
+  try {
+    const r = await workerFetch('/agenda/run-cleanup', { method: 'POST' });
+    const d = await r.json();
+    if (d.success) {
+      const msg = d.removed > 0
+        ? '\ud83d\uddd1\ufe0f ' + d.removed + ' \u00e9v\u00e9nement(s) pass\u00e9(s) supprim\u00e9(s)'
+        : '\u2705 Aucun \u00e9v\u00e9nement pass\u00e9 \u00e0 supprimer';
+      showToast(msg);
+      renderAdminAgenda();
+    } else {
+      showToast('❌ ' + (d.error || 'Erreur'));
+    }
+  } catch(e) { showToast('❌ ' + e.message); }
+}
+
 function swInvalidateCache(url) {
   if (!navigator.serviceWorker || !navigator.serviceWorker.controller) return;
   navigator.serviceWorker.controller.postMessage({ type: 'CLEAR_CACHE', url: url });
@@ -5652,6 +5734,7 @@ renderAdminAnalytics = function() {
         <button class="admin-tab" id="admin-tab-orders" onclick="showAdminTab('orders')">🛒 Commandes</button>
         <button class="admin-tab" id="admin-tab-config" onclick="showAdminTab('config')">⚙️ Config</button>
         <button class="admin-tab" id="admin-tab-csv" onclick="showAdminTab('csv')">📋 CSV</button>
+        <button class="admin-tab" id="admin-tab-agenda" onclick="showAdminTab('agenda')">📅 Agenda</button>
       </div>
       <!-- Section Galerie -->
       <div id="admin-section-gallery">
@@ -5680,6 +5763,10 @@ renderAdminAnalytics = function() {
       <!-- Section CSV -->
       <div id="admin-section-csv" style="display:none">
         <div id="admin-csv-content"></div>
+      </div>
+      <!-- Section Agenda -->
+      <div id="admin-section-agenda" style="display:none">
+        <div id="admin-agenda-content"></div>
       </div>
     </div>
   </div>

@@ -83,7 +83,7 @@ const APP_CONFIG = {
   INSTALL_SNOOZE_DAYS: 7,
 
   // ── Contact & Réseaux sociaux ─────────────────────────
-  CONTACT_WHATSAPP: '+21624055055',
+  CONTACT_WHATSAPP: '+216XXXXXXXX',
   CONTACT_EMAIL: 'contact@jerbievents.tn',
   SOCIAL_INSTAGRAM: 'https://instagram.com/jerbievents',
 
