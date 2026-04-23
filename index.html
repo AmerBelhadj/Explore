@@ -710,11 +710,15 @@ body.light .home-hero{background:linear-gradient(135deg,#5a3e00,#a07020);}
   position:relative;
   display:flex; align-items:center; justify-content:center; font-size:5rem;
   background:linear-gradient(135deg,#1f1300,#d4a843); flex-shrink:0;
-  overflow:hidden; min-height:200px; max-height:300px;
+  overflow:hidden;
+  /* Hauteur fixe : 240px mobile, 280px desktop — évite l'image trop grande sur PC */
+  height:240px;
 }
+@media(min-width:640px){ .fiche-media{ height:280px; } }
 .fiche-media-img{
   position:absolute; inset:0;
-  width:100%; height:100%; object-fit:cover; object-position:center top;
+  width:100%; height:100%;
+  object-fit:cover; object-position:center 20%;
   display:block; z-index:0;
 }
 .fiche-media-overlay{
@@ -860,52 +864,73 @@ body.light .home-hero{background:linear-gradient(135deg,#5a3e00,#a07020);}
 }
 
 /* ══ LIGHTBOX UNIVERSEL MULTI-PHOTOS ════════════════════ */
+/* Le lightbox est en position:fixed plein écran.
+   Le viewport-area contient le slider + les boutons flèches en overlay.
+   Les dots et le compteur sont en dehors du viewport-area (flex column). */
 #photos-lightbox{
   display:none;position:fixed;inset:0;z-index:9500;
-  background:rgba(0,0,0,.92);flex-direction:column;
-  align-items:center;justify-content:center;
+  background:rgba(0,0,0,.94);
+  flex-direction:column;align-items:stretch;justify-content:center;
 }
 #photos-lightbox.open{display:flex;}
-#photos-lb-track-wrap{
-  width:100%;flex:1;overflow:hidden;position:relative;
-  display:flex;align-items:center;max-height:calc(100vh - 80px);
+
+/* Zone centrale qui occupe tout l'espace disponible */
+#photos-lb-viewport{
+  position:relative;           /* ancre les boutons flèches */
+  flex:1;overflow:hidden;
+  display:flex;align-items:center;
 }
+
+/* Le track glisse horizontalement — chaque slide = 100% de la viewport */
 #photos-lb-track{
-  display:flex;width:100%;height:100%;
+  display:flex;
+  width:100%;height:100%;
   transition:transform .32s cubic-bezier(.4,0,.2,1);
   will-change:transform;
 }
 #photos-lb-track img{
-  width:100vw;height:100%;flex-shrink:0;
+  /* Chaque slide = exactement la largeur du viewport */
+  min-width:100%;max-width:100%;height:100%;
+  flex-shrink:0;flex-grow:0;
   object-fit:contain;object-position:center;
   user-select:none;-webkit-user-drag:none;
-  padding:0 8px;box-sizing:border-box;
+  padding:4px 56px;box-sizing:border-box; /* espace pour les flèches */
 }
+
+/* Flèches — overlay sur #photos-lb-viewport */
 #photos-lb-prev,#photos-lb-next{
   position:absolute;top:50%;transform:translateY(-50%);
-  width:40px;height:40px;border-radius:50%;z-index:2;
-  background:rgba(0,0,0,.5);border:1px solid rgba(255,255,255,.2);
-  color:#fff;font-size:1.4rem;cursor:pointer;
+  width:44px;height:44px;border-radius:50%;z-index:4;
+  background:rgba(0,0,0,.55);border:1px solid rgba(255,255,255,.25);
+  color:#fff;font-size:1.5rem;cursor:pointer;
   display:flex;align-items:center;justify-content:center;
-  transition:background .2s;
+  transition:background .2s;flex-shrink:0;
 }
-#photos-lb-prev:hover,#photos-lb-next:hover{background:rgba(212,168,67,.4);}
-#photos-lb-prev{left:10px;}
-#photos-lb-next{right:10px;}
+#photos-lb-prev:hover,#photos-lb-next:hover{background:rgba(212,168,67,.45);}
+#photos-lb-prev{left:8px;}
+#photos-lb-next{right:8px;}
+
+/* Bouton fermer — overlay sur le lightbox complet */
 #photos-lb-close{
-  position:absolute;top:14px;right:14px;z-index:6;
+  position:absolute;top:12px;right:12px;z-index:6;
   width:36px;height:36px;border-radius:50%;
-  background:rgba(0,0,0,.55);border:1px solid rgba(255,255,255,.2);
+  background:rgba(0,0,0,.6);border:1px solid rgba(255,255,255,.2);
   color:#fff;font-size:1rem;cursor:pointer;
   display:flex;align-items:center;justify-content:center;
 }
+
+/* Compteur — overlay en haut au centre */
 #photos-lb-counter{
-  position:absolute;top:18px;left:50%;transform:translateX(-50%);
-  font-size:.75rem;color:rgba(255,255,255,.6);z-index:6;
-  background:rgba(0,0,0,.4);padding:3px 10px;border-radius:12px;
+  position:absolute;top:12px;left:50%;transform:translateX(-50%);
+  font-size:.75rem;color:rgba(255,255,255,.7);z-index:6;
+  background:rgba(0,0,0,.45);padding:3px 12px;border-radius:12px;
+  pointer-events:none;white-space:nowrap;
 }
+
+/* Dots — barre fixe en bas, hors du viewport */
 #photos-lb-dots{
-  display:flex;gap:6px;padding:10px 0 14px;z-index:6;flex-wrap:wrap;justify-content:center;
+  display:flex;gap:7px;padding:10px 0 14px;
+  justify-content:center;flex-wrap:wrap;flex-shrink:0;
 }
 .photos-lb-dot{
   width:7px;height:7px;border-radius:50%;
@@ -1988,15 +2013,18 @@ body.light .event-card.past .event-month{color:var(--tm);}
           </div>
 
           <!-- Lightbox universel multi-photos (partenaires, shop, fiche, exp) -->
-          <div id="photos-lightbox" onclick="if(event.target===this||event.target.id==='photos-lightbox')closePhotosLightbox()">
-            <div id="photos-lb-track-wrap">
+          <div id="photos-lightbox" onclick="if(event.target===this)closePhotosLightbox()">
+            <!-- Viewport : zone image + boutons flèches en overlay -->
+            <div id="photos-lb-viewport">
               <div id="photos-lb-track"></div>
+              <button id="photos-lb-prev" onclick="event.stopPropagation();photosLbNav(-1)">&#8249;</button>
+              <button id="photos-lb-next" onclick="event.stopPropagation();photosLbNav(1)">&#8250;</button>
             </div>
-            <button id="photos-lb-prev" onclick="event.stopPropagation();photosLbNav(-1)">&#8249;</button>
-            <button id="photos-lb-next" onclick="event.stopPropagation();photosLbNav(1)">&#8250;</button>
+            <!-- Éléments fixes hors viewport -->
+            <div id="photos-lb-dots"></div>
+            <!-- Overlays absolus sur tout le lightbox -->
             <button id="photos-lb-close" onclick="closePhotosLightbox()">&#x2715;</button>
             <div id="photos-lb-counter"></div>
-            <div id="photos-lb-dots"></div>
           </div>
 
           <div style="height:20px"></div>
@@ -4061,8 +4089,10 @@ function photosLbGoTo(idx) {
 function _plbUpdatePos() {
   const track   = document.getElementById('photos-lb-track');
   const counter = document.getElementById('photos-lb-counter');
-  if (track) track.style.transform = 'translateX(-' + (_plbIdx * 100) + 'vw)';
-  if (counter) counter.textContent = (_plbIdx + 1) + ' / ' + _plbPhotos.length;
+  // Chaque slide = 100% du parent → on décale de N * 100%
+  if (track) track.style.transform = 'translateX(-' + (_plbIdx * 100) + '%)';
+  if (counter && _plbPhotos.length > 1)
+    counter.textContent = (_plbIdx + 1) + ' / ' + _plbPhotos.length;
   document.querySelectorAll('.photos-lb-dot').forEach(function(d, i){
     d.classList.toggle('active', i === _plbIdx);
   });
