@@ -10,7 +10,7 @@
    - Tuiles carte : cache-first dynamique
 ══════════════════════════════════════════════════════ */
 
-const CACHE_VERSION = 'jerbi-v3.12.0'; // etape2 - images admin
+const CACHE_VERSION = 'jerbi-v3.13.0'; // etape3 - offline images + partenaires
 const CACHE_STATIC  = `${CACHE_VERSION}-static`;
 const CACHE_DYNAMIC = `${CACHE_VERSION}-dynamic`;
 
@@ -105,14 +105,24 @@ self.addEventListener('fetch', event => {
   }
 
   /* CSV et données → network-first avec timeout 5s + fallback cache
-     Si l'URL contient déjà un cache-buster (?t=...) → bypass complet du cache SW */
+     Le ?t= cache-buster est IGNORÉ par le SW pour permettre le fallback cache offline
+     Le réseau est toujours tenté en premier (network-first) mais si hors ligne,
+     on retourne la version cachée → les partenaires/événements restent visibles */
   if (url.includes(BASE_PATH) && (url.includes('.csv') || url.includes('message.txt'))) {
-    if (url.includes('?t=') || url.includes('&t=')) {
-      // Cache-buster présent : ne pas cacher, retourner le réseau direct
-      event.respondWith(fetch(request).catch(() => caches.match(request)));
-    } else {
-      event.respondWith(networkFirstTimeout(request, 5000));
-    }
+    // Normaliser l'URL : supprimer ?t= pour la clé de cache
+    // On fetch avec l'URL originale (cache-buster ok pour le réseau)
+    // mais on stocke/recherche SANS le cache-buster
+    event.respondWith(networkFirstTimeoutWithNormalizedCache(request, 5000));
+    return;
+  }
+
+  /* Images des dossiers data/ → cache-first dynamique
+     Au 1er accès en ligne : mise en cache automatique
+     Hors ligne : retourner l'image depuis le cache si disponible
+     Si jamais vue (pas en cache) : retourner 404 propre (pas index.html)
+     → le JS côté client affiche le fallback emoji via onerror */
+  if (url.includes(BASE_PATH + '/data/') && isImageUrl(url)) {
+    event.respondWith(cacheFirstImage(request));
     return;
   }
 
@@ -181,6 +191,42 @@ async function staleWhileRevalidate(request) {
 
 /* Network-first avec timeout — si réseau répond dans le délai → utilise réseau + met en cache
    Si timeout ou erreur → fallback cache immédiat */
+/* Network-first avec URL normalisée pour le cache :
+   On fetch l'URL complète (avec ?t=...) pour toujours avoir des données fraîches,
+   mais on stocke et recherche dans le cache SANS le ?t= 
+   → hors ligne, le cache répond même si l'URL originale avait un cache-buster */
+async function networkFirstTimeoutWithNormalizedCache(request, timeoutMs) {
+  // URL normalisée = sans paramètres de cache-buster
+  const normalizedUrl = request.url.replace(/[?&]t=\d+/g, '').replace(/[?&]+$/, '');
+  const normalizedRequest = new Request(normalizedUrl, {
+    method: request.method,
+    headers: request.headers,
+    mode: 'same-origin',
+    credentials: request.credentials,
+  });
+  const cache = await caches.open(CACHE_STATIC);
+  try {
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), timeoutMs);
+    // Fetch avec l'URL originale (cache-buster inclus si présent)
+    const response = await fetch(request, { signal: controller.signal });
+    clearTimeout(timer);
+    if (response && response.ok) {
+      // Stocker sous l'URL normalisée
+      cache.put(normalizedRequest, response.clone());
+      return response;
+    }
+    // Réponse non-ok → essayer le cache normalisé
+    const cached = await cache.match(normalizedRequest);
+    return cached || response;
+  } catch {
+    // Hors ligne → chercher dans le cache avec l'URL normalisée
+    const cached = await cache.match(normalizedRequest);
+    if (cached) return cached;
+    return new Response('', { status: 503 });
+  }
+}
+
 async function networkFirstTimeout(request, timeoutMs) {
   const cache = await caches.open(CACHE_STATIC);
   try {
@@ -198,6 +244,36 @@ async function networkFirstTimeout(request, timeoutMs) {
     const cached = await cache.match(request);
     if (cached) return cached;
     return new Response('', { status: 503 });
+  }
+}
+
+function isImageUrl(url) {
+  return /\.(jpe?g|png|webp|gif|avif|svg)(\?.*)?$/i.test(url);
+}
+
+/* Cache-first pour les images data/ :
+   - Cache hit → retourne immédiatement (offline OK)
+   - Cache miss → fetch réseau + mise en cache + retourne la réponse
+   - Réseau indisponible + pas en cache → 404 propre (pas de fallback HTML)
+     Le navigateur déclenche onerror sur l'<img> → fallback emoji JS */
+async function cacheFirstImage(request) {
+  const cache = await caches.open(CACHE_DYNAMIC);
+  const cached = await cache.match(request);
+  if (cached) return cached;
+  try {
+    const response = await fetch(request);
+    if (response && response.ok) {
+      cache.put(request, response.clone());
+    }
+    return response;
+  } catch {
+    // Pas en cache + hors ligne → 404 sans corps
+    // Le navigateur déclenche onerror → fallback emoji côté JS
+    return new Response('', {
+      status: 404,
+      statusText: 'Image not cached',
+      headers: { 'Content-Type': 'text/plain' }
+    });
   }
 }
 
