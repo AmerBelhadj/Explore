@@ -2040,32 +2040,6 @@ body.light .event-card.past .event-month{color:var(--tm);}
             <div class="gallery-empty">Chargement de la galerie…</div>
           </div>
           <!-- Lightbox (photos uniquement, désactivée offline) -->
-          <div id="gallery-lightbox" oncontextmenu="return false" onclick="closeLightbox()">
-            <div id="lightbox-media"></div>
-            <div id="lightbox-info">
-              <div id="lightbox-caption"></div>
-              <div id="lightbox-date"></div>
-            </div>
-            <button id="lightbox-prev" onclick="event.stopPropagation();lightboxNav(-1)">‹</button>
-            <button id="lightbox-next" onclick="event.stopPropagation();lightboxNav(1)">›</button>
-            <button id="lightbox-close" onclick="closeLightbox()">✕</button>
-          </div>
-
-          <!-- Lightbox universel multi-photos (partenaires, shop, fiche, exp) -->
-          <div id="photos-lightbox" onclick="if(event.target===this||event.target.id==='photos-lb-viewport'||event.target.id==='photos-lb-track')closePhotosLightbox()">
-            <!-- Zone image scrollable -->
-            <div id="photos-lb-viewport">
-              <div id="photos-lb-track"></div>
-            </div>
-            <!-- Barre de dots en bas -->
-            <div id="photos-lb-dots"></div>
-            <!-- Overlays fixed : croix, flèches, compteur -->
-            <button id="photos-lb-close"  onclick="event.stopPropagation();closePhotosLightbox()">&#x2715;</button>
-            <button id="photos-lb-prev"   onclick="event.stopPropagation();photosLbNav(-1)">&#8249;</button>
-            <button id="photos-lb-next"   onclick="event.stopPropagation();photosLbNav(1)">&#8250;</button>
-            <div id="photos-lb-counter"></div>
-          </div>
-
           <div style="height:20px"></div>
         </div>
 
@@ -6054,6 +6028,38 @@ renderAdminAnalytics = function() {
   });
 })();
 </script>
+
+  <!-- ═══ GALLERY LIGHTBOX ══════════════════════════════════════
+       Déplacé hors de #screens pour le même fix position:fixed. ══ -->
+  <div id="gallery-lightbox" oncontextmenu="return false" onclick="closeLightbox()">
+            <div id="lightbox-media"></div>
+            <div id="lightbox-info">
+              <div id="lightbox-caption"></div>
+              <div id="lightbox-date"></div>
+            </div>
+            <button id="lightbox-prev" onclick="event.stopPropagation();lightboxNav(-1)">‹</button>
+            <button id="lightbox-next" onclick="event.stopPropagation();lightboxNav(1)">›</button>
+            <button id="lightbox-close" onclick="closeLightbox()">✕</button>
+          </div>
+
+  <!-- ═══ LIGHTBOX UNIVERSEL MULTI-PHOTOS ═══════════════════════════
+       Placé directement dans <body> pour éviter le piège CSS :
+       position:fixed dans un parent avec transform/will-change
+       devient relatif à ce parent, pas à la fenêtre.
+       Ici, position:fixed = ancrage fenêtre garanti. ══════════════ -->
+  <div id="photos-lightbox" onclick="if(event.target===this||event.target.id==='photos-lb-viewport'||event.target.id==='photos-lb-track')closePhotosLightbox()">
+    <!-- Zone image scrollable -->
+    <div id="photos-lb-viewport">
+      <div id="photos-lb-track"></div>
+    </div>
+    <!-- Barre de dots en bas -->
+    <div id="photos-lb-dots"></div>
+    <!-- Overlays fixed : croix, flèches, compteur -->
+    <button id="photos-lb-close"  onclick="event.stopPropagation();closePhotosLightbox()">&#x2715;</button>
+    <button id="photos-lb-prev"   onclick="event.stopPropagation();photosLbNav(-1)">&#8249;</button>
+    <button id="photos-lb-next"   onclick="event.stopPropagation();photosLbNav(1)">&#8250;</button>
+    <div id="photos-lb-counter"></div>
+  </div>
 
 </body>
 </html>
