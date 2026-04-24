@@ -443,8 +443,23 @@ body.light .logo-wrap img{
 .nav-label{font-size:.55rem; letter-spacing:.3px; color:var(--tm); transition:color .2s; white-space:nowrap;}
 .nav-item.active .nav-label{color:var(--tq); font-weight:600;}
 
-/* ══ DESKTOP MEDIA QUERY ══ */
-@media(min-width:768px){
+/* ══ PROTECTION MOBILE TACTILE ══
+   Sur tout appareil tactile (pointer:coarse = doigt) :
+   bottom-nav toujours visible, sidebar toujours caché.
+   Cette règle prime sur toute autre règle de largeur.
+   Protège contre le flash de layout lors d'un reload SW. */
+@media(pointer:coarse){
+  #bottom-nav{ display:flex !important; }
+  #sidebar{ display:none !important; }
+  #topbar .home-btn{ display:flex !important; }
+}
+
+/* ══ DESKTOP MEDIA QUERY ══
+   Double condition : largeur + souris (hover:hover)
+   → s'active UNIQUEMENT sur les vrais desktops/laptops
+   → ne s'active PAS sur mobile même si viewport temporairement large
+      (ex: pendant un reload après MAJ du SW) */
+@media(min-width:768px) and (hover:hover){
   #sidebar{display:flex;}
   #topbar .home-btn{display:none;}
   #bottom-nav{display:none;}
@@ -3791,7 +3806,12 @@ async function registerServiceWorker() {
     });
 
     navigator.serviceWorker.addEventListener('controllerchange', () => {
-      window.location.reload();
+      // Délai de 300ms avant reload :
+      // Sur Android/iOS, un reload immédiat peut s'exécuter avant que le
+      // viewport meta soit appliqué → largeur temporaire ~980px → media query
+      // desktop s'active → bottom-nav disparaît.
+      // Le délai laisse le navigateur appliquer le viewport correctement.
+      setTimeout(() => { window.location.reload(); }, 300);
     });
 
     // Vérifier les updates périodiquement
