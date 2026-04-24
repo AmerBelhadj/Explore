@@ -254,7 +254,16 @@ async function readEvenementsCSV(env) {
   const r = await githubFetch(env, 'GET', EVENEMENTS_PATH);
   if (!r.ok) throw new Error('GitHub GET evenements.csv: ' + r.status);
   const data = await r.json();
-  const content = atob(data.content.replace(/\n/g, ''));
+  // Décodage UTF-8 correct : atob() seul retourne du latin-1 brut
+  // → il faut passer par decodeURIComponent(escape()) pour les accents
+  const raw = data.content.replace(/\n/g, '');
+  let content;
+  try {
+    content = decodeURIComponent(escape(atob(raw)));
+  } catch(e) {
+    // Fallback si le CSV n'est pas encodé en UTF-8 (ancien fichier latin-1)
+    content = atob(raw);
+  }
   return { ...parseCSV(content), sha: data.sha, raw: content };
 }
 
@@ -425,6 +434,9 @@ export default {
     // GitHub Proxy
     if (path === '/github/file'     && method === 'GET')    return handleGitHubGet(request, env);
     if (path === '/github/file'     && method === 'PUT')    return handleGitHubPutFile(request, env);
+    if (path === '/github/upload-image' && method === 'POST') return handleImageUpload(request, env);
+    if (path === '/github/list-images'  && method === 'GET')  return handleListImages(request, env);
+    if (path === '/github/delete-image' && method === 'DELETE') return handleDeleteImage(request, env);
     if (path === '/github/config'   && method === 'PUT')    return handleConfigUpdate(request, env);
 
     // Backups CSV
@@ -452,3 +464,121 @@ export default {
     ctx.waitUntil(runNightlyTask(env));
   },
 };
+
+/* ═══════════════════════════════════════════════════════
+   GESTION IMAGES — Upload / Listage / Suppression
+   via GitHub API (même mécanique que les CSV)
+═══════════════════════════════════════════════════════ */
+
+// Dossiers d'images autorisés
+const IMAGE_FOLDERS = {
+  'partenaires':   'data/partenaires_images',
+  'experiences':   'data/Experiences/images_experiences',
+  'eshop':         'data/e_shop/images_e_shop',
+  'gallery':       'data/Images',
+  'background':    'data/Background',
+};
+
+// Extensions autorisées
+const ALLOWED_EXT = ['jpg','jpeg','png','webp','gif','avif'];
+
+function getImageFolder(folder) {
+  return IMAGE_FOLDERS[folder] || null;
+}
+
+// POST /github/upload-image
+// Body JSON : { folder, filename, base64, sha? (si remplacement) }
+async function handleImageUpload(request, env) {
+  if (!checkSecret(request, env)) return jsonResponse({ error: 'Non autorisé' }, 401);
+  let body;
+  try { body = await request.json(); } catch { return jsonResponse({ error: 'JSON invalide' }, 400); }
+
+  const { folder, filename, base64, sha } = body;
+  if (!folder || !filename || !base64) return jsonResponse({ error: 'Champs manquants: folder, filename, base64' }, 400);
+
+  const dir = getImageFolder(folder);
+  if (!dir) return jsonResponse({ error: 'Dossier inconnu: ' + folder }, 400);
+
+  // Vérifier l'extension
+  const ext = filename.split('.').pop().toLowerCase();
+  if (!ALLOWED_EXT.includes(ext)) return jsonResponse({ error: 'Extension non autorisée: ' + ext }, 400);
+
+  // Nettoyer le nom de fichier (sécurité)
+  const safeName = filename.replace(/[^a-zA-Z0-9._\-]/g, '_');
+  const path = dir + '/' + safeName;
+
+  // Vérifier si le fichier existe déjà (pour récupérer le sha)
+  let existingSha = sha;
+  if (!existingSha) {
+    try {
+      const check = await githubFetch(env, 'GET', path);
+      if (check.ok) {
+        const existing = await check.json();
+        existingSha = existing.sha;
+      }
+    } catch(e) { /* fichier nouveau, pas de sha */ }
+  }
+
+  const putBody = {
+    message: 'Upload image ' + safeName + ' via Jerbi Admin',
+    content: base64,
+  };
+  if (existingSha) putBody.sha = existingSha;
+
+  const r = await githubFetch(env, 'PUT', path, putBody);
+  if (!r.ok) {
+    const d = await r.json();
+    return jsonResponse({ error: d.message || 'Erreur GitHub', details: d }, r.status);
+  }
+  const d = await r.json();
+  return jsonResponse({ success: true, path: path, sha: d.content?.sha });
+}
+
+// GET /github/list-images?folder=partenaires
+async function handleListImages(request, env) {
+  if (!checkSecret(request, env)) return jsonResponse({ error: 'Non autorisé' }, 401);
+  const url = new URL(request.url);
+  const folder = url.searchParams.get('folder');
+  const dir = getImageFolder(folder);
+  if (!dir) return jsonResponse({ error: 'Dossier inconnu: ' + folder }, 400);
+
+  const r = await githubFetch(env, 'GET', dir);
+  if (!r.ok) {
+    if (r.status === 404) return jsonResponse({ files: [] });
+    return jsonResponse({ error: 'Erreur GitHub ' + r.status }, r.status);
+  }
+  const data = await r.json();
+  const files = Array.isArray(data)
+    ? data
+        .filter(f => f.type === 'file' && ALLOWED_EXT.includes(f.name.split('.').pop().toLowerCase()))
+        .map(f => ({ name: f.name, sha: f.sha, size: f.size, path: f.path, download_url: f.download_url }))
+    : [];
+  return jsonResponse({ files });
+}
+
+// DELETE /github/delete-image
+// Body JSON : { folder, filename, sha }
+async function handleDeleteImage(request, env) {
+  if (!checkSecret(request, env)) return jsonResponse({ error: 'Non autorisé' }, 401);
+  let body;
+  try { body = await request.json(); } catch { return jsonResponse({ error: 'JSON invalide' }, 400); }
+
+  const { folder, filename, sha } = body;
+  if (!folder || !filename || !sha) return jsonResponse({ error: 'Champs manquants: folder, filename, sha' }, 400);
+
+  const dir = getImageFolder(folder);
+  if (!dir) return jsonResponse({ error: 'Dossier inconnu' }, 400);
+
+  const safeName = filename.replace(/[^a-zA-Z0-9._\-]/g, '_');
+  const path = dir + '/' + safeName;
+
+  const r = await githubFetch(env, 'DELETE', path, {
+    message: 'Suppression image ' + safeName + ' via Jerbi Admin',
+    sha: sha,
+  });
+  if (!r.ok) {
+    const d = await r.json();
+    return jsonResponse({ error: d.message || 'Erreur GitHub' }, r.status);
+  }
+  return jsonResponse({ success: true });
+}
