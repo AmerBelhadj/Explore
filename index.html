@@ -423,43 +423,40 @@ body.light .logo-wrap img{
 
 /* ══ BOTTOM NAV (mobile only) ══ */
 #bottom-nav{
-  display:flex; justify-content:space-around;
+  display:flex; justify-content:space-around; align-items:stretch;
   padding:6px 0 0;
   padding-bottom:max(12px,env(safe-area-inset-bottom));
   background:var(--nav); border-top:1px solid var(--border);
   backdrop-filter:blur(20px); flex-shrink:0; z-index:50;
   transition:background .3s;
-  /* Garantit visibilité sur tous les appareils */
-  min-height:56px;
+  /* min-height garantit icône + label même pendant un reload SW :
+     icon(18px) + gap(2px) + label(9px) + padding-top(6px) + padding-bottom(12px) = 47px
+     On prend 64px pour absorber les variations de rendu mobile */
+  min-height:64px;
   position:relative;
+  box-sizing:border-box;
+  overflow:visible; /* évite que les labels soient coupés */
 }
 .nav-item{
-  display:flex; flex-direction:column; align-items:center; gap:2px;
+  display:flex; flex-direction:column; align-items:center; justify-content:center; gap:2px;
   padding:4px 10px; border-radius:12px; cursor:pointer;
   transition:background .2s; flex:1; max-width:72px;
+  min-height:44px; /* zone de tap minimum iOS/Android */
+  overflow:visible;
 }
 .nav-item.active{background:rgba(212,168,67,.12);}
-.nav-icon{font-size:1.1rem; line-height:1;}
-.nav-label{font-size:.55rem; letter-spacing:.3px; color:var(--tm); transition:color .2s; white-space:nowrap;}
+.nav-icon{font-size:1.1rem; line-height:1; flex-shrink:0;}
+.nav-label{
+  font-size:.55rem; letter-spacing:.3px; color:var(--tm);
+  transition:color .2s; white-space:nowrap;
+  display:block; /* force l'affichage même si parent a overflow */
+  flex-shrink:0;
+  visibility:visible !important; /* ne jamais masquer les labels */
+}
 .nav-item.active .nav-label{color:var(--tq); font-weight:600;}
 
-/* ══ PROTECTION MOBILE TACTILE ══
-   Sur tout appareil tactile (pointer:coarse = doigt) :
-   bottom-nav toujours visible, sidebar toujours caché.
-   Cette règle prime sur toute autre règle de largeur.
-   Protège contre le flash de layout lors d'un reload SW. */
-@media(pointer:coarse){
-  #bottom-nav{ display:flex !important; }
-  #sidebar{ display:none !important; }
-  #topbar .home-btn{ display:flex !important; }
-}
-
-/* ══ DESKTOP MEDIA QUERY ══
-   Double condition : largeur + souris (hover:hover)
-   → s'active UNIQUEMENT sur les vrais desktops/laptops
-   → ne s'active PAS sur mobile même si viewport temporairement large
-      (ex: pendant un reload après MAJ du SW) */
-@media(min-width:768px) and (hover:hover){
+/* ══ DESKTOP MEDIA QUERY ══ */
+@media(min-width:768px){
   #sidebar{display:flex;}
   #topbar .home-btn{display:none;}
   #bottom-nav{display:none;}
@@ -3805,13 +3802,29 @@ async function registerServiceWorker() {
       });
     });
 
+    // ── STRATÉGIE SANS RELOAD AUTOMATIQUE ──────────────────────────
+    // Problème : window.location.reload() après controllerchange provoque
+    // un flash de layout sur Android/iOS — le viewport n'est pas encore
+    // appliqué → la media query desktop s'active → bottom-nav disparaît.
+    //
+    // Solution : PAS de reload automatique sur controllerchange.
+    // Le reload est déclenché UNIQUEMENT par l'utilisateur via le banner,
+    // avec un flag sessionStorage pour éviter la boucle infinie.
+    //
+    // Si le banner n'est pas cliqué, la nouvelle version sera active
+    // au prochain démarrage naturel de l'app (fermeture/réouverture).
+    let _swReloadPending = false;
     navigator.serviceWorker.addEventListener('controllerchange', () => {
-      // Délai de 300ms avant reload :
-      // Sur Android/iOS, un reload immédiat peut s'exécuter avant que le
-      // viewport meta soit appliqué → largeur temporaire ~980px → media query
-      // desktop s'active → bottom-nav disparaît.
-      // Le délai laisse le navigateur appliquer le viewport correctement.
-      setTimeout(() => { window.location.reload(); }, 300);
+      // Éviter la boucle : si on vient juste de faire un reload intentionnel
+      if (sessionStorage.getItem('sw_manual_reload')) {
+        sessionStorage.removeItem('sw_manual_reload');
+        return;
+      }
+      // Nouveau SW actif → marquer qu'un reload est disponible
+      // mais NE PAS recharger automatiquement
+      _swReloadPending = true;
+      // Si le banner n'est pas déjà visible, l'afficher
+      showUpdateBanner();
     });
 
     // Vérifier les updates périodiquement
@@ -3831,7 +3844,18 @@ function showUpdateBanner() {
 
 function applyUpdate() {
   if (swRegistration && swRegistration.waiting) {
+    // Marquer le reload comme intentionnel pour éviter la boucle
+    sessionStorage.setItem('sw_manual_reload', '1');
     swRegistration.waiting.postMessage({ type: 'SKIP_WAITING' });
+    // Reload après un délai suffisant pour que le SW soit bien activé
+    // ET que le viewport soit correctement initialisé
+    setTimeout(() => {
+      window.location.reload();
+    }, 500);
+  } else if (_swReloadPending) {
+    // Le SW est déjà le controller actif, recharger directement
+    sessionStorage.setItem('sw_manual_reload', '1');
+    setTimeout(() => { window.location.reload(); }, 100);
   }
   const banner = document.getElementById('update-banner');
   if (banner) banner.style.display = 'none';
