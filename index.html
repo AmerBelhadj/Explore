@@ -743,6 +743,13 @@ body.light .home-hero{background:linear-gradient(135deg,#5a3e00,#a07020);}
   color:#fff;font-size:.7rem;padding:3px 8px;border-radius:10px;
   pointer-events:none;
 }
+/* Badge multi-photos sur modal partenaire */
+.modal-photo-badge{
+  position:absolute;bottom:8px;right:10px;
+  background:rgba(0,0,0,.55);color:#fff;
+  font-size:.68rem;padding:2px 8px;border-radius:10px;
+  pointer-events:none;
+}
 .fiche-home-btn{right:14px; font-size:.9rem;}
 .fiche-back:active,.fiche-home-btn:active{background:rgba(0,0,0,.65);}
 .fiche-body{padding:18px;}
@@ -3026,19 +3033,28 @@ function openPartnerModal(p) {
   const imgWrap = document.getElementById('modal-img-wrap');
   if (imgWrap) {
     if (allPhotos.length >= 1) {
-      // Afficher 1ère photo + badge si plusieurs
-      // Clic → lightbox universel scrollable
+      // Badge multi-photos
       const badgeHtml = allPhotos.length > 1
-        ? `<div style="position:absolute;bottom:8px;right:10px;background:rgba(0,0,0,.55);color:#fff;font-size:.68rem;padding:2px 8px;border-radius:10px;pointer-events:none">📸 ${allPhotos.length}</div>`
+        ? '<div class="modal-photo-badge">📸 ' + allPhotos.length + '</div>'
         : '';
-      imgWrap.innerHTML = `
-        <img src="${escHtml(allPhotos[0])}" alt="${escHtml(nom)}"
-          style="width:100%;height:100%;object-fit:cover;display:block;cursor:${allPhotos.length>1?'zoom-in':'default'}"
-          onclick="${allPhotos.length>0?'openPhotosLightbox('+JSON.stringify(allPhotos)+',0)':''}"
-          onerror="this.parentElement.innerHTML='<div style=height:220px;display:flex;align-items:center;justify-content:center;font-size:4rem;background:linear-gradient(135deg,var(--bg2),var(--bg3))>${emoji}</div>'">
-        ${badgeHtml}`;
+      // On concatène en string (pas de template literal) pour éviter
+      // le piège JSON.stringify dans onclick inline (les " cassent l'attribut HTML)
+      imgWrap.innerHTML =
+        '<img id="modal-main-img"'
+        + ' src="' + escHtml(allPhotos[0]) + '"'
+        + ' alt="' + escHtml(nom) + '"'
+        + ' style="width:100%;height:100%;object-fit:cover;display:block;cursor:zoom-in"'
+        + ' onerror="this.parentElement.innerHTML=\'<div style=height:220px;display:flex;align-items:center;justify-content:center;font-size:4rem>' + emoji + '</div>\'"'
+        + '>' + badgeHtml;
+      // addEventListener : propre, pas de souci d'échappement
+      const mainImg = document.getElementById('modal-main-img');
+      if (mainImg) {
+        mainImg.addEventListener('click', function() {
+          openPhotosLightbox(allPhotos, 0);
+        });
+      }
     } else {
-      imgWrap.innerHTML = `<div style="height:220px;display:flex;align-items:center;justify-content:center;font-size:4rem;background:linear-gradient(135deg,var(--bg2),var(--bg3))">${emoji}</div>`;
+      imgWrap.innerHTML = '<div style="height:220px;display:flex;align-items:center;justify-content:center;font-size:4rem;background:linear-gradient(135deg,var(--bg2),var(--bg3))">' + emoji + '</div>';
     }
   }
 
@@ -4854,14 +4870,22 @@ function openShopModal(p) {
   // URLs complètes pour le lightbox universel
   const allPhotosFull = allPhotos.map(ph => BASE + ph);
 
+  // Construction HTML de l'image principale sans onclick inline
+  // (JSON.stringify avec " casserait l'attribut HTML)
+  const imgHtml = mainImgSrc
+    ? '<img class="shop-modal-img" id="shop-modal-main-img"'
+      + ' src="' + escHtml(mainImgSrc) + '"'
+      + ' alt="' + escHtml(p.nom) + '"'
+      + ' style="cursor:' + (allPhotosFull.length > 0 ? 'zoom-in' : 'default') + '"'
+      + ' onerror="this.outerHTML=\'<div class=shop-modal-img-placeholder>🛍️</div>\'"'
+      + '>'
+    : '<div class="shop-modal-img-placeholder">🛍️</div>';
+  const multiBadge = allPhotosFull.length > 1
+    ? '<div style="text-align:right;padding:0 20px;font-size:.7rem;color:var(--tm);margin-top:-4px;margin-bottom:4px">📸 ' + allPhotosFull.length + ' photos – cliquez l\'image</div>'
+    : '';
   inner.innerHTML = `
-    ${mainImgSrc
-      ? `<img class="shop-modal-img" id="shop-modal-main-img" src="${escHtml(mainImgSrc)}" alt="${escHtml(p.nom)}"
-          style="cursor:${allPhotosFull.length > 0 ? 'zoom-in' : 'default'}"
-          onclick="${allPhotosFull.length > 0 ? 'openPhotosLightbox(' + JSON.stringify(allPhotosFull) + ',0)' : ''}"
-          onerror="this.outerHTML='<div class=shop-modal-img-placeholder>🛍️</div>'">`
-      : `<div class="shop-modal-img-placeholder">🛍️</div>`}
-    ${allPhotosFull.length > 1 ? `<div style="text-align:right;padding:0 20px;font-size:.7rem;color:var(--tm);margin-top:-4px;margin-bottom:4px">📸 Cliquez pour voir toutes les photos (${allPhotosFull.length})</div>` : ''}
+    ${imgHtml}
+    ${multiBadge}
     ${galleryHtml}
     ${videoHtml}
     <div class="shop-modal-body">
@@ -4882,6 +4906,13 @@ function openShopModal(p) {
     </div>
     <div style="height:20px"></div>
   `;
+  // Brancher le clic lightbox sur l'image shop via addEventListener
+  const shopMainImg = document.getElementById('shop-modal-main-img');
+  if (shopMainImg && allPhotosFull.length >= 1) {
+    shopMainImg.addEventListener('click', function() {
+      openPhotosLightbox(allPhotosFull, 0);
+    });
+  }
   overlay.classList.add('open');
   document.body.style.overflow = 'hidden';
 }
