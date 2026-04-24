@@ -344,6 +344,8 @@ body{
 #app{
   display:flex; flex-direction:column;
   height:100%; position:relative; overflow:hidden;
+  /* Espace en bas pour le nav fixe (min-height:56px + safe-area) */
+  padding-bottom:calc(56px + env(safe-area-inset-bottom, 0px));
 }
 
 /* ══ TOPBAR ══ */
@@ -424,13 +426,17 @@ body.light .logo-wrap img{
 /* ══ BOTTOM NAV (mobile only) ══ */
 #bottom-nav{
   display:flex; justify-content:space-around;
+  /* position:fixed → sort du flux overflow:hidden du parent #app
+     → impossible à rogner lors d'un recalcul de hauteur post-reload SW
+     → toujours ancré en bas de l'écran sur Android et iOS */
+  position:fixed;
+  bottom:0; left:0; right:0;
   padding:6px 0 0;
   padding-bottom:max(12px,env(safe-area-inset-bottom));
   background:var(--nav); border-top:1px solid var(--border);
-  backdrop-filter:blur(20px); flex-shrink:0; z-index:50;
+  backdrop-filter:blur(20px); z-index:200;
   transition:background .3s;
   min-height:56px;
-  position:relative;
 }
 .nav-item{
   display:flex; flex-direction:column; align-items:center; gap:2px;
@@ -444,13 +450,6 @@ body.light .logo-wrap img{
 
 /* Ancrage du bottom-nav en bas même si le parent recalcule sa hauteur
    après un reload SW sur Android/iOS */
-#bottom-nav{
-  position:sticky;
-  bottom:0;
-  /* Assurer que le nav est toujours visible au-dessus du contenu */
-  margin-top:auto;
-}
-
 /* ══ DESKTOP MEDIA QUERY ══ */
 @media(min-width:768px){
   #sidebar{display:flex;}
