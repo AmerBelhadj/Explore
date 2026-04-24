@@ -899,27 +899,32 @@ body.light .home-hero{background:linear-gradient(135deg,#5a3e00,#a07020);}
   flex:1;
   overflow:hidden;
   min-height:0; /* fix flex shrink */
+  /* position:relative pour mesure JS */
+  position:relative;
 }
 
 /* Track : rangée de slides côte à côte */
 #photos-lb-track{
   display:flex;
   height:100%;
+  /* La largeur du track = N * 100% du viewport (calculée en JS) */
   transition:transform .32s cubic-bezier(.4,0,.2,1);
   will-change:transform;
 }
 
-/* Chaque slide = 100% du viewport */
+/* Chaque slide = largeur fixée en JS via style.width
+   On part sur 100vw en CSS fallback mais le JS corrige au runtime */
 #photos-lb-track img{
-  min-width:100vw;
-  height:100%;
+  /* width définie en JS = viewport.offsetWidth pour éviter le bug vw mobile */
   flex-shrink:0;
+  height:100%;
   object-fit:contain;
   object-position:center;
   padding:50px 60px 10px; /* top: espace croix | sides: espace flèches */
   box-sizing:border-box;
   user-select:none;
   -webkit-user-drag:none;
+  display:block;
 }
 
 /* Dots */
@@ -4073,6 +4078,8 @@ function openPhotosLightbox(urls, start) {
   const dots  = document.getElementById('photos-lb-dots');
   if (!lb || !track) return;
 
+  // Mesurer la largeur réelle du viewport (évite le bug 100vw sur Android/iOS)
+  // On reporte la mesure après que le lightbox soit visible (rAF)
   track.innerHTML = _plbPhotos.map((url, i) =>
     '<img src="' + url + '" alt="Photo ' + (i+1) + '" loading="' + (i===0?'eager':'lazy') + '" onerror="this.style.opacity=\'.3\'" draggable="false" oncontextmenu="return false">'
   ).join('');
@@ -4094,9 +4101,23 @@ function openPhotosLightbox(urls, start) {
 
   lb.classList.add('open');
   document.body.style.overflow = 'hidden';
-  _plbUpdatePos();
+  // Attendre le prochain frame pour que le DOM soit rendu
+  // et que offsetWidth soit la vraie valeur
+  requestAnimationFrame(function() {
+    _plbUpdatePos();
+  });
   document.addEventListener('keydown', _plbKeyHandler);
+  // Gestion rotation écran : recalculer les tailles
+  window.addEventListener('resize', _plbOnResize);
   _plbInitSwipe(lb);
+}
+
+function _plbOnResize() {
+  if (!_plbPhotos.length) return;
+  // Recalculer positions après rotation/resize
+  requestAnimationFrame(function() {
+    _plbUpdatePos();
+  });
 }
 
 function closePhotosLightbox() {
@@ -4104,6 +4125,7 @@ function closePhotosLightbox() {
   if (lb) lb.classList.remove('open');
   document.body.style.overflow = '';
   document.removeEventListener('keydown', _plbKeyHandler);
+  window.removeEventListener('resize', _plbOnResize);
   _plbPhotos = [];
 }
 
@@ -4115,11 +4137,32 @@ function photosLbGoTo(idx) {
   _plbUpdatePos();
 }
 
+function _plbGetSlideW() {
+  // Largeur réelle d'une slide = offsetWidth du viewport
+  // (pas window.innerWidth ni 100vw qui peuvent différer sur Android/iOS
+  //  à cause des barres de statut, safe-area, scrollbar, etc.)
+  const vp = document.getElementById('photos-lb-viewport');
+  return vp ? vp.offsetWidth : window.innerWidth;
+}
+
+function _plbSizeSlides() {
+  // Impose la largeur exacte à chaque slide après rendu
+  const slideW = _plbGetSlideW();
+  const imgs = document.querySelectorAll('#photos-lb-track img');
+  imgs.forEach(function(img) {
+    img.style.width  = slideW + 'px';
+    img.style.minWidth = slideW + 'px';
+  });
+  return slideW;
+}
+
 function _plbUpdatePos() {
   const track   = document.getElementById('photos-lb-track');
   const counter = document.getElementById('photos-lb-counter');
-  // Slides font min-width:100vw → décalage en vw
-  if (track) track.style.transform = 'translateX(-' + (_plbIdx * 100) + 'vw)';
+  // Recalculer la largeur réelle (peut changer si rotation écran)
+  const slideW = _plbSizeSlides();
+  // Décalage en px absolus — garanti identique à la largeur des slides
+  if (track) track.style.transform = 'translateX(-' + (_plbIdx * slideW) + 'px)';
   if (counter) {
     if (_plbPhotos.length > 1) {
       counter.textContent = (_plbIdx + 1) + ' / ' + _plbPhotos.length;
