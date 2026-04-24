@@ -10,7 +10,7 @@
    - Tuiles carte : cache-first dynamique
 ══════════════════════════════════════════════════════ */
 
-const CACHE_VERSION = 'jerbi-v3.17.0'; // fix nav overflow clip
+const CACHE_VERSION = 'jerbi-v3.18.0'; // fix nav sticky
 const CACHE_STATIC  = `${CACHE_VERSION}-static`;
 const CACHE_DYNAMIC = `${CACHE_VERSION}-dynamic`;
 

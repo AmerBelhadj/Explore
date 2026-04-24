@@ -70,17 +70,7 @@ body.light {
 }
 
 *,*::before,*::after{margin:0;padding:0;box-sizing:border-box;}
-html{
-  height: 100%;
-  height: -webkit-fill-available; /* iOS Safari fix */
-}
-body{
-  height: 100%;
-  height: 100dvh;
-  /* fill-available comme fallback pour iOS quand dvh est recalculé */
-  min-height: -webkit-fill-available;
-  overflow: hidden;
-}
+html,body{height:100%;height:100dvh;overflow:hidden;}
 body{
   font-family:'DM Sans',sans-serif;
   /* ── Mode sombre : fond depuis data/Background/bg-dark.jpg ── */
@@ -303,13 +293,7 @@ body{
 
 /* ══ DESKTOP LAYOUT ══ */
 #root{
-  display:flex; width:100%;
-  /* dvh = dynamic viewport height (exclut barres navigateur mobiles)
-     Fallback: 100vh si dvh non supporté
-     min-height évite le recadrage si dvh est mal calculé au reload SW */
-  height:100vh;
-  height:100dvh;
-  min-height: -webkit-fill-available; /* iOS Safari */
+  display:flex; height:100vh; height:100dvh; width:100%;
   overflow:hidden;
 }
 
@@ -353,21 +337,13 @@ body{
 /* Desktop main content area */
 #main-content{
   flex:1; display:flex; flex-direction:column;
-  min-width:0;
-  /* overflow géré par les enfants (#screens), pas par ce conteneur */
-  overflow:clip; /* clip : comme hidden mais ne crée pas de stacking context
-                    → ne piège pas position:fixed des lightboxes
-                    → ne rogne pas le bottom-nav lors du recalcul de hauteur */
+  min-width:0; overflow:hidden;
 }
 
 /* Mobile app shell (inside main-content) */
 #app{
   display:flex; flex-direction:column;
-  height:100%; position:relative;
-  /* overflow:visible (pas hidden) : évite que #bottom-nav soit rogné
-     sur Android/iOS quand la hauteur est recalculée après un reload SW.
-     C'est #screens qui gère son propre overflow. */
-  overflow:visible;
+  height:100%; position:relative; overflow:hidden;
 }
 
 /* ══ TOPBAR ══ */
@@ -447,37 +423,33 @@ body.light .logo-wrap img{
 
 /* ══ BOTTOM NAV (mobile only) ══ */
 #bottom-nav{
-  display:flex; justify-content:space-around; align-items:stretch;
+  display:flex; justify-content:space-around;
   padding:6px 0 0;
   padding-bottom:max(12px,env(safe-area-inset-bottom));
   background:var(--nav); border-top:1px solid var(--border);
   backdrop-filter:blur(20px); flex-shrink:0; z-index:50;
   transition:background .3s;
-  /* min-height garantit icône + label même pendant un reload SW :
-     icon(18px) + gap(2px) + label(9px) + padding-top(6px) + padding-bottom(12px) = 47px
-     On prend 64px pour absorber les variations de rendu mobile */
-  min-height:64px;
+  min-height:56px;
   position:relative;
-  box-sizing:border-box;
-  overflow:visible; /* évite que les labels soient coupés */
 }
 .nav-item{
-  display:flex; flex-direction:column; align-items:center; justify-content:center; gap:2px;
+  display:flex; flex-direction:column; align-items:center; gap:2px;
   padding:4px 10px; border-radius:12px; cursor:pointer;
   transition:background .2s; flex:1; max-width:72px;
-  min-height:44px; /* zone de tap minimum iOS/Android */
-  overflow:visible;
 }
 .nav-item.active{background:rgba(212,168,67,.12);}
-.nav-icon{font-size:1.1rem; line-height:1; flex-shrink:0;}
-.nav-label{
-  font-size:.55rem; letter-spacing:.3px; color:var(--tm);
-  transition:color .2s; white-space:nowrap;
-  display:block; /* force l'affichage même si parent a overflow */
-  flex-shrink:0;
-  visibility:visible !important; /* ne jamais masquer les labels */
-}
+.nav-icon{font-size:1.1rem; line-height:1;}
+.nav-label{font-size:.55rem; letter-spacing:.3px; color:var(--tm); transition:color .2s; white-space:nowrap;}
 .nav-item.active .nav-label{color:var(--tq); font-weight:600;}
+
+/* Ancrage du bottom-nav en bas même si le parent recalcule sa hauteur
+   après un reload SW sur Android/iOS */
+#bottom-nav{
+  position:sticky;
+  bottom:0;
+  /* Assurer que le nav est toujours visible au-dessus du contenu */
+  margin-top:auto;
+}
 
 /* ══ DESKTOP MEDIA QUERY ══ */
 @media(min-width:768px){
@@ -4614,8 +4586,33 @@ function _renderMsgPopup() {
   setTimeout(forceHideSplash, 3000);
 })();
 
+/* ══ FIX BOTTOM-NAV HEIGHT — Android/iOS après reload SW ══════════
+   Le bottom-nav peut être rogné si le viewport n'est pas encore stable.
+   On force sa hauteur à être correctement calculée après rendu complet. */
+function fixBottomNavHeight() {
+  var nav = document.getElementById('bottom-nav');
+  if (!nav) return;
+  // Laisser le navigateur calculer la vraie hauteur disponible
+  nav.style.minHeight = '';
+  var naturalH = nav.scrollHeight;
+  // Si la hauteur rendue est inférieure au contenu → forcer
+  if (nav.offsetHeight < naturalH) {
+    nav.style.minHeight = naturalH + 'px';
+  }
+}
+// Appeler immédiatement, après fonts, et après resize
+window.addEventListener('load', function() {
+  fixBottomNavHeight();
+  // Double RAF pour s'assurer que le layout est stable
+  requestAnimationFrame(function() {
+    requestAnimationFrame(fixBottomNavHeight);
+  });
+});
+window.addEventListener('resize', fixBottomNavHeight);
+
 /* Init principale sur DOMContentLoaded — ne dépend pas des images/fonts/réseau */
 document.addEventListener('DOMContentLoaded', function() {
+  fixBottomNavHeight();
   // ── 1. Rendu synchrone immédiat (données fallback déjà en mémoire) ──
   loadFavoris();
   renderPlaces();
@@ -4722,6 +4719,8 @@ document.addEventListener('DOMContentLoaded', function() {
       document.querySelectorAll('.nav-item').forEach(n =>
         n.classList.toggle('active', n.dataset.screen === 'home'));
     }
+    // Recalculer la hauteur du nav après que le splash est caché
+    requestAnimationFrame(fixBottomNavHeight);
   }, 800);
 
   // Service Worker
