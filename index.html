@@ -988,6 +988,50 @@ body.light .home-hero{background:linear-gradient(135deg,#5a3e00,#a07020);}
   pointer-events:none;white-space:nowrap;
   border:1px solid rgba(255,255,255,.15);
 }
+.admin-img-grid{
+  display:grid;grid-template-columns:repeat(auto-fill,minmax(110px,1fr));
+  gap:8px;margin:10px 0;
+}
+.admin-img-card{
+  position:relative;border-radius:10px;overflow:hidden;
+  background:var(--bg2);aspect-ratio:1;cursor:pointer;
+  border:1.5px solid var(--border);transition:border-color .2s;
+}
+.admin-img-card:hover{border-color:var(--tq);}
+.admin-img-card img{width:100%;height:100%;object-fit:cover;display:block;}
+.admin-img-card .img-name{
+  position:absolute;bottom:0;left:0;right:0;
+  background:rgba(0,0,0,.65);color:#fff;font-size:.6rem;
+  padding:2px 5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+}
+.admin-img-card .img-del{
+  position:absolute;top:4px;right:4px;
+  width:22px;height:22px;border-radius:50%;
+  background:rgba(200,50,50,.8);border:none;color:#fff;
+  font-size:.75rem;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;
+  opacity:0;transition:opacity .2s;
+}
+.admin-img-card:hover .img-del{opacity:1;}
+.admin-img-drop{
+  border:2px dashed var(--tq);border-radius:12px;
+  padding:20px;text-align:center;
+  color:var(--ts);font-size:.82rem;cursor:pointer;
+  transition:background .2s;margin:8px 0;
+}
+.admin-img-drop.drag-over{background:rgba(212,168,67,.12);}
+.admin-img-drop input[type=file]{display:none;}
+.admin-img-folder-sel{
+  display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px;
+}
+.admin-img-folder-btn{
+  padding:5px 12px;border-radius:20px;border:1.5px solid var(--border);
+  background:none;color:var(--tm);font-size:.75rem;cursor:pointer;
+  transition:all .2s;
+}
+.admin-img-folder-btn.active{
+  background:var(--tq);border-color:var(--tq);color:#000;font-weight:600;
+}
 /* Offline badge sur item vidéo */
 .gallery-item-offline{
   position:absolute; top:6px; left:6px;
@@ -5264,7 +5308,7 @@ function openAdminPanel() {
 }
 
 function showAdminTab(tab) {
-  ['gallery','analytics','orders','config','csv','agenda'].forEach(t => {
+  ['gallery','analytics','orders','config','csv','agenda','images'].forEach(t => {
     const s = document.getElementById('admin-section-' + t);
     if (s) s.style.display = t === tab ? 'block' : 'none';
   });
@@ -5276,6 +5320,7 @@ function showAdminTab(tab) {
   if (tab === 'config')    renderAdminConfig();
   if (tab === 'csv')       renderAdminCSV();
   if (tab === 'agenda')    renderAdminAgenda();
+  if (tab === 'images')    renderAdminImages();
 }
 
 function closeAdminPanel() {
@@ -5979,6 +6024,206 @@ function swClearAllCSV() {
   setTimeout(function() { location.reload(); }, 2000);
 }
 
+/* ══ ADMIN — GESTION IMAGES ═══════════════════════════════ */
+const IMAGE_FOLDERS_LABELS = [
+  { key:'partenaires', label:'🤝 Partenaires',   path:'data/partenaires_images' },
+  { key:'experiences', label:'🏝️ Incontournables', path:'data/Experiences/images_experiences' },
+  { key:'eshop',       label:'🛍️ Boutique',       path:'data/e_shop/images_e_shop' },
+  { key:'gallery',     label:'📸 Galerie',         path:'data/Images' },
+  { key:'background',  label:'🖼️ Background',      path:'data/Background' },
+];
+
+let _imgsCurrentFolder = 'partenaires';
+let _imgsFiles = [];  // liste courante
+
+async function renderAdminImages() {
+  const el = document.getElementById('admin-images-content');
+  if (!el) return;
+  const wUrl = getWorkerUrl();
+  if (!wUrl) {
+    el.innerHTML = '<div class="worker-cfg-box"><b>⚙️ WORKER_URL non configuré</b></div>';
+    return;
+  }
+
+  // Barre de sélection de dossier
+  // Boutons dossiers via DOM pour éviter les problèmes de guillemets imbriqués
+  const folderBar = document.createElement('div');
+  folderBar.className = 'admin-img-folder-sel';
+  IMAGE_FOLDERS_LABELS.forEach(function(f) {
+    const btn = document.createElement('button');
+    btn.className = 'admin-img-folder-btn' + (f.key === _imgsCurrentFolder ? ' active' : '');
+    btn.textContent = f.label;
+    btn.addEventListener('click', function(){ adminImgsSetFolder(f.key); });
+    folderBar.appendChild(btn);
+  });
+  el.innerHTML = '';
+  el.appendChild(folderBar);
+
+  // Zone upload construite via DOM pour eviter les guillemets imbriques
+  const dropDiv = document.createElement('div');
+  dropDiv.id = 'admin-imgs-drop';
+  dropDiv.className = 'admin-img-drop';
+  dropDiv.innerHTML = '📂 Glissez-deposez des images ici<br>'
+    + '<span style="font-size:.75rem;opacity:.7">ou</span><br>';
+
+  const fileInput = document.createElement('input');
+  fileInput.type = 'file';
+  fileInput.id = 'admin-imgs-file';
+  fileInput.multiple = true;
+  fileInput.accept = 'image/*';
+
+  const choosBtn = document.createElement('button');
+  choosBtn.className = 'csv-add-row-btn';
+  choosBtn.style.marginTop = '6px';
+  choosBtn.textContent = 'Choisir des fichiers';
+  choosBtn.addEventListener('click', function(){ fileInput.click(); });
+  dropDiv.appendChild(fileInput);
+  dropDiv.appendChild(choosBtn);
+
+  const statusDiv = document.createElement('div');
+  statusDiv.id = 'admin-imgs-status';
+  statusDiv.style.cssText = 'font-size:.75rem;color:var(--ts);min-height:20px;margin:4px 0';
+
+  const gridDiv = document.createElement('div');
+  gridDiv.id = 'admin-imgs-grid';
+  gridDiv.className = 'admin-img-grid';
+
+  el.appendChild(dropDiv);
+  el.appendChild(statusDiv);
+  el.appendChild(gridDiv);
+
+  // Drag & Drop
+  dropDiv.addEventListener('dragover', function(e){ e.preventDefault(); dropDiv.classList.add('drag-over'); });
+  dropDiv.addEventListener('dragleave', function(){ dropDiv.classList.remove('drag-over'); });
+  dropDiv.addEventListener('drop', function(e){
+    e.preventDefault(); dropDiv.classList.remove('drag-over');
+    adminImgsUploadFiles(Array.from(e.dataTransfer.files));
+  });
+  fileInput.addEventListener('change', function(e){
+    adminImgsUploadFiles(Array.from(e.target.files));
+    e.target.value = '';
+  });
+
+  await adminImgsLoadGrid();
+}
+
+
+function adminImgsSetFolder(key) {
+  _imgsCurrentFolder = key;
+  renderAdminImages();
+}
+
+async function adminImgsLoadGrid() {
+  const grid   = document.getElementById('admin-imgs-grid');
+  const status = document.getElementById('admin-imgs-status');
+  if (!grid) return;
+  grid.innerHTML = '<div style="color:var(--ts);padding:10px;font-size:.8rem">⏳ Chargement...</div>';
+  try {
+    const r = await workerFetch('/github/list-images?folder=' + _imgsCurrentFolder);
+    const d = await r.json();
+    if (!r.ok) throw new Error(d.error || 'Erreur serveur');
+    _imgsFiles = d.files || [];
+    if (status) status.textContent = _imgsFiles.length + ' image(s) dans ce dossier';
+    if (!_imgsFiles.length) {
+      grid.innerHTML = '<div style="color:var(--ts);padding:10px;font-size:.8rem">Aucune image dans ce dossier.</div>';
+      return;
+    }
+    // Construire la grille sans guillemets imbriqués dans onerror
+    const cards = _imgsFiles.map(function(f) {
+      const card = document.createElement('div');
+      card.className = 'admin-img-card';
+      card.title = f.name + ' — ' + Math.round((f.size||0)/1024) + ' Ko';
+
+      const img = document.createElement('img');
+      img.src = f.download_url || '';
+      img.alt = f.name;
+      img.loading = 'lazy';
+      img.onerror = function(){ this.style.opacity = '.3'; };
+
+      const name = document.createElement('div');
+      name.className = 'img-name';
+      name.textContent = f.name;
+
+      const del = document.createElement('button');
+      del.className = 'img-del';
+      del.title = 'Supprimer';
+      del.textContent = '✕';
+      del.addEventListener('click', function(e){
+        e.stopPropagation();
+        adminImgsDelete(f.name, f.sha);
+      });
+
+      card.appendChild(img);
+      card.appendChild(name);
+      card.appendChild(del);
+      return card;
+    });
+
+    grid.innerHTML = '';
+    cards.forEach(function(card){ grid.appendChild(card); });
+  } catch(e) {
+    if (grid) grid.innerHTML = '<div style="color:#f87171;padding:10px;font-size:.8rem">❌ ' + escHtml(e.message) + '</div>';
+  }
+}
+
+async function adminImgsUploadFiles(files) {
+  const status = document.getElementById('admin-imgs-status');
+  const validFiles = files.filter(function(f){ return f.type.startsWith('image/'); });
+  if (!validFiles.length) { showToast('⚠️ Sélectionnez des fichiers image'); return; }
+
+  if (status) status.textContent = '⏳ Upload de ' + validFiles.length + ' image(s)...';
+
+  let ok = 0, err = 0;
+  for (const file of validFiles) {
+    try {
+      // Lire le fichier en base64
+      const b64 = await new Promise(function(res, rej) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+          // Extraire seulement la partie base64 (sans le préfixe data:image/...;base64,)
+          res(e.target.result.split(',')[1]);
+        };
+        reader.onerror = rej;
+        reader.readAsDataURL(file);
+      });
+
+      const r = await workerFetch('/github/upload-image', {
+        method: 'POST',
+        body: JSON.stringify({
+          folder: _imgsCurrentFolder,
+          filename: file.name,
+          base64: b64,
+        }),
+      });
+      const d = await r.json();
+      if (d.success) { ok++; }
+      else { err++; console.error('Upload error', file.name, d.error); }
+    } catch(e) {
+      err++;
+      console.error('Upload exception', file.name, e);
+    }
+  }
+
+  const msg = ok + ' uploadée(s)' + (err ? ', ' + err + ' erreur(s)' : '');
+  if (status) status.textContent = '';
+  showToast(err === 0 ? '✅ ' + msg : '⚠️ ' + msg);
+  await adminImgsLoadGrid();
+}
+
+async function adminImgsDelete(filename, sha) {
+  if (!confirm('Supprimer l\'image "' + filename + '" définitivement ?')) return;
+  showToast('⏳ Suppression...');
+  try {
+    const r = await workerFetch('/github/delete-image', {
+      method: 'DELETE',
+      body: JSON.stringify({ folder: _imgsCurrentFolder, filename, sha }),
+    });
+    const d = await r.json();
+    if (d.success) { showToast('✅ Image supprimée'); await adminImgsLoadGrid(); }
+    else showToast('❌ ' + (d.error || 'Erreur'));
+  } catch(e) { showToast('❌ ' + e.message); }
+}
+
 /* ── Statistiques installations (Worker) ───────────────── */
 
 const _origRenderAdminAnalytics = renderAdminAnalytics;
@@ -6045,6 +6290,7 @@ renderAdminAnalytics = function() {
         <button class="admin-tab" id="admin-tab-config" onclick="showAdminTab('config')">⚙️ Config</button>
         <button class="admin-tab" id="admin-tab-csv" onclick="showAdminTab('csv')">📋 CSV</button>
         <button class="admin-tab" id="admin-tab-agenda" onclick="showAdminTab('agenda')">📅 Agenda</button>
+        <button class="admin-tab" id="admin-tab-images" onclick="showAdminTab('images')">🖼️ Images</button>
       </div>
       <!-- Section Galerie -->
       <div id="admin-section-gallery">
@@ -6077,6 +6323,10 @@ renderAdminAnalytics = function() {
       <!-- Section Agenda -->
       <div id="admin-section-agenda" style="display:none">
         <div id="admin-agenda-content"></div>
+      </div>
+      <!-- Section Images -->
+      <div id="admin-section-images" style="display:none">
+        <div id="admin-images-content"></div>
       </div>
     </div>
   </div>
