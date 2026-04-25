@@ -407,11 +407,7 @@ body.light .logo-wrap img{
 }
 
 /* ══ SCREENS ══ */
-#screens{
-  flex:1; overflow:hidden; position:relative;
-  /* Compenser la hauteur du nav fixe pour que le contenu ne soit pas masqué */
-  padding-bottom:calc(56px + env(safe-area-inset-bottom, 0px));
-}
+#screens{flex:1; overflow:hidden; position:relative;}
 .screen{
   position:absolute; inset:0;
   overflow-y:auto; overflow-x:hidden;
@@ -420,6 +416,8 @@ body.light .logo-wrap img{
   transition:opacity .22s ease, transform .22s ease;
   scrollbar-width:thin;
   scrollbar-color:var(--border) transparent;
+  /* Espace sous le contenu pour ne pas être masqué par le nav fixe */
+  padding-bottom:calc(64px + env(safe-area-inset-bottom, 12px));
 }
 .screen::-webkit-scrollbar{width:4px;}
 .screen::-webkit-scrollbar-thumb{background:var(--border); border-radius:2px;}
