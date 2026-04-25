@@ -344,8 +344,6 @@ body{
 #app{
   display:flex; flex-direction:column;
   height:100%; position:relative; overflow:hidden;
-  /* Espace en bas pour le nav fixe (min-height:56px + safe-area) */
-  padding-bottom:calc(56px + env(safe-area-inset-bottom, 0px));
 }
 
 /* ══ TOPBAR ══ */
@@ -409,7 +407,11 @@ body.light .logo-wrap img{
 }
 
 /* ══ SCREENS ══ */
-#screens{flex:1; overflow:hidden; position:relative;}
+#screens{
+  flex:1; overflow:hidden; position:relative;
+  /* Compenser la hauteur du nav fixe pour que le contenu ne soit pas masqué */
+  padding-bottom:calc(56px + env(safe-area-inset-bottom, 0px));
+}
 .screen{
   position:absolute; inset:0;
   overflow-y:auto; overflow-x:hidden;
