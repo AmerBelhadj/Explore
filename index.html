@@ -12,7 +12,7 @@
 <title>Jerbi Explore – Cap Bon</title>
 <link rel="manifest" href="/Explore/manifest.json">
 <!-- Configuration centralisée -->
-<script src="/Explore/config.js" defer></script>
+<script src="/Explore/config.js"></script><!-- config SANS defer : doit s'exécuter avant le script inline -->
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css"/>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js" defer></script>
 <!-- PapaParse for reading CSV from Google Sheets (published) -->
@@ -2343,9 +2343,11 @@ const CFG = (typeof APP_CONFIG !== 'undefined') ? APP_CONFIG : {
 (function() {
   function updateVersionFooter() {
     var el = document.getElementById('version-footer');
-    if (el && typeof CFG !== 'undefined' && CFG.VERSION) {
-      el.textContent = 'v' + CFG.VERSION + ' · Jerbi Explore';
-    }
+    // Lire APP_CONFIG directement (config.js est maintenant synchrone)
+    var ver = (typeof APP_CONFIG !== 'undefined' && APP_CONFIG.VERSION)
+      ? APP_CONFIG.VERSION
+      : (typeof CFG !== 'undefined' && CFG.VERSION ? CFG.VERSION : null);
+    if (el && ver) el.textContent = 'v' + ver + ' · Jerbi Explore';
   }
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', updateVersionFooter);
