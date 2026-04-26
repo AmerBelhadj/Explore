@@ -2337,6 +2337,23 @@ const CFG = (typeof APP_CONFIG !== 'undefined') ? APP_CONFIG : {
   SPONSOR_ALT:     'SVR Sun Secure',
 };
 
+// ── Mise à jour dynamique du footer version ──────────────
+// Le footer est initialement hardcodé dans le HTML.
+// Ce bloc le met à jour dès que CFG (= APP_CONFIG) est disponible.
+(function() {
+  function updateVersionFooter() {
+    var el = document.getElementById('version-footer');
+    if (el && typeof CFG !== 'undefined' && CFG.VERSION) {
+      el.textContent = 'v' + CFG.VERSION + ' · Jerbi Explore';
+    }
+  }
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', updateVersionFooter);
+  } else {
+    updateVersionFooter();
+  }
+})();
+
 // Helpers chemins CSV locaux
 function getCsvPath(name) {
   const paths = {
