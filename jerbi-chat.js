@@ -10,21 +10,23 @@
   'use strict';
 
   /* ── CONFIG ─────────────────────────────────────────── */
-  const BASE = (window.APP_CONFIG && window.APP_CONFIG.GITHUB_REPO_PATH) || '/Explore';
+  /* Lecture de APP_CONFIG — déclaré en const dans config.js (pas window.APP_CONFIG) */
+  const _CFG = (typeof APP_CONFIG !== 'undefined') ? APP_CONFIG : null;
 
-  const WA_NUMBER = (window.APP_CONFIG && window.APP_CONFIG.CONTACT_WHATSAPP
-    ? window.APP_CONFIG.CONTACT_WHATSAPP.replace(/\D/g, '')
+  const BASE = (_CFG && _CFG.GITHUB_REPO_PATH) || '/Explore';
+
+  const WA_NUMBER = (_CFG && _CFG.CONTACT_WHATSAPP
+    ? _CFG.CONTACT_WHATSAPP.replace(/\D/g, '')
     : '21600000000');
   const WA_LINK = 'https://wa.me/' + WA_NUMBER + '?text=' + encodeURIComponent("Bonjour Jerbi Explore ! J'ai une question sur le Cap Bon.");
 
-  const FAQ_URL = (window.APP_CONFIG && window.APP_CONFIG.CSV_FAQ)
-    ? window.APP_CONFIG.CSV_FAQ
+  const FAQ_URL = (_CFG && _CFG.CSV_FAQ)
+    ? _CFG.CSV_FAQ
     : (BASE + '/data/faq.csv');
 
-  /* URL du proxy Cloudflare — à renseigner dans config.js après déploiement
-     Format : https://jerbi-proxy.TON-COMPTE.workers.dev                    */
-  const PROXY_URL = (window.APP_CONFIG && window.APP_CONFIG.CHAT_PROXY_URL)
-    ? window.APP_CONFIG.CHAT_PROXY_URL
+  /* URL du proxy Cloudflare — configurée dans config.js → CHAT_PROXY_URL */
+  const PROXY_URL = (_CFG && _CFG.CHAT_PROXY_URL)
+    ? _CFG.CHAT_PROXY_URL
     : '';
 
   /* ── STATE ──────────────────────────────────────────── */
