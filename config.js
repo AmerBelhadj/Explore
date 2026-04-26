@@ -7,7 +7,7 @@
 
 const APP_CONFIG = {
   // ── Version de l'application ──────────────────────────
-  VERSION: '3.2.1',
+  VERSION: '3.2.2',
 
   // ── Chemins GitHub Pages ──────────────────────────────
   GITHUB_REPO_PATH: '/Explore',
@@ -63,7 +63,7 @@ const APP_CONFIG = {
 
   // Rafraîchissement automatique des données (en ms)
   // CSV local = rechargement toutes les 5 min suffit
-  REFRESH_INTERVAL_MS: 300000,
+  REFRESH_INTERVAL_MS: 60000,
 
   // ── Carte ─────────────────────────────────────────────
   MAP_CENTER: [36.9, 11.0],
