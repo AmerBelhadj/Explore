@@ -27,7 +27,7 @@ const APP_CONFIG = {
   // URL du proxy Cloudflare Worker (clé Groq côté serveur)
   // Format : 'https://jerbi-proxy.TON-COMPTE.workers.dev'
   // Laisser vide '' = mode local uniquement
-  CHAT_PROXY_URL: '',
+  CHAT_PROXY_URL: 'https://chatjerbiexplore.amer-belhadj.workers.dev',
 
   // ── E-Shop ────────────────────────────────────────────
   // Numéro WhatsApp pour les commandes (format international sans +)
