@@ -10,7 +10,7 @@
    - Tuiles carte : cache-first dynamique
 ══════════════════════════════════════════════════════ */
 
-const CACHE_VERSION = 'jerbi-v3.18.8'; // fix chatbot window.APP_CONFIG
+const CACHE_VERSION = 'jerbi-v3.18.9'; // fix chatbot window.APP_CONFIG
 const CACHE_STATIC  = `${CACHE_VERSION}-static`;
 const CACHE_DYNAMIC = `${CACHE_VERSION}-dynamic`;
 
