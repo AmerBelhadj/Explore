@@ -287,7 +287,7 @@
     var fab = document.createElement('button');
     fab.id = 'jc-fab';
     fab.setAttribute('aria-label', 'Ouvrir le guide IA Jerbi');
-    fab.innerHTML = '<svg class="jc-fab-ico" viewBox="0 0 24 24"><path d="M20 2H4C2.9 2 2 2.9 2 4v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm-2 12H6v-2h12v2zm0-3H6V9h12v2zm0-3H6V6h12v2z"/></svg><span class="jc-fab-lbl">Besoin d'aide</span><span id="jc-fab-badge">1</span>';
+    fab.innerHTML = '<svg class="jc-fab-ico" viewBox="0 0 24 24"><path d="M20 2H4C2.9 2 2 2.9 2 4v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm-2 12H6v-2h12v2zm0-3H6V9h12v2zm0-3H6V6h12v2z"/></svg><span class="jc-fab-lbl">chatbot</span><span id="jc-fab-badge">1</span>';
     fab.onclick = toggleChat;
     document.body.appendChild(fab);
 
