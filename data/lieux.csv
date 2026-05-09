@@ -1,4 +1,4 @@
-﻿id;nom;categorie;ville;description;actif;coup_de_coeur;citation_haykel;gps_lat;gps_lng;photo_url;tel;horaires;prix;tags
+id;nom;categorie;ville;description;actif;coup_de_coeur;citation_haykel;gps_lat;gps_lng;photo_url;tel;horaires;prix;tags
 1;Restaurant El Mansourah;restaurant;Kelibia;Tables les pieds dans l'eau, fruits de mer ultra-frais, vue paradisiaque sur mer turquoise.;OUI;NON;Réservez une table sur les rochers en bord de mer ;36.84925;11.12585;;;;;
 3;Restaurant Le Petit Pêcheur Kélibia;restaurant;Kelibia;Vue panoramique sur la plage de Kélibia, fruits de mer frais et couchers de soleil époustouflants.;OUI;NON;Installez-vous en terrasse pour le coucher de soleil avec une assiette de crevettes grillées.;36.83566;11.11258;;;11h-23h (Ouvert 7j/7 en saison);Non précisé;vue mer, coucher de soleil, fruits de mer, terrasse
 4;Restaurant Les Grottes;restaurant;El Haouaria;Cuisine tunisienne authentique près des grottes romaines, menu abordable, personnel serviable.;OUI;NON;Idéal après la visite des grottes ;37.0560847;10.9993958;;;;;
