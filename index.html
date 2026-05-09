@@ -1160,6 +1160,84 @@ body.light .home-hero{background:linear-gradient(135deg,#5a3e00,#a07020);}
 .leaflet-control-zoom a{background:var(--bg2) !important; color:var(--th) !important; border:1px solid var(--border) !important;}
 .leaflet-popup-content{color:var(--tb) !important; font-family:'DM Sans',sans-serif;}
 
+/* ══ BOUTON AFFICHE MAPS & FULLSCREEN MAP ══ */
+.leaflet-control-fullmap {
+  margin-top: 4px !important;
+}
+.leaflet-control-fullmap a {
+  background: var(--bg2) !important;
+  color: var(--th) !important;
+  border: 1px solid var(--border) !important;
+  border-radius: 4px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  width: 30px !important;
+  height: 30px !important;
+  font-size: 15px !important;
+  cursor: pointer !important;
+  text-decoration: none !important;
+  line-height: 1 !important;
+}
+.leaflet-control-fullmap a:hover {
+  background: var(--border) !important;
+}
+
+/* Overlay plein écran */
+#map-fullscreen-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  background: #000;
+  flex-direction: column;
+}
+#map-fullscreen-overlay.active {
+  display: flex;
+}
+#map-fullscreen-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 14px;
+  background: var(--bg2);
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+  z-index: 10;
+}
+#map-fullscreen-title {
+  font-family: 'Playfair Display', serif;
+  font-size: 1.05rem;
+  color: var(--th);
+  font-weight: 600;
+}
+#map-fullscreen-close {
+  background: rgba(212,168,67,.15);
+  border: 1px solid #d4a843;
+  color: #d4a843;
+  border-radius: 20px;
+  padding: 6px 16px;
+  font-size: .8rem;
+  font-weight: 700;
+  cursor: pointer;
+  font-family: 'DM Sans', sans-serif;
+  transition: background .2s;
+}
+#map-fullscreen-close:hover {
+  background: rgba(212,168,67,.3);
+}
+#map-fullscreen-container {
+  flex: 1;
+  position: relative;
+  overflow: hidden;
+}
+#map-fullscreen-instance {
+  width: 100%;
+  height: 100%;
+  position: absolute;
+  inset: 0;
+}
+
 /* ══ SPLASH ══ */
 /* ── Popup sponsor au lancement ── */
 #sponsor-popup{
@@ -2633,7 +2711,123 @@ function initMap() {
   }).addTo(leafletMap);
   addMapPins();
   setTimeout(() => leafletMap.invalidateSize(), 200);
+
+  // Bouton "Affiche maps" à côté des +/-
+  const FullMapControl = L.Control.extend({
+    options: { position: 'topleft' },
+    onAdd: function() {
+      const container = L.DomUtil.create('div', 'leaflet-bar leaflet-control leaflet-control-fullmap');
+      const btn = L.DomUtil.create('a', '', container);
+      btn.href = '#';
+      btn.title = 'Affiche maps — Plein écran';
+      btn.innerHTML = '⛶';
+      btn.setAttribute('role', 'button');
+      btn.setAttribute('aria-label', 'Affiche maps plein écran');
+      L.DomEvent.on(btn, 'click', function(e) {
+        L.DomEvent.stopPropagation(e);
+        L.DomEvent.preventDefault(e);
+        openFullscreenMap();
+      });
+      return container;
+    }
+  });
+  leafletMap.addControl(new FullMapControl());
 }
+
+/* ══ CARTE PLEIN ÉCRAN ══ */
+let fullscreenMap = null;
+let fullscreenReady = false;
+
+function openFullscreenMap() {
+  const overlay = document.getElementById('map-fullscreen-overlay');
+  overlay.classList.add('active');
+  document.body.style.overflow = 'hidden';
+
+  if (!fullscreenReady) {
+    fullscreenReady = true;
+    const el = document.getElementById('map-fullscreen-instance');
+    fullscreenMap = L.map(el, {
+      center: leafletMap ? leafletMap.getCenter() : CFG.MAP_CENTER,
+      zoom: leafletMap ? leafletMap.getZoom() : CFG.MAP_ZOOM_DEFAULT,
+      zoomControl: true, attributionControl: false
+    });
+    L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+      maxZoom: 19, attribution: 'Esri'
+    }).addTo(fullscreenMap);
+    L.tileLayer(isLight
+      ? 'https://{s}.basemaps.cartocdn.com/light_only_labels/{z}/{x}/{y}{r}.png'
+      : 'https://{s}.basemaps.cartocdn.com/dark_only_labels/{z}/{x}/{y}{r}.png', {
+      maxZoom: 19, opacity: 0.8
+    }).addTo(fullscreenMap);
+    addFullscreenMapPins();
+  } else {
+    // Synchroniser la vue avec la carte principale
+    if (leafletMap) {
+      fullscreenMap.setView(leafletMap.getCenter(), leafletMap.getZoom());
+    }
+  }
+
+  setTimeout(() => {
+    fullscreenMap.invalidateSize();
+  }, 100);
+}
+
+function closeFullscreenMap() {
+  const overlay = document.getElementById('map-fullscreen-overlay');
+  overlay.classList.remove('active');
+  document.body.style.overflow = '';
+}
+
+function addFullscreenMapPins() {
+  if (!fullscreenMap) return;
+  bonnesAdresses.filter(p => p.actif === 'OUI' && p.gps_lat && p.gps_lng).forEach(p => {
+    const lat = parseCoord(p.gps_lat);
+    const lng = parseCoord(p.gps_lng);
+    if (isNaN(lat) || isNaN(lng)) return;
+    const starred = p.coup_de_coeur === 'OUI';
+    const emoji = CAT_EMOJI[p.categorie] || '📍';
+    const bg = starred ? 'rgba(212,168,67,.95)' : 'rgba(212,168,67,.95)';
+    const bc = starred ? '#d4a843' : '#c49030';
+    const icon = L.divIcon({
+      html:`<div style="background:${bg};border:2px solid ${bc};border-radius:50% 50% 50% 0;transform:rotate(-45deg);width:30px;height:30px;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 10px rgba(0,0,0,.5)"><span style="transform:rotate(45deg);font-size:13px">${emoji}</span></div>`,
+      className:'', iconSize:[30,30], iconAnchor:[15,30], popupAnchor:[0,-32]
+    });
+    const popsk = storeItem(p);
+    const popup = `<div style="font-family:'DM Sans',sans-serif;min-width:190px;padding:4px 0">
+      <div style="font-weight:700;font-size:13px;margin-bottom:3px">${emoji} ${escHtml(p.nom)}</div>
+      <div style="font-size:11px;opacity:.7;margin-bottom:4px">${escHtml(p.categorie)} · ${escHtml(p.ville)}</div>
+      ${starred ? '<div style="font-size:11px;color:#d4a843;margin-bottom:3px">⭐ Coup de cœur Jerbi Explore</div>' : ''}
+      <div style="font-size:10px;opacity:.6;margin-bottom:8px">${escHtml(p.horaires||'')}</div>
+      <div onclick="closeFullscreenMap();showFiche(getItem('${popsk}'))"
+           style="font-size:11px;color:#d4a843;font-weight:700;cursor:pointer;padding:5px 8px;background:rgba(212,168,67,.1);border-radius:8px;text-align:center">
+        Voir le détail →
+      </div>
+    </div>`;
+    const marker = L.marker([lat, lng], {icon});
+    marker._isJerbiPin = true;
+    marker._jerbiData = p;
+    marker._popupOpen = false;
+    marker.bindPopup(popup, {maxWidth:220, autoPanPadding:[20,20]});
+    marker.on('click', function() {
+      if (this._popupOpen) {
+        this._popupOpen = false;
+        this.closePopup();
+        closeFullscreenMap();
+        showFiche(this._jerbiData);
+      } else {
+        this._popupOpen = true;
+        this.openPopup();
+      }
+    });
+    marker.on('popupclose', function() { this._popupOpen = false; });
+    marker.addTo(fullscreenMap);
+  });
+}
+
+// Fermer le fullscreen avec la touche Escape
+document.addEventListener('keydown', function(e) {
+  if (e.key === 'Escape') closeFullscreenMap();
+});
 
 function updateMapTiles() {
   if (!leafletMap) return;
@@ -2644,6 +2838,15 @@ function updateMapTiles() {
         : 'https://{s}.basemaps.cartocdn.com/dark_only_labels/{z}/{x}/{y}{r}.png');
     }
   });
+  if (fullscreenMap) {
+    fullscreenMap.eachLayer(l => {
+      if (l._url && l._url.includes('only_labels')) {
+        l.setUrl(isLight
+          ? 'https://{s}.basemaps.cartocdn.com/light_only_labels/{z}/{x}/{y}{r}.png'
+          : 'https://{s}.basemaps.cartocdn.com/dark_only_labels/{z}/{x}/{y}{r}.png');
+      }
+    });
+  }
 }
 
 function parseCoord(v) {
@@ -6486,6 +6689,17 @@ renderAdminAnalytics = function() {
     <button id="photos-lb-prev"   onclick="event.stopPropagation();photosLbNav(-1)">&#8249;</button>
     <button id="photos-lb-next"   onclick="event.stopPropagation();photosLbNav(1)">&#8250;</button>
     <div id="photos-lb-counter"></div>
+  </div>
+
+  <!-- ══ CARTE PLEIN ÉCRAN OVERLAY ══ -->
+  <div id="map-fullscreen-overlay">
+    <div id="map-fullscreen-header">
+      <div id="map-fullscreen-title">🗺️ Guide Cap Bon — Carte complète</div>
+      <button id="map-fullscreen-close" onclick="closeFullscreenMap()">✕ Fermer</button>
+    </div>
+    <div id="map-fullscreen-container">
+      <div id="map-fullscreen-instance"></div>
+    </div>
   </div>
 
 </body>
