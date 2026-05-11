@@ -4,7 +4,7 @@ compatibility_date = "2024-01-01"
 
 [[kv_namespaces]]
 binding = "JERBI_KV"
-id = "REMPLACER_PAR_VOTRE_KV_ID"
+id = "5d9506ac842a420697c17366ea9ee065"
 
 # Cron : nettoyage + recherche événements chaque nuit à 1h00 UTC (= 2h Tunis)
 # Pour changer l'heure : modifier "0 1 * * *"
