@@ -1,16 +1,16 @@
 Titre;Date;Heure;Lieu;Ville;Description;Photo_URL;Lien_Billetterie;Organisateur;Statut;prix
-Festival de l’Épervier;2026-06-25;Heure non encore préciser;Centre-ville et espaces culturels;El Haouaria;Festival patrimonial consacré à la fauconnerie traditionnelle et au folklore du Cap Bon.;;;Municipalité El Haouaria / Ministère de la Culture;actif;Gratuit / certains spectacles payants
+Festival de l’Épervier;2026-06-25;Heure non encore préciser;Centre-ville et espaces culturels;El Haouaria;Festival patrimonial consacré à la fauconnerie traditionnelle et au folklore du Cap Bon.;;;Municipalité El Haouaria / Ministère de la Culture;actif;Gratuit
 Ouverture Saison Estivale Hammamet;2026-06-15;Heure non encore préciser;Yasmine Hammamet;Hammamet;Début des animations touristiques estivales et soirées balnéaires.;;;Hôtels & Offices Touristiques;actif;Variable
-Festival International de Hammamet;2026-07-01;Heure non encore préciser;Centre Culturel International de Hammamet;Hammamet;Festival international de musique, théâtre et danse.;;https://festivaldehammamet.com;Festival International de Hammamet;actif;20 à 120 TND
-Festival Estival Municipal;2026-07-01;Heure non encore préciser;Maison de la Culture;Nabeul;Festival culturel avec concerts et spectacles populaires.;;;Municipalité de Nabeul;actif;Gratuit / Variable
-Saison Touristique Kelibia;2026-07-01;Heure non encore préciser;Port et plages de Kelibia;Kelibia;Animations estivales, activités nautiques et concerts.;;;Municipalité de Kelibia;actif;Variable
-Festival International du Film Amateur (FIFAK);2026-08-01;Heure non encore préciser;Centre culturel et espaces publics;Kelibia;Festival historique du cinéma amateur tunisien.;;;FIFAK Kelibia;actif;Variable
-Animations Artisanales d’Été;2026-08-01;Heure non encore préciser;Centre-ville;Nabeul;Marchés artisanaux et animations estivales.;;;Municipalité de Nabeul;actif;Gratuit
-Arrière-saison Culturelle;2026-09-01;Heure non encore préciser;Divers lieux culturels;Hammamet;Concerts lounge, expositions et gastronomie.;;;Acteurs culturels locaux;actif;Variable
-Événements Agricoles;2026-09-01;Heure non encore préciser;Espaces agricoles et marchés;Korba;Produits du terroir et gastronomie locale.;;;Municipalité de Korba;actif;Gratuit
-Saison de la Poterie;2026-10-01;Heure non encore préciser;Ateliers et espaces artisanaux;Nabeul;Expositions de céramique et artisanat local.;;;Artisans de Nabeul;actif;Gratuit
-Tourisme Nature;2026-10-01;Heure non encore préciser;Falaises et espaces naturels;El Haouaria;Activités écologiques et randonnées.;;;Associations locales;actif;Variable
-Tourisme MICE & Congrès;2026-11-01;Heure non encore préciser;Hôtels et centres de congrès;Hammamet;Séminaires et événements professionnels.;;;Hôtels & Resorts;actif;Variable
-Marchés Artisanaux d’Automne;2026-11-01;Heure non encore préciser;Marchés et médina;Nabeul;Produits artisanaux et spécialités du Cap Bon.;;;Municipalité de Nabeul;actif;Gratuit
-Festival Neapolis du Théâtre pour Enfants;2026-12-21;Heure non encore préciser;Espaces culturels de Nabeul;Nabeul;Festival international du théâtre jeunesse.;;;Festival Neapolis;actif;Variable
-Réveillon & Fêtes de Fin d’Année;2026-12-24;Heure non encore préciser;Yasmine Hammamet;Hammamet;Soirées premium et dîners spectacles.;;;Hôtels & Resorts;actif;Variable
+Festival International de Hammamet;2026-07-01;Heure non encore préciser;Centre Culturel International de Hammamet;Hammamet;Festival international de musique, théâtre et danse.;;https://festivaldehammamet.com;Festival International de Hammamet;NON;20 à 120 TND
+Festival Estival Municipal;2026-07-01;Heure non encore préciser;Maison de la Culture;Nabeul;Festival culturel avec concerts et spectacles populaires.;;;Municipalité de Nabeul;NON;Gratuit / Variable
+Saison Touristique Kelibia;2026-07-01;Heure non encore préciser;Port et plages de Kelibia;Kelibia;Animations estivales, activités nautiques et concerts.;;;Municipalité de Kelibia;NON;Variable
+Festival International du Film Amateur (FIFAK);2026-08-01;Heure non encore préciser;Centre culturel et espaces publics;Kelibia;Festival historique du cinéma amateur tunisien.;;;FIFAK Kelibia;NON;Variable
+Animations Artisanales d’Été;2026-08-01;Heure non encore préciser;Centre-ville;Nabeul;Marchés artisanaux et animations estivales.;;;Municipalité de Nabeul;NON;Gratuit
+Arrière-saison Culturelle;2026-09-01;Heure non encore préciser;Divers lieux culturels;Hammamet;Concerts lounge, expositions et gastronomie.;;;Acteurs culturels locaux;NON;Variable
+Événements Agricoles;2026-09-01;Heure non encore préciser;Espaces agricoles et marchés;Korba;Produits du terroir et gastronomie locale.;;;Municipalité de Korba;NON;Gratuit
+Saison de la Poterie;2026-10-01;Heure non encore préciser;Ateliers et espaces artisanaux;Nabeul;Expositions de céramique et artisanat local.;;;Artisans de Nabeul;NON;Gratuit
+Tourisme Nature;2026-10-01;Heure non encore préciser;Falaises et espaces naturels;El Haouaria;Activités écologiques et randonnées.;;;Associations locales;NON;Variable
+Tourisme MICE & Congrès;2026-11-01;Heure non encore préciser;Hôtels et centres de congrès;Hammamet;Séminaires et événements professionnels.;;;Hôtels & Resorts;NON;Variable
+Marchés Artisanaux d’Automne;2026-11-01;Heure non encore préciser;Marchés et médina;Nabeul;Produits artisanaux et spécialités du Cap Bon.;;;Municipalité de Nabeul;NON;Gratuit
+Festival Neapolis du Théâtre pour Enfants;2026-12-21;Heure non encore préciser;Espaces culturels de Nabeul;Nabeul;Festival international du théâtre jeunesse.;;;Festival Neapolis;NON;Variable
+Réveillon & Fêtes de Fin d’Année;2026-12-24;Heure non encore préciser;Yasmine Hammamet;Hammamet;Soirées premium et dîners spectacles.;;;Hôtels & Resorts;NON;Variable
